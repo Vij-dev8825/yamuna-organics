@@ -73,6 +73,24 @@ router.get('/stats', async (req, res, next) => {
   }
 });
 
+/* -------------------------------- Uploads --------------------------------- */
+
+// POST /api/admin/upload-image — multipart 'file' → { url } for use as a
+// product/category image (banners have their own dedicated upload below).
+const imageUpload = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB
+  fileFilter: (req, file, cb) => {
+    const ok = /\.(jpe?g|png|webp)$/i.test(file.originalname);
+    cb(ok ? null : new Error('Only jpg/png/webp image files are allowed.'), ok);
+  },
+});
+
+router.post('/upload-image', imageUpload.single('file'), (req, res) => {
+  if (!req.file) return res.status(400).json({ success: false, message: 'An image file is required.' });
+  res.status(201).json({ success: true, url: `/uploads/${req.file.filename}` });
+});
+
 /* -------------------------------- Products -------------------------------- */
 
 function validateProduct(body) {

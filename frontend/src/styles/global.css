@@ -1188,6 +1188,19 @@ p { margin: 0 0 1em; }
   gap: 0 18px;
 }
 .form-inline { display: flex; gap: 18px; align-items: flex-end; flex-wrap: wrap; }
+
+/* ---------- Admin image upload field ---------- */
+.image-upload-field { display: flex; align-items: center; gap: 12px; }
+.image-upload-preview {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(31,61,43,0.15);
+  flex-shrink: 0;
+}
+.image-upload-btn { cursor: pointer; white-space: nowrap; }
+.image-upload-btn.disabled { opacity: 0.6; pointer-events: none; }
 .check-row { display: flex; align-items: center; gap: 8px; font-size: 0.88rem; margin: 12px 0 0; cursor: pointer; }
 .check-row input { accent-color: var(--gold-2); width: auto; }
 .check-row-group { display: flex; gap: 22px; flex-wrap: wrap; margin-bottom: 14px; }

@@ -71,6 +71,8 @@ export const api = {
   admin: {
     stats: (token) => request('/admin/stats', { token }),
 
+    uploadImage: (token, formData) => request('/admin/upload-image', { method: 'POST', formData, token }),
+
     createProduct: (token, product) => request('/admin/products', { method: 'POST', body: product, token }),
     updateProduct: (token, id, product) => request(`/admin/products/${id}`, { method: 'PUT', body: product, token }),
     deleteProduct: (token, id) => request(`/admin/products/${id}`, { method: 'DELETE', token }),

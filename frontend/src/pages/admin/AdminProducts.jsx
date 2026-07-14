@@ -1,14 +1,15 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../api';
 import { useAuth } from '../../context/AuthContext';
-import { getProductImage, knownProductImages } from '../../utils/productImages';
+import { getProductImage } from '../../utils/productImages';
+import ImageUploadField from '../../components/admin/ImageUploadField';
 
 const EMPTY = {
   name: '',
   category: '',
   shortDescription: '',
   description: '',
-  image: knownProductImages[0],
+  image: '',
   sizes: [{ label: '500 ml', price: '', mrp: '', stock: '' }],
   tags: '',
 };
@@ -129,21 +130,12 @@ export default function AdminProducts() {
               </select>
             </div>
             <div className="field">
-              <label>Image</label>
-              <select value={form.image} onChange={(e) => setForm({ ...form, image: e.target.value })}>
-                {knownProductImages.map((img) => (
-                  <option key={img} value={img}>{img}</option>
-                ))}
-                {form.image && !knownProductImages.includes(form.image) && (
-                  <option value={form.image}>{form.image}</option>
-                )}
-              </select>
-            </div>
-            <div className="field">
               <label>Tags (comma-separated)</label>
               <input value={form.tags} onChange={(e) => setForm({ ...form, tags: e.target.value })} />
             </div>
           </div>
+
+          <ImageUploadField value={form.image} onChange={(url) => setForm({ ...form, image: url })} />
           <div className="field">
             <label>Short description</label>
             <input value={form.shortDescription} onChange={(e) => setForm({ ...form, shortDescription: e.target.value })} />

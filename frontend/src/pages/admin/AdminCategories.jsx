@@ -1,14 +1,17 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { api } from '../../api';
 import { useAuth } from '../../context/AuthContext';
-import { getProductImage, knownProductImages } from '../../utils/productImages';
+import { getProductImage } from '../../utils/productImages';
+import ImageUploadField from '../../components/admin/ImageUploadField';
 
 export default function AdminCategories() {
   const { token } = useAuth();
   const [categories, setCategories] = useState([]);
   const [label, setLabel] = useState('');
-  const [image, setImage] = useState(knownProductImages[0]);
+  const [image, setImage] = useState('');
   const [message, setMessage] = useState(null);
+  const [rowUploading, setRowUploading] = useState(null); // category id currently uploading
+  const rowFileInputs = useRef({});
 
   function load() {
     api.admin.getCategories(token).then((d) => setCategories(d.categories)).catch(() => {});
@@ -21,6 +24,7 @@ export default function AdminCategories() {
     try {
       await api.admin.createCategory(token, { label, image });
       setLabel('');
+      setImage('');
       setMessage({ type: 'success', text: 'Category added.' });
       load();
     } catch (err) {
@@ -36,6 +40,22 @@ export default function AdminCategories() {
       load();
     } catch (err) {
       setMessage({ type: 'error', text: err.message });
+    }
+  }
+
+  async function changeRowImage(c, file) {
+    setRowUploading(c.id);
+    setMessage(null);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const uploaded = await api.admin.uploadImage(token, fd);
+      await api.admin.updateCategory(token, c.id, { image: uploaded.url });
+      load();
+    } catch (err) {
+      setMessage({ type: 'error', text: err.message });
+    } finally {
+      setRowUploading(null);
     }
   }
 
@@ -62,14 +82,7 @@ export default function AdminCategories() {
           <label>New category label</label>
           <input value={label} onChange={(e) => setLabel(e.target.value)} placeholder="e.g. Mustard Oil" required />
         </div>
-        <div className="field">
-          <label>Tile image</label>
-          <select value={image} onChange={(e) => setImage(e.target.value)}>
-            {knownProductImages.map((img) => (
-              <option key={img} value={img}>{img}</option>
-            ))}
-          </select>
-        </div>
+        <ImageUploadField value={image} onChange={setImage} label="Tile image" />
         <button className="btn btn-gold btn-sm">+ Add category</button>
       </form>
 
@@ -86,7 +99,25 @@ export default function AdminCategories() {
                 <td><code>{c.id}</code></td>
                 <td>
                   <button className="link-btn" onClick={() => rename(c)}>rename</button>{' '}
+                  <button
+                    className="link-btn"
+                    disabled={rowUploading === c.id}
+                    onClick={() => rowFileInputs.current[c.id]?.click()}
+                  >
+                    {rowUploading === c.id ? 'uploading…' : 'change image'}
+                  </button>{' '}
                   <button className="link-btn danger" onClick={() => del(c)}>delete</button>
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    ref={(el) => (rowFileInputs.current[c.id] = el)}
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                      e.target.value = '';
+                      if (file) changeRowImage(c, file);
+                    }}
+                    hidden
+                  />
                 </td>
               </tr>
             ))}
