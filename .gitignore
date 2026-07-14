@@ -1,0 +1,15 @@
+node_modules/
+frontend/dist/
+backend/.env
+.env
+
+# Runtime data (JSON dev-mode database) — only the product seed is versioned
+backend/data/*.json
+!backend/data/products.json
+
+# Uploaded banners are recreated from backend/seed-assets on boot
+backend/uploads/
+
+*.log
+boot.log
+boot.err

@@ -1,0 +1,106 @@
+const BASE_URL = '/api';
+
+async function request(path, { method = 'GET', body, token, formData } = {}) {
+  const headers = {};
+  if (!formData) headers['Content-Type'] = 'application/json';
+  if (token) headers.Authorization = `Bearer ${token}`;
+
+  const res = await fetch(`${BASE_URL}${path}`, {
+    method,
+    headers,
+    body: formData || (body ? JSON.stringify(body) : undefined),
+  });
+
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    throw new Error(data.message || 'Something went wrong. Please try again.');
+  }
+  return data;
+}
+
+export const api = {
+  // auth
+  sendOtp: (phone) => request('/auth/send-otp', { method: 'POST', body: { phone } }),
+  verifyOtp: (phone, otp, name) =>
+    request('/auth/verify-otp', { method: 'POST', body: { phone, otp, name } }),
+  me: (token) => request('/auth/me', { token }),
+  updateProfile: (token, updates) => request('/auth/me', { method: 'PUT', body: updates, token }),
+
+  // products
+  getProducts: (params = {}) => {
+    const qs = new URLSearchParams(params).toString();
+    return request(`/products${qs ? `?${qs}` : ''}`);
+  },
+  getCategories: () => request('/products/categories'),
+  getProduct: (id) => request(`/products/${id}`),
+
+  // banners (home page hero)
+  getBanners: () => request('/banners'),
+
+  // cart
+  getCart: (token) => request('/cart', { token }),
+  syncCart: (token, items) => request('/cart', { method: 'PUT', body: { items }, token }),
+  addCartItem: (token, item) => request('/cart/item', { method: 'POST', body: item, token }),
+  updateCartItem: (token, item) => request('/cart/item', { method: 'PATCH', body: item, token }),
+  removeCartItem: (token, item) => request('/cart/item', { method: 'DELETE', body: item, token }),
+
+  // wishlist
+  getWishlist: (token) => request('/wishlist', { token }),
+  addWishlist: (token, productId) => request('/wishlist', { method: 'POST', body: { productId }, token }),
+  removeWishlist: (token, productId) => request(`/wishlist/${productId}`, { method: 'DELETE', token }),
+
+  // orders
+  placeOrder: (token, payload) => request('/orders', { method: 'POST', body: payload, token }),
+  getOrders: (token) => request('/orders', { token }),
+
+  // bulk enquiry + contact
+  submitBulkEnquiry: (payload, token) => request('/bulk-enquiry', { method: 'POST', body: payload, token }),
+  submitContact: (payload) => request('/contact', { method: 'POST', body: payload }),
+
+  // notifications (customer)
+  getNotifications: (token) => request('/notifications', { token }),
+  markNotificationRead: (token, id) => request(`/notifications/${id}/read`, { method: 'POST', token }),
+  markAllNotificationsRead: (token) => request('/notifications/read-all', { method: 'POST', token }),
+
+  // chat (customer)
+  getChat: (token) => request('/chat', { token }),
+  sendChat: (token, text) => request('/chat', { method: 'POST', body: { text }, token }),
+
+  // admin
+  admin: {
+    stats: (token) => request('/admin/stats', { token }),
+
+    createProduct: (token, product) => request('/admin/products', { method: 'POST', body: product, token }),
+    updateProduct: (token, id, product) => request(`/admin/products/${id}`, { method: 'PUT', body: product, token }),
+    deleteProduct: (token, id) => request(`/admin/products/${id}`, { method: 'DELETE', token }),
+
+    getCategories: (token) => request('/admin/categories', { token }),
+    createCategory: (token, category) => request('/admin/categories', { method: 'POST', body: category, token }),
+    updateCategory: (token, id, category) => request(`/admin/categories/${id}`, { method: 'PUT', body: category, token }),
+    deleteCategory: (token, id) => request(`/admin/categories/${id}`, { method: 'DELETE', token }),
+
+    getBanners: (token) => request('/admin/banners', { token }),
+    uploadBanner: (token, formData) => request('/admin/banners', { method: 'POST', formData, token }),
+    updateBanner: (token, id, patch) => request(`/admin/banners/${id}`, { method: 'PATCH', body: patch, token }),
+    deleteBanner: (token, id) => request(`/admin/banners/${id}`, { method: 'DELETE', token }),
+
+    getOrders: (token) => request('/admin/orders', { token }),
+    updateOrderStatus: (token, id, status) =>
+      request(`/admin/orders/${id}`, { method: 'PATCH', body: { status }, token }),
+
+    getCustomers: (token) => request('/admin/customers', { token }),
+    getEnquiries: (token) => request('/admin/enquiries', { token }),
+    updateEnquiry: (token, id, status) =>
+      request(`/admin/enquiries/${id}`, { method: 'PATCH', body: { status }, token }),
+    getContacts: (token) => request('/admin/contacts', { token }),
+
+    notify: (token, payload) => request('/admin/notify', { method: 'POST', body: payload, token }),
+    notifyLogs: (token) => request('/admin/notify/logs', { token }),
+
+    getConversations: (token) => request('/admin/chat', { token }),
+    getThread: (token, userId) => request(`/admin/chat/${userId}`, { token }),
+    sendMessage: (token, userId, text) =>
+      request(`/admin/chat/${userId}`, { method: 'POST', body: { text }, token }),
+  },
+};

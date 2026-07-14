@@ -1,0 +1,117 @@
+import { useEffect, useState } from 'react';
+import { api } from '../../api';
+import { useAuth } from '../../context/AuthContext';
+
+export default function AdminLeads() {
+  const { token } = useAuth();
+  const [tab, setTab] = useState('enquiries');
+  const [enquiries, setEnquiries] = useState([]);
+  const [contacts, setContacts] = useState([]);
+  const [customers, setCustomers] = useState([]);
+
+  function load() {
+    api.admin.getEnquiries(token).then((d) => setEnquiries(d.enquiries)).catch(() => {});
+    api.admin.getContacts(token).then((d) => setContacts(d.contacts)).catch(() => {});
+    api.admin.getCustomers(token).then((d) => setCustomers(d.customers)).catch(() => {});
+  }
+  useEffect(load, [token]);
+
+  async function setStatus(e2, status) {
+    await api.admin.updateEnquiry(token, e2.id, status).catch(() => {});
+    load();
+  }
+
+  return (
+    <>
+      <div className="admin-head">
+        <h1>Enquiries & Leads</h1>
+      </div>
+
+      <div className="tab-row">
+        {[
+          ['enquiries', `Bulk enquiries (${enquiries.length})`],
+          ['contacts', `Contact messages (${contacts.length})`],
+          ['customers', `Customers (${customers.length})`],
+        ].map(([key, label]) => (
+          <button key={key} className={`tab ${tab === key ? 'active' : ''}`} onClick={() => setTab(key)}>
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {tab === 'enquiries' && (
+        <div className="admin-card">
+          {enquiries.length === 0 ? <p className="muted">No bulk enquiries yet.</p> : (
+            <table className="admin-table">
+              <thead>
+                <tr><th>Name</th><th>Contact</th><th>Wants</th><th>Message</th><th>Status</th></tr>
+              </thead>
+              <tbody>
+                {enquiries.map((e2) => (
+                  <tr key={e2.id}>
+                    <td><b>{e2.name}</b>{e2.company && <div className="muted" style={{ fontSize: '0.75rem' }}>{e2.company}</div>}</td>
+                    <td>{e2.phone}<div className="muted" style={{ fontSize: '0.75rem' }}>{e2.email}</div></td>
+                    <td>{e2.quantity} {e2.unit} of {e2.productCategory}{e2.city && <div className="muted" style={{ fontSize: '0.75rem' }}>{e2.city}</div>}</td>
+                    <td style={{ maxWidth: 220 }}>{e2.message}</td>
+                    <td>
+                      <select className="select" value={e2.status} onChange={(ev) => setStatus(e2, ev.target.value)}>
+                        {['new', 'contacted', 'quoted', 'won', 'lost'].map((s) => (
+                          <option key={s} value={s}>{s}</option>
+                        ))}
+                      </select>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      )}
+
+      {tab === 'contacts' && (
+        <div className="admin-card">
+          {contacts.length === 0 ? <p className="muted">No contact messages yet.</p> : (
+            <table className="admin-table">
+              <thead>
+                <tr><th>Name</th><th>Email / phone</th><th>Subject</th><th>Message</th><th>When</th></tr>
+              </thead>
+              <tbody>
+                {contacts.map((c) => (
+                  <tr key={c.id}>
+                    <td><b>{c.name}</b></td>
+                    <td>{c.email}<div className="muted" style={{ fontSize: '0.75rem' }}>{c.phone}</div></td>
+                    <td>{c.subject}</td>
+                    <td style={{ maxWidth: 260 }}>{c.message}</td>
+                    <td className="muted">{new Date(c.createdAt).toLocaleDateString('en-IN')}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      )}
+
+      {tab === 'customers' && (
+        <div className="admin-card">
+          {customers.length === 0 ? <p className="muted">No customers yet.</p> : (
+            <table className="admin-table">
+              <thead>
+                <tr><th>Name</th><th>Phone</th><th>Email</th><th>Joined</th></tr>
+              </thead>
+              <tbody>
+                {customers.map((c) => (
+                  <tr key={c.id}>
+                    <td><b>{c.name || '—'}</b></td>
+                    <td>{c.phone}</td>
+                    <td>{c.email || '—'}</td>
+                    <td className="muted">{new Date(c.createdAt).toLocaleDateString('en-IN')}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      )}
+    </>
+  );
+}

@@ -1,0 +1,126 @@
+[
+  {
+    "id": "castor-oil-1l",
+    "name": "Cold-Pressed Castor Oil",
+    "category": "oils",
+    "shortDescription": "Wood-pressed (kachi ghani) castor oil, extracted from sun-dried castor seeds.",
+    "description": "Our castor oil is extracted using the traditional wood-press (kolhu) method at low temperature and speed, so it retains its natural ricinoleic acid content, colour and aroma. Unrefined, unfiltered beyond a single cloth-filter pass, and free of chemical solvents. Popular for hair and skin care, and as a natural massage oil.",
+    "image": "castor-oil.jpeg",
+    "sizes": [
+      { "label": "500 ml", "price": 220, "mrp": 260, "stock": 40 },
+      { "label": "1 L", "price": 399, "mrp": 460, "stock": 55 },
+      { "label": "5 L", "price": 1799, "mrp": 2050, "stock": 12 }
+    ],
+    "rating": 4.7,
+    "reviewsCount": 186,
+    "tags": ["castor", "cold-pressed", "wood-pressed", "chemical-free", "hair-care"]
+  },
+  {
+    "id": "coconut-oil-1l",
+    "name": "Cold-Pressed Coconut Oil",
+    "category": "oils",
+    "shortDescription": "Virgin, cold-pressed coconut oil from farm-fresh copra.",
+    "description": "Pressed from hand-selected copra without heat or chemical refining, our coconut oil keeps its natural sweetness, aroma and nutrients intact. Suitable for cooking, skin and hair application. Turns solid below 24°C - a sign of purity, not a defect.",
+    "image": "coconut-oil.jpeg",
+    "sizes": [
+      { "label": "500 ml", "price": 210, "mrp": 250, "stock": 60 },
+      { "label": "1 L", "price": 385, "mrp": 440, "stock": 70 },
+      { "label": "5 L", "price": 1750, "mrp": 1980, "stock": 15 }
+    ],
+    "rating": 4.8,
+    "reviewsCount": 241,
+    "tags": ["coconut", "cold-pressed", "virgin", "cooking", "skin-care"]
+  },
+  {
+    "id": "sesame-oil-1l",
+    "name": "Cold-Pressed Sesame (Til) Oil",
+    "category": "oils",
+    "shortDescription": "Wood-pressed sesame oil with roasted sesame seeds for deep flavour.",
+    "description": "Extracted from black and white til seeds on a traditional wooden ghani, our sesame oil carries a rich, nutty aroma prized in South Indian and Ayurvedic kitchens. Also traditionally used for oil-pulling and body massage (abhyanga).",
+    "image": "sesame-oil.jpeg",
+    "sizes": [
+      { "label": "500 ml", "price": 240, "mrp": 280, "stock": 35 },
+      { "label": "1 L", "price": 440, "mrp": 500, "stock": 48 },
+      { "label": "5 L", "price": 1999, "mrp": 2250, "stock": 10 }
+    ],
+    "rating": 4.6,
+    "reviewsCount": 129,
+    "tags": ["sesame", "til", "wood-pressed", "ayurvedic", "cooking", "massage-oil"]
+  },
+  {
+    "id": "groundnut-oil-1l",
+    "name": "Cold-Pressed Groundnut Oil",
+    "category": "oils",
+    "shortDescription": "Kachi ghani groundnut (peanut) oil, pressed from farm-fresh peanuts.",
+    "description": "Made from sun-dried, hand-picked groundnuts, slow-pressed on a wooden ghani to preserve natural flavour and nutrition. A everyday cooking oil across Indian households, with a high smoke point ideal for frying and tempering.",
+    "image": "groundnut-oil.jpeg",
+    "sizes": [
+      { "label": "500 ml", "price": 190, "mrp": 220, "stock": 50 },
+      { "label": "1 L", "price": 349, "mrp": 400, "stock": 65 },
+      { "label": "5 L", "price": 1599, "mrp": 1820, "stock": 18 }
+    ],
+    "rating": 4.7,
+    "reviewsCount": 203,
+    "tags": ["groundnut", "peanut", "kachi-ghani", "cooking", "everyday-use"]
+  },
+  {
+    "id": "neem-tulsi-soap",
+    "name": "Neem & Tulsi Handmade Soap",
+    "category": "soaps",
+    "shortDescription": "Cold-process soap with neem oil, tulsi extract and our own coconut oil base.",
+    "description": "Handmade in small batches using the cold-process method, this soap blends neem oil and tulsi extract into a base of our own wood-pressed coconut oil. Naturally antibacterial and gentle enough for daily use on face and body. No parabens, sulphates, artificial fragrance or colour.",
+    "image": "neem-soap.svg",
+    "sizes": [
+      { "label": "100 g bar", "price": 85, "mrp": 110, "stock": 80 },
+      { "label": "Pack of 3", "price": 240, "mrp": 330, "stock": 45 }
+    ],
+    "rating": 4.6,
+    "reviewsCount": 74,
+    "tags": ["neem", "tulsi", "handmade", "cold-process", "skin-care"]
+  },
+  {
+    "id": "turmeric-sandal-soap",
+    "name": "Turmeric & Sandalwood Soap",
+    "category": "soaps",
+    "shortDescription": "Brightening bath bar with wild turmeric, sandalwood and sesame oil.",
+    "description": "A traditional ubtan-inspired bar made with wild turmeric (kasturi manjal), sandalwood powder and our cold-pressed sesame oil. Gently brightens and evens skin tone while keeping it moisturised. Handmade, cured for 4 weeks, and completely free of synthetic additives.",
+    "image": "turmeric-soap.svg",
+    "sizes": [
+      { "label": "100 g bar", "price": 95, "mrp": 125, "stock": 70 },
+      { "label": "Pack of 3", "price": 270, "mrp": 375, "stock": 38 }
+    ],
+    "rating": 4.7,
+    "reviewsCount": 58,
+    "tags": ["turmeric", "sandalwood", "ubtan", "handmade", "skin-care"]
+  },
+  {
+    "id": "moringa-leaf-powder",
+    "name": "Moringa Leaf Powder",
+    "category": "powders",
+    "shortDescription": "Shade-dried moringa (drumstick) leaves, stone-ground to a fine green powder.",
+    "description": "Tender moringa leaves are plucked at dawn, shade-dried to protect nutrients, and stone-ground in small batches. A spoonful into smoothies, dal or chapati dough adds plant protein, iron and antioxidants. Single-origin, nothing added.",
+    "image": "moringa-powder.svg",
+    "sizes": [
+      { "label": "100 g", "price": 149, "mrp": 180, "stock": 60 },
+      { "label": "250 g", "price": 329, "mrp": 400, "stock": 30 }
+    ],
+    "rating": 4.5,
+    "reviewsCount": 41,
+    "tags": ["moringa", "superfood", "stone-ground", "iron", "wellness"]
+  },
+  {
+    "id": "amla-powder",
+    "name": "Amla Fruit Powder",
+    "category": "powders",
+    "shortDescription": "Sun-dried wild amla, ground whole — for hair, skin and immunity.",
+    "description": "Wild-harvested amla (Indian gooseberry) is de-seeded, sun-dried and ground whole with no additives. Rich in natural vitamin C — mix with warm water for immunity, into hair masks for stronger roots, or with honey as a daily tonic.",
+    "image": "amla-powder.svg",
+    "sizes": [
+      { "label": "100 g", "price": 129, "mrp": 160, "stock": 65 },
+      { "label": "250 g", "price": 289, "mrp": 360, "stock": 28 }
+    ],
+    "rating": 4.6,
+    "reviewsCount": 52,
+    "tags": ["amla", "vitamin-c", "hair-care", "immunity", "wellness"]
+  }
+]
