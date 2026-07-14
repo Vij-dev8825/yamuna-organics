@@ -70,6 +70,14 @@ export default function Login() {
     if (value && i < 3) otpRefs.current[i + 1]?.focus();
   }
 
+  function handleChangeNumber() {
+    setStep('phone');
+    setPhone('');
+    setOtp(['', '', '', '']);
+    setError('');
+    setDevOtp('');
+  }
+
   return (
     <div className="container section">
       <div className="form-card">
@@ -134,7 +142,7 @@ export default function Login() {
               type="button"
               className="btn btn-ghost btn-block"
               style={{ marginTop: 10 }}
-              onClick={() => setStep('phone')}
+              onClick={handleChangeNumber}
             >
               Change mobile number
             </button>
