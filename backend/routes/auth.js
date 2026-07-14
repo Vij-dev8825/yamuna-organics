@@ -41,7 +41,8 @@ router.post('/send-otp', async (req, res, next) => {
     otpStore.set(phone, { otp, expiresAt: Date.now() + OTP_EXPIRY_MS, attempts: 0 });
 
     // Goes through the SMS provider when configured; logs to console otherwise.
-    await sendSms(phone, `${otp} is your Yamuna Organics login OTP. Valid for ${OTP_EXPIRY_MS / 60000} minutes.`);
+    // Third arg is the raw OTP digits — that's what fills the MSG91 template variable.
+    await sendSms(phone, `${otp} is your Yamuna Organics login OTP. Valid for ${OTP_EXPIRY_MS / 60000} minutes.`, otp);
 
     const response = { success: true, message: 'OTP sent to your mobile number.' };
 
