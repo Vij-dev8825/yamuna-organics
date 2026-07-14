@@ -3,11 +3,17 @@
 # DATABASE_URL in the Render dashboard when prompted.
 #
 # Deploy: push this repo to GitHub → Render dashboard → New → Blueprint.
+#
+# NOTE (free plan): the service spins down after ~15 min of inactivity (first
+# request then takes ~50s), and files uploaded from the admin panel are lost on
+# redeploy — the two seeded hero videos always survive because they ship in the
+# repo. To keep admin uploads permanently, upgrade the plan to "starter" and
+# uncomment the disk + UPLOADS_DIR lines below.
 services:
   - type: web
     name: yamuna-organics
     runtime: node
-    plan: starter # "free" also works, but uploaded banners won't persist without the disk below
+    plan: free
     buildCommand: cd frontend && npm ci && npm run build && cd ../backend && npm ci
     startCommand: cd backend && npm start
     healthCheckPath: /api/health
@@ -20,9 +26,9 @@ services:
         sync: false
       - key: ADMIN_PHONE # phone number that gets admin access via OTP login
         sync: false
-      - key: UPLOADS_DIR
-        value: /var/data/uploads
-    disk: # persistent storage for admin-uploaded banner videos (paid plans)
-      name: uploads
-      mountPath: /var/data/uploads
-      sizeGB: 2
+      # - key: UPLOADS_DIR
+      #   value: /var/data/uploads
+    # disk:               # persistent storage for admin uploads (paid plans)
+    #   name: uploads
+    #   mountPath: /var/data/uploads
+    #   sizeGB: 2
