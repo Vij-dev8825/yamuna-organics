@@ -21,8 +21,13 @@ export default function Login() {
   const location = useLocation();
   const redirectTo = location.state?.from || '/';
 
-  async function handleSendOtp(e) {
-    e.preventDefault();
+  // Deliberately NOT wired to a <form onSubmit> — mobile Chrome ignores
+  // autocomplete="off" on phone fields and can both autofill AND
+  // auto-dispatch a native form "submit" event after doing so, silently
+  // resubmitting a stale number. Requiring an explicit button click (or the
+  // Enter-key handler below) sidesteps that vector entirely.
+  async function handleSendOtp() {
+    if (loading) return;
     setError('');
     if (!/^[6-9]\d{9}$/.test(phone)) {
       setError('Enter a valid 10-digit mobile number.');
@@ -41,8 +46,8 @@ export default function Login() {
     }
   }
 
-  async function handleVerifyOtp(e) {
-    e.preventDefault();
+  async function handleVerifyOtp() {
+    if (loading) return;
     setError('');
     const code = otp.join('');
     if (code.length !== 4) {
@@ -78,6 +83,15 @@ export default function Login() {
     setDevOtp('');
   }
 
+  function onEnterKey(handler) {
+    return (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handler();
+      }
+    };
+  }
+
   return (
     <div className="container section">
       <div className="form-card">
@@ -97,7 +111,7 @@ export default function Login() {
         )}
 
         {step === 'phone' ? (
-          <form onSubmit={handleSendOtp}>
+          <div>
             <div className="field">
               <label>Mobile number</label>
               <input
@@ -108,19 +122,24 @@ export default function Login() {
                 value={phone}
                 maxLength={10}
                 onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
-                autoFocus
+                onKeyDown={onEnterKey(handleSendOtp)}
               />
             </div>
             <div className="field">
               <label>Your name (optional)</label>
-              <input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Priya Sharma" />
+              <input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                onKeyDown={onEnterKey(handleSendOtp)}
+                placeholder="e.g. Priya Sharma"
+              />
             </div>
-            <button className="btn btn-gold btn-block" disabled={loading}>
+            <button type="button" className="btn btn-gold btn-block" disabled={loading} onClick={handleSendOtp}>
               {loading ? 'Sending OTP…' : 'Send OTP'}
             </button>
-          </form>
+          </div>
         ) : (
-          <form onSubmit={handleVerifyOtp}>
+          <div>
             <div className="field">
               <div className="otp-inputs">
                 {otp.map((digit, i) => (
@@ -132,12 +151,13 @@ export default function Login() {
                     inputMode="numeric"
                     autoComplete="off"
                     onChange={(e) => handleOtpChange(i, e.target.value)}
+                    onKeyDown={onEnterKey(handleVerifyOtp)}
                     autoFocus={i === 0}
                   />
                 ))}
               </div>
             </div>
-            <button className="btn btn-gold btn-block" disabled={loading}>
+            <button type="button" className="btn btn-gold btn-block" disabled={loading} onClick={handleVerifyOtp}>
               {loading ? 'Verifying…' : 'Verify & continue'}
             </button>
             <button
@@ -148,7 +168,7 @@ export default function Login() {
             >
               Change mobile number
             </button>
-          </form>
+          </div>
         )}
       </div>
     </div>
