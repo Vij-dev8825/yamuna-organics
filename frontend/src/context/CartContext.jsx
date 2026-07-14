@@ -18,6 +18,15 @@ export function CartProvider({ children }) {
   const [items, setItems] = useState(loadGuestCart);
   const [synced, setSynced] = useState(false);
 
+  // Re-sync whenever the logged-in identity changes (login, logout, or
+  // switching accounts on the same device) — otherwise `synced` stays true
+  // forever after the first login and later sessions keep showing whichever
+  // account's cart happened to load first.
+  useEffect(() => {
+    setSynced(false);
+    if (!token) setItems(loadGuestCart());
+  }, [token]);
+
   // On login: merge guest cart into server cart once.
   useEffect(() => {
     if (!isLoggedIn || synced) return;

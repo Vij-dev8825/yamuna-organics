@@ -6,6 +6,7 @@ import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useAuth } from '../context/AuthContext';
 import { useLang, LANGS } from '../i18n';
+import { IconHeart, IconBag, IconUser, IconBell, IconMenu } from './Icons';
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
@@ -79,23 +80,35 @@ export default function Navbar() {
           </select>
           {isLoggedIn && (
             <button className="icon-btn" aria-label="Notifications" onClick={() => navigate('/notifications')}>
-              🔔
+              <IconBell />
               {unread > 0 && <span className="badge-count">{unread}</span>}
             </button>
           )}
-          <button className="icon-btn" aria-label="Wishlist" onClick={() => navigate('/wishlist')}>
-            ♡
+          <button
+            className={`icon-btn ${productIds.length > 0 ? 'wished' : ''}`}
+            aria-label="Wishlist"
+            onClick={() => navigate('/wishlist')}
+          >
+            <IconHeart filled={productIds.length > 0} />
             {productIds.length > 0 && <span className="badge-count">{productIds.length}</span>}
           </button>
           <button className="icon-btn" aria-label="Cart" onClick={() => navigate('/cart')}>
-            🛍
+            <IconBag />
             {totalCount > 0 && <span className="badge-count">{totalCount}</span>}
           </button>
-          <button className="icon-btn" aria-label="Account" onClick={() => navigate(isLoggedIn ? '/profile' : '/login')}>
-            {isLoggedIn ? (user?.name ? user.name[0].toUpperCase() : '👤') : '👤'}
+          <button
+            className={`icon-btn account-btn ${isLoggedIn ? 'has-initial' : ''}`}
+            aria-label="Account"
+            onClick={() => navigate(isLoggedIn ? '/profile' : '/login')}
+          >
+            {isLoggedIn && user?.name ? (
+              <span className="avatar-initial">{user.name[0].toUpperCase()}</span>
+            ) : (
+              <IconUser />
+            )}
           </button>
           <button className="mobile-toggle" aria-label="Toggle menu" onClick={() => setOpen((o) => !o)}>
-            ☰
+            <IconMenu />
           </button>
         </div>
       </div>

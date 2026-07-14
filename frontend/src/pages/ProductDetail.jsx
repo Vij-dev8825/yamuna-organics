@@ -6,6 +6,7 @@ import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useToast } from '../context/ToastContext';
 import ChakkiWheel from '../components/ChakkiWheel';
+import { IconHeart } from '../components/Icons';
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -40,6 +41,11 @@ export default function ProductDetail() {
   function handleAdd() {
     addItem(product.id, size, qty);
     showToast(`${product.name} (${size}) ×${qty} added to cart`);
+  }
+
+  function handleWishlist() {
+    toggleWishlist(product.id);
+    showToast(isWished ? 'Removed from wishlist' : `${product.name} added to wishlist`);
   }
 
   return (
@@ -91,10 +97,10 @@ export default function ProductDetail() {
             </div>
             <button className="btn btn-gold" onClick={handleAdd}>Add to cart</button>
             <button
-              className={`btn btn-outline ${isWished ? 'active' : ''}`}
-              onClick={() => toggleWishlist(product.id)}
+              className={`btn btn-outline wishlist-btn-detail ${isWished ? 'active' : ''}`}
+              onClick={handleWishlist}
             >
-              {isWished ? '♥ Wishlisted' : '♡ Wishlist'}
+              <IconHeart filled={isWished} size={16} /> {isWished ? 'Wishlisted' : 'Wishlist'}
             </button>
           </div>
 

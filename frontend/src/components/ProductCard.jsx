@@ -4,6 +4,7 @@ import { getProductImage } from '../utils/productImages';
 import { useWishlist } from '../context/WishlistContext';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
+import { IconHeart } from './Icons';
 
 export default function ProductCard({ product }) {
   const { productIds, toggleWishlist } = useWishlist();
@@ -21,6 +22,12 @@ export default function ProductCard({ product }) {
     showToast(`${product.name} (${size}) added to cart`);
   }
 
+  function handleWishlist(e) {
+    e.preventDefault();
+    toggleWishlist(product.id);
+    showToast(isWished ? `Removed from wishlist` : `${product.name} added to wishlist`);
+  }
+
   return (
     <Link to={`/product/${product.id}`} className="product-card">
       <div className="product-media">
@@ -28,12 +35,9 @@ export default function ProductCard({ product }) {
         <button
           className={`wishlist-toggle ${isWished ? 'active' : ''}`}
           aria-label={isWished ? 'Remove from wishlist' : 'Add to wishlist'}
-          onClick={(e) => {
-            e.preventDefault();
-            toggleWishlist(product.id);
-          }}
+          onClick={handleWishlist}
         >
-          {isWished ? '♥' : '♡'}
+          <IconHeart filled={isWished} size={17} />
         </button>
         <img src={getProductImage(product.image)} alt={product.name} loading="lazy" />
       </div>

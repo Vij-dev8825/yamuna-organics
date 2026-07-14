@@ -18,6 +18,15 @@ export function WishlistProvider({ children }) {
   const [productIds, setProductIds] = useState(loadGuest);
   const [synced, setSynced] = useState(false);
 
+  // Re-sync whenever the logged-in identity changes (login, logout, or
+  // switching accounts on the same device) — otherwise `synced` stays true
+  // forever after the first login and later sessions keep showing whichever
+  // account's wishlist happened to load first.
+  useEffect(() => {
+    setSynced(false);
+    if (!token) setProductIds(loadGuest());
+  }, [token]);
+
   useEffect(() => {
     if (!isLoggedIn || synced) return;
     const guestIds = loadGuest();
