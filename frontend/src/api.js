@@ -53,6 +53,11 @@ export const api = {
   // orders
   placeOrder: (token, payload) => request('/orders', { method: 'POST', body: payload, token }),
   getOrders: (token) => request('/orders', { token }),
+  createRazorpayOrder: (token, items) => request('/orders/razorpay/create', { method: 'POST', body: { items }, token }),
+  verifyRazorpayPayment: (token, payload) => request('/orders/razorpay/verify', { method: 'POST', body: payload, token }),
+
+  // public config flags
+  getConfig: () => request('/config'),
 
   // bulk enquiry + contact
   submitBulkEnquiry: (payload, token) => request('/bulk-enquiry', { method: 'POST', body: payload, token }),

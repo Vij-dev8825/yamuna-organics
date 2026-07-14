@@ -497,8 +497,11 @@ p { margin: 0 0 1em; }
 .filter-group { margin-bottom: 22px; }
 .filter-option { display: flex; align-items: center; gap: 10px; padding: 7px 0; font-size: 0.9rem; cursor: pointer; }
 
-/* Custom radio: native input kept for accessibility/click target, visually replaced */
-.filter-option input[type="radio"] {
+/* Custom radio: native input kept for accessibility/click target, visually
+   replaced — reused anywhere a label wraps `input[type=radio] + .filter-radio`
+   (Shop filters, Cart payment method, etc.), not just `.filter-option`. */
+.filter-option input[type="radio"],
+.payment-option input[type="radio"] {
   position: absolute;
   opacity: 0;
   width: 20px;
@@ -526,9 +529,9 @@ p { margin: 0 0 1em; }
   transform: scale(0);
   transition: transform 0.15s ease;
 }
-.filter-option input:checked + .filter-radio { border-color: var(--gold-2); }
-.filter-option input:checked + .filter-radio::after { transform: scale(1); }
-.filter-option input:focus-visible + .filter-radio { outline: 2px solid var(--gold-2); outline-offset: 2px; }
+input:checked + .filter-radio { border-color: var(--gold-2); }
+input:checked + .filter-radio::after { transform: scale(1); }
+input:focus-visible + .filter-radio { outline: 2px solid var(--gold-2); outline-offset: 2px; }
 
 .filter-toggle {
   display: none;
@@ -667,6 +670,42 @@ p { margin: 0 0 1em; }
 .summary-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 0.92rem; }
 .summary-row.total { font-weight: 700; font-size: 1.05rem; border-top: 1px dashed rgba(31,61,43,0.2); margin-top: 8px; padding-top: 14px; }
 .empty-state { text-align: center; padding: 80px 20px; }
+
+/* ---------- Checkout steps (Amazon/Flipkart-style numbered sections) ---------- */
+.checkout-step { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.checkout-step-num {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--forest);
+  color: var(--cream);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.checkout-step h4 { margin: 0; font-family: var(--font-body); font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--forest); }
+
+.payment-options { display: flex; flex-direction: column; gap: 10px; }
+.payment-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px;
+  border: 1.5px solid rgba(31,61,43,0.15);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.payment-option.active { border-color: var(--gold-2); background: rgba(232,184,75,0.06); }
+.payment-option.disabled { opacity: 0.55; cursor: not-allowed; }
+.payment-option .filter-radio { margin-top: 2px; }
+.payment-option-body { display: flex; flex-direction: column; gap: 2px; }
+.payment-option-body b { font-size: 0.95rem; color: var(--forest-deep); }
+.payment-option-body .muted { font-size: 0.8rem; }
 .empty-state .chakki-wheel { margin: 0 auto 20px; width: 70px; height: 70px; }
 
 /* ---------- Steps / process ---------- */

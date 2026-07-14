@@ -19,6 +19,7 @@ const bannerRoutes = require('./routes/banners');
 const chatRoutes = require('./routes/chat');
 const notificationRoutes = require('./routes/notifications');
 const adminRoutes = require('./routes/admin');
+const configRoutes = require('./routes/config');
 
 const app = express();
 
@@ -41,6 +42,7 @@ app.use('/api/banners', bannerRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/config', configRoutes);
 
 // Uploaded banner videos/images
 app.use('/uploads', express.static(UPLOADS_DIR, { maxAge: '7d' }));

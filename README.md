@@ -14,6 +14,10 @@ Full-stack e-commerce site: React (Vite) frontend + Node/Express backend, ready 
   USP strip, categories, bestsellers, "watch how it's made" video section, testimonials
 - Shop, Categories, Product detail, Cart, Wishlist, OTP Login, Profile,
   Bulk Enquiry, Contact, Policy pages
+- **Amazon/Flipkart-style checkout**: numbered "1 Delivery Address" / "2 Payment
+  Method" sections, with **Cash on Delivery** or **Pay Online (Razorpay —
+  cards/UPI/netbanking/wallets)**. "Pay Online" auto-hides/disables itself
+  until Razorpay keys are configured (see below)
 - **Notifications page + bell icon** — order updates, price drops, offers
 - **Floating chat widget** — customers chat with the store (login required)
 
@@ -79,7 +83,12 @@ Notes:
   (and the `UPLOADS_DIR` var) — the two seeded videos still work (they ship with the repo),
   but new uploads are lost on redeploy.
 - For production email/SMS set the `SMTP_*` and `MSG91_*`/`TWILIO_*` vars (see `.env.example`).
-- OTPs are returned in the API response only when `NODE_ENV !== 'production'`.
+- OTPs are returned in the API response only when `NODE_ENV !== 'production'`, or
+  always if `SHOW_OTP_ONSCREEN=true` (useful before SMS delivery is set up).
+- For online payments, set `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` (from
+  https://dashboard.razorpay.com → Settings → API Keys — test-mode keys work
+  immediately with no KYC; live keys need Razorpay KYC for real settlement).
+  Until set, "Pay Online" is disabled at checkout and only Cash on Delivery works.
 
 ## Where things live
 - `backend/data/db.js` — Postgres/JSON dual data layer

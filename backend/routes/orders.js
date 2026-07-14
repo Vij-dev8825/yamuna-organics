@@ -3,10 +3,59 @@ const { v4: uuid } = require('uuid');
 const db = require('../data/db');
 const { requireAuth } = require('../middleware/auth');
 const { notifyUser } = require('../utils/notify');
+const razorpay = require('../utils/razorpay');
 
 const router = express.Router();
 
-// POST /api/orders  { items, address, paymentMethod }
+async function buildOrderItems(items) {
+  const products = await db.list('products');
+  let total = 0;
+  const orderItems = items.map((item) => {
+    const product = products.find((p) => p.id === item.productId);
+    const sizeInfo = product?.sizes.find((s) => s.label === item.size);
+    const price = sizeInfo ? sizeInfo.price : 0;
+    total += price * item.quantity;
+    return {
+      productId: item.productId,
+      name: product?.name,
+      size: item.size,
+      quantity: item.quantity,
+      price,
+    };
+  });
+  return { orderItems, total };
+}
+
+async function createOrderRecord({ userId, orderItems, address, total, paymentMethod, payment }) {
+  const order = {
+    id: uuid(),
+    orderNumber: `YO${Date.now().toString().slice(-8)}`,
+    userId,
+    items: orderItems,
+    address,
+    paymentMethod,
+    paymentStatus: paymentMethod === 'razorpay' ? 'paid' : 'pending',
+    payment: payment || null,
+    total,
+    status: 'placed',
+    createdAt: new Date().toISOString(),
+  };
+  await db.put('orders', order);
+  await db.put('carts', { id: userId, items: [] });
+
+  const user = await db.get('users', userId);
+  if (user) {
+    await notifyUser(user, {
+      title: `Order ${order.orderNumber} placed`,
+      message: `We've received your order of ${orderItems.length} item(s) totalling ₹${total}. We'll notify you when it ships.`,
+      meta: { orderId: order.id },
+      channels: { inapp: true, email: true },
+    });
+  }
+  return order;
+}
+
+// POST /api/orders  { items, address, paymentMethod }  — COD path
 router.post('/', requireAuth, async (req, res, next) => {
   try {
     const { items, address, paymentMethod } = req.body;
@@ -18,50 +67,78 @@ router.post('/', requireAuth, async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'A complete delivery address is required.' });
     }
 
-    const products = await db.list('products');
-    let total = 0;
-    const orderItems = items.map((item) => {
-      const product = products.find((p) => p.id === item.productId);
-      const sizeInfo = product?.sizes.find((s) => s.label === item.size);
-      const price = sizeInfo ? sizeInfo.price : 0;
-      total += price * item.quantity;
-      return {
-        productId: item.productId,
-        name: product?.name,
-        size: item.size,
-        quantity: item.quantity,
-        price,
-      };
+    const { orderItems, total } = await buildOrderItems(items);
+    const order = await createOrderRecord({
+      userId: req.user.id,
+      orderItems,
+      address,
+      total,
+      paymentMethod: paymentMethod || 'cod',
     });
 
-    const order = {
-      id: uuid(),
-      orderNumber: `YO${Date.now().toString().slice(-8)}`,
-      userId: req.user.id,
-      items: orderItems,
-      address,
-      paymentMethod: paymentMethod || 'cod',
-      total,
-      status: 'placed',
-      createdAt: new Date().toISOString(),
-    };
-    await db.put('orders', order);
+    res.status(201).json({ success: true, message: 'Order placed successfully.', order });
+  } catch (err) {
+    next(err);
+  }
+});
 
-    // Clear cart after order
-    await db.put('carts', { id: req.user.id, items: [] });
-
-    // Order confirmation to the customer (in-app + email when available)
-    const user = await db.get('users', req.user.id);
-    if (user) {
-      await notifyUser(user, {
-        title: `Order ${order.orderNumber} placed`,
-        message: `We've received your order of ${orderItems.length} item(s) totalling ₹${total}. We'll notify you when it ships.`,
-        meta: { orderId: order.id },
-        channels: { inapp: true, email: true },
+// POST /api/orders/razorpay/create  { items } → { razorpayOrderId, amount, currency, keyId }
+router.post('/razorpay/create', requireAuth, async (req, res, next) => {
+  try {
+    if (!razorpay.isConfigured()) {
+      return res.status(503).json({
+        success: false,
+        message: 'Online payment isn’t set up yet — please choose Cash on Delivery instead.',
       });
     }
+    const { items } = req.body;
+    if (!items || !items.length) {
+      return res.status(400).json({ success: false, message: 'Your cart is empty.' });
+    }
+    const { total } = await buildOrderItems(items);
+    if (total <= 0) {
+      return res.status(400).json({ success: false, message: 'Order total must be greater than zero.' });
+    }
+    const rzpOrder = await razorpay.createOrder(total, `yo_${Date.now()}`);
+    res.json({
+      success: true,
+      razorpayOrderId: rzpOrder.id,
+      amount: rzpOrder.amount,
+      currency: rzpOrder.currency,
+      keyId: process.env.RAZORPAY_KEY_ID,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
 
-    res.status(201).json({ success: true, message: 'Order placed successfully.', order });
+// POST /api/orders/razorpay/verify
+// { items, address, razorpay_order_id, razorpay_payment_id, razorpay_signature }
+router.post('/razorpay/verify', requireAuth, async (req, res, next) => {
+  try {
+    const { items, address, razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+      return res.status(400).json({ success: false, message: 'Missing payment confirmation details.' });
+    }
+    if (!address || !address.line1 || !address.pincode || !address.phone) {
+      return res.status(400).json({ success: false, message: 'A complete delivery address is required.' });
+    }
+    if (!razorpay.verifySignature({ razorpay_order_id, razorpay_payment_id, razorpay_signature })) {
+      return res.status(400).json({ success: false, message: 'Payment verification failed. Please contact support before retrying.' });
+    }
+
+    const { orderItems, total } = await buildOrderItems(items);
+    const order = await createOrderRecord({
+      userId: req.user.id,
+      orderItems,
+      address,
+      total,
+      paymentMethod: 'razorpay',
+      payment: { razorpay_order_id, razorpay_payment_id },
+    });
+
+    res.status(201).json({ success: true, message: 'Payment verified and order placed.', order });
   } catch (err) {
     next(err);
   }

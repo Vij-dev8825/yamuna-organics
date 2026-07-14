@@ -5,11 +5,12 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { getProductImage } from '../utils/productImages';
+import { loadRazorpay } from '../utils/loadRazorpay';
 import ChakkiWheel from '../components/ChakkiWheel';
 
 export default function Cart() {
   const { items, updateQuantity, removeItem, clearCart } = useCart();
-  const { isLoggedIn, token } = useAuth();
+  const { isLoggedIn, token, user } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
 
@@ -17,9 +18,12 @@ export default function Cart() {
   const [placing, setPlacing] = useState(false);
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [address, setAddress] = useState({ line1: '', city: '', state: '', pincode: '', phone: '' });
+  const [paymentMethod, setPaymentMethod] = useState('cod'); // 'cod' | 'razorpay'
+  const [razorpayEnabled, setRazorpayEnabled] = useState(false);
 
   useEffect(() => {
     api.getProducts().then((d) => setProducts(d.products));
+    api.getConfig().then((d) => setRazorpayEnabled(!!d.razorpayEnabled)).catch(() => {});
   }, []);
 
   const lines = useMemo(() => {
@@ -37,20 +41,76 @@ export default function Cart() {
   const shipping = subtotal > 999 || subtotal === 0 ? 0 : 60;
   const total = subtotal + shipping;
 
+  function validAddress() {
+    return address.line1 && address.city && address.state && address.pincode && address.phone;
+  }
+
   async function handlePlaceOrder(e) {
     e.preventDefault();
+    if (!validAddress()) {
+      showToast('Please fill in your complete delivery address.', 'error');
+      return;
+    }
     setPlacing(true);
+    const orderItems = lines.map((l) => ({ productId: l.productId, size: l.size, quantity: l.quantity }));
     try {
-      const orderItems = lines.map((l) => ({ productId: l.productId, size: l.size, quantity: l.quantity }));
-      await api.placeOrder(token, { items: orderItems, address, paymentMethod: 'cod' });
-      clearCart();
-      showToast('Order placed! We will call to confirm delivery.');
-      navigate('/profile');
+      if (paymentMethod === 'razorpay') {
+        await payWithRazorpay(orderItems);
+      } else {
+        await api.placeOrder(token, { items: orderItems, address, paymentMethod: 'cod' });
+        clearCart();
+        showToast('Order placed! We will call to confirm delivery.');
+        navigate('/profile');
+      }
     } catch (err) {
       showToast(err.message, 'error');
     } finally {
       setPlacing(false);
     }
+  }
+
+  async function payWithRazorpay(orderItems) {
+    const rzpOrder = await api.createRazorpayOrder(token, orderItems);
+    await loadRazorpay();
+
+    return new Promise((resolve, reject) => {
+      const rzp = new window.Razorpay({
+        key: rzpOrder.keyId,
+        amount: rzpOrder.amount,
+        currency: rzpOrder.currency,
+        order_id: rzpOrder.razorpayOrderId,
+        name: 'Yamuna Organic',
+        description: `Order · ${orderItems.length} item(s)`,
+        prefill: {
+          name: user?.name || '',
+          contact: address.phone,
+        },
+        theme: { color: '#c9962c' },
+        modal: {
+          ondismiss: () => {
+            setPlacing(false);
+            reject(new Error('Payment cancelled.'));
+          },
+        },
+        handler: async (response) => {
+          try {
+            await api.verifyRazorpayPayment(token, { items: orderItems, address, ...response });
+            clearCart();
+            showToast('Payment successful — order placed!');
+            navigate('/profile');
+            resolve();
+          } catch (err) {
+            showToast(err.message, 'error');
+            reject(err);
+          }
+        },
+      });
+      rzp.on('payment.failed', () => {
+        setPlacing(false);
+        reject(new Error('Payment failed. Please try again or choose Cash on Delivery.'));
+      });
+      rzp.open();
+    });
   }
 
   if (!products.length && items.length) {
@@ -133,6 +193,10 @@ export default function Cart() {
             </button>
           ) : (
             <form onSubmit={handlePlaceOrder} style={{ marginTop: 18 }}>
+              <div className="checkout-step">
+                <span className="checkout-step-num">1</span>
+                <h4>Delivery Address</h4>
+              </div>
               <div className="field">
                 <label>Address line</label>
                 <input required value={address.line1} onChange={(e) => setAddress({ ...address, line1: e.target.value })} />
@@ -153,8 +217,46 @@ export default function Cart() {
                 <label>Phone</label>
                 <input required value={address.phone} onChange={(e) => setAddress({ ...address, phone: e.target.value })} />
               </div>
-              <button className="btn btn-gold btn-block" disabled={placing}>
-                {placing ? 'Placing order…' : `Place order · Cash on Delivery · ₹${total}`}
+
+              <div className="checkout-step" style={{ marginTop: 22 }}>
+                <span className="checkout-step-num">2</span>
+                <h4>Payment Method</h4>
+              </div>
+              <div className="payment-options">
+                <label className={`payment-option ${paymentMethod === 'cod' ? 'active' : ''}`}>
+                  <input type="radio" name="paymentMethod" checked={paymentMethod === 'cod'} onChange={() => setPaymentMethod('cod')} />
+                  <span className="filter-radio" aria-hidden="true" />
+                  <span className="payment-option-body">
+                    <b>Cash on Delivery</b>
+                    <span className="muted">Pay in cash when your order arrives</span>
+                  </span>
+                </label>
+                <label className={`payment-option ${paymentMethod === 'razorpay' ? 'active' : ''} ${!razorpayEnabled ? 'disabled' : ''}`}>
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    checked={paymentMethod === 'razorpay'}
+                    disabled={!razorpayEnabled}
+                    onChange={() => setPaymentMethod('razorpay')}
+                  />
+                  <span className="filter-radio" aria-hidden="true" />
+                  <span className="payment-option-body">
+                    <b>Pay Online</b>
+                    <span className="muted">
+                      {razorpayEnabled
+                        ? 'Cards, UPI, NetBanking & wallets — secured by Razorpay'
+                        : 'Currently unavailable — please use Cash on Delivery'}
+                    </span>
+                  </span>
+                </label>
+              </div>
+
+              <button className="btn btn-gold btn-block" style={{ marginTop: 18 }} disabled={placing}>
+                {placing
+                  ? 'Processing…'
+                  : paymentMethod === 'razorpay'
+                    ? `Pay ₹${total} securely`
+                    : `Place order · Cash on Delivery · ₹${total}`}
               </button>
             </form>
           )}
