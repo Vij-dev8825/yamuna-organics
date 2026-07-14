@@ -71,15 +71,22 @@ async function seed() {
     console.log(`[seed] admin user on phone ${adminPhone} (log in with OTP as usual)`);
   }
 
-  // Banner files + records
+  // Seed video files: copied into UPLOADS_DIR on every boot (not gated on the
+  // banner *records* existing) because the filesystem is ephemeral on Render's
+  // free plan — a redeploy wipes uploads/ even though the DB rows persist in
+  // Neon. Without this, existing banner records would 404 forever.
   if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+  for (const b of SEED_BANNERS) {
+    const src = path.join(SEED_ASSETS_DIR, b.file);
+    const dest = path.join(UPLOADS_DIR, b.file);
+    if (!fs.existsSync(dest) && fs.existsSync(src)) fs.copyFileSync(src, dest);
+  }
+
+  // Banner records: only inserted once (admin may delete/reorder them afterwards).
   if ((await db.count('banners')) === 0) {
     let sort = 0;
     for (const b of SEED_BANNERS) {
-      const src = path.join(SEED_ASSETS_DIR, b.file);
-      const dest = path.join(UPLOADS_DIR, b.file);
-      if (!fs.existsSync(dest) && fs.existsSync(src)) fs.copyFileSync(src, dest);
-      if (fs.existsSync(dest)) {
+      if (fs.existsSync(path.join(UPLOADS_DIR, b.file))) {
         await db.put('banners', {
           id: uuid(),
           title: b.title,
