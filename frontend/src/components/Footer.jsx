@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-import ChakkiWheel from './ChakkiWheel';
 import { useLang } from '../i18n';
 
 export default function Footer() {
@@ -11,7 +10,7 @@ export default function Footer() {
         <div className="footer-grid">
           <div>
             <div className="flex gap-1" style={{ alignItems: 'center', marginBottom: 14 }}>
-              <ChakkiWheel size={34} spin={false} />
+              <img src="/favicon.svg" alt="" width={34} height={34} />
               <h3 style={{ color: '#fffdf8', margin: 0 }}>Yamuna Organic</h3>
             </div>
             <p style={{ maxWidth: 280, fontSize: '0.9rem' }}>{t('footerTagline')}</p>
@@ -45,7 +44,7 @@ export default function Footer() {
           <div>
             <h4>{t('footerReach')}</h4>
             <ul>
-              <li>Yamuna Organic Mill,<br />Village Road, Mathura, UP</li>
+              <li>Shri Gopal Flour &amp; Oil Mills,<br />Udumalpet, Tiruppur District,<br />Tamil Nadu – 642126</li>
               <li><a href="tel:+919000000000">+91 90000 00000</a></li>
               <li><a href="mailto:hello@yamunaorganics.com">hello@yamunaorganics.com</a></li>
             </ul>
