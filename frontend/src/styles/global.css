@@ -15,21 +15,23 @@
   --ink: #241f18;
   --paper: #fffdf8;
 
-  --gold-1: #8a5a1e;
-  --gold-2: #c9962c;
-  --gold-3: #e8b84b;
-  --gold-4: #fff2c9;
+  /* Brand accent — light, fresh green (replaces the old gold accent
+     everywhere; kept the --gold-* variable names so every consumer, in
+     both the storefront and admin panel, picks up the new color for free). */
+  --gold-1: #4a8f42;
+  --gold-2: #6fae4f;
+  --gold-3: #9be89a;
+  --gold-4: #eafce0;
 
-  /* "Gold shine" is now rendered as a plant-green sheen (same sweep effect,
-     leafy palette) — kept the --gold-* variable names so every consumer
-     (buttons, badges, admin accents) picks up the new color for free. */
-  --leaf-1: #3d6b3f;
-  --leaf-2: #6fae4f;
-  --leaf-3: #8fd66f;
-  --leaf-4: #eafce0;
+  /* Shine sweep — kept entirely in the light range (no dark anchor) for a
+     softer, more premium shimmer instead of a heavy/saturated green. */
+  --leaf-1: #7cc46a;
+  --leaf-2: #a3e08c;
+  --leaf-3: #cdf2bd;
+  --leaf-4: #f3fbef;
 
   --gold-shine: linear-gradient(115deg, var(--leaf-1) 0%, var(--leaf-2) 22%, var(--leaf-4) 45%, var(--leaf-3) 60%, var(--leaf-1) 100%);
-  --gold-shine-soft: linear-gradient(120deg, #4a7f47 0%, #8fd66f 40%, #eafce0 50%, #8fd66f 60%, #4a7f47 100%);
+  --gold-shine-soft: linear-gradient(120deg, #8fd67c 0%, #cdf2bd 40%, #f3fbef 50%, #cdf2bd 60%, #8fd67c 100%);
 
   --font-display: 'Fraunces', Georgia, serif;
   --font-body: 'Work Sans', 'Segoe UI', sans-serif;
@@ -53,7 +55,10 @@ html {
 
 body {
   margin: 0;
-  background: var(--cream);
+  background:
+    radial-gradient(ellipse 900px 500px at 100% 0%, rgba(163,224,140,0.16), transparent 60%),
+    linear-gradient(180deg, #f8fbf3 0%, var(--cream) 45%, var(--cream-deep) 100%);
+  background-attachment: fixed;
   color: var(--ink);
   font-family: var(--font-body);
   line-height: 1.55;
@@ -208,7 +213,7 @@ p { margin: 0 0 1em; }
   top: 0;
   z-index: 50;
   background: var(--paper);
-  border-bottom: 1px solid rgba(201, 150, 44, 0.25);
+  border-bottom: 1px solid rgba(111, 174, 79, 0.25);
 }
 .navbar-inner {
   max-width: var(--container);
@@ -263,7 +268,7 @@ p { margin: 0 0 1em; }
 }
 .icon-btn:hover {
   background: var(--cream-deep);
-  border-color: rgba(201, 150, 44, 0.3);
+  border-color: rgba(111, 174, 79, 0.3);
   color: var(--gold-1);
   transform: translateY(-1px);
 }
@@ -321,7 +326,7 @@ p { margin: 0 0 1em; }
 /* ---------- Hero ---------- */
 .hero {
   position: relative;
-  background: radial-gradient(ellipse at top right, rgba(232,184,75,0.14), transparent 55%), var(--forest);
+  background: radial-gradient(ellipse at top right, rgba(155, 232, 154,0.14), transparent 55%), var(--forest);
   color: var(--cream);
   overflow: hidden;
 }
@@ -370,7 +375,7 @@ p { margin: 0 0 1em; }
   width: 92%;
   aspect-ratio: 1;
   border-radius: 50%;
-  border: 1.5px dashed rgba(232, 184, 75, 0.4);
+  border: 1.5px dashed rgba(155, 232, 154, 0.4);
   animation: wheelSpin 40s linear infinite;
 }
 .hero-visual img {
@@ -714,7 +719,7 @@ input:focus-visible + .filter-radio { outline: 2px solid var(--gold-2); outline-
   cursor: pointer;
   transition: border-color 0.15s ease, background 0.15s ease;
 }
-.payment-option.active { border-color: var(--gold-2); background: rgba(232,184,75,0.06); }
+.payment-option.active { border-color: var(--gold-2); background: rgba(155, 232, 154,0.06); }
 .payment-option.disabled { opacity: 0.55; cursor: not-allowed; }
 .payment-option .filter-radio { margin-top: 2px; }
 .payment-option-body { display: flex; flex-direction: column; gap: 2px; }
@@ -1140,7 +1145,7 @@ input:focus-visible + .filter-radio { outline: 2px solid var(--gold-2); outline-
 /* ---------- USP strip ---------- */
 .usp-strip {
   background: var(--paper);
-  border-bottom: 1px solid rgba(201, 150, 44, 0.2);
+  border-bottom: 1px solid rgba(111, 174, 79, 0.2);
 }
 .usp-grid {
   display: grid;
@@ -1213,7 +1218,7 @@ input:focus-visible + .filter-radio { outline: 2px solid var(--gold-2); outline-
 .notification-list li {
   background: var(--paper);
   border: 1px solid rgba(31,61,43,0.08);
-  border-left: 4px solid rgba(201,150,44,0.35);
+  border-left: 4px solid rgba(111, 174, 79,0.35);
   border-radius: var(--radius-sm);
   padding: 16px 18px;
 }
@@ -1254,7 +1259,7 @@ input:focus-visible + .filter-radio { outline: 2px solid var(--gold-2); outline-
   flex-direction: column;
   overflow: hidden;
   z-index: 180;
-  border: 1px solid rgba(201,150,44,0.25);
+  border: 1px solid rgba(111, 174, 79,0.25);
 }
 .chat-head {
   background: var(--forest-deep);
@@ -1300,7 +1305,7 @@ input:focus-visible + .filter-radio { outline: 2px solid var(--gold-2); outline-
 .chat-empty {
   font-size: 0.85rem;
   color: var(--forest-light);
-  background: rgba(201,150,44,0.08);
+  background: rgba(111, 174, 79,0.08);
   border-radius: var(--radius-sm);
   padding: 12px 14px;
 }
@@ -1359,7 +1364,9 @@ input:focus-visible + .filter-radio { outline: 2px solid var(--gold-2); outline-
   display: grid;
   grid-template-columns: 225px 1fr;
   min-height: calc(100vh - 80px);
-  background: var(--cream);
+  background:
+    radial-gradient(ellipse 800px 460px at 100% 0%, rgba(163,224,140,0.14), transparent 60%),
+    linear-gradient(180deg, #f8fbf3 0%, var(--cream) 100%);
 }
 .admin-sidebar {
   background: var(--forest-deep);
@@ -1387,8 +1394,8 @@ input:focus-visible + .filter-radio { outline: 2px solid var(--gold-2); outline-
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(160deg, rgba(250,246,236,0.95), rgba(232,184,75,0.25));
-  box-shadow: 0 0 0 1.5px rgba(232,184,75,0.5), 0 4px 12px rgba(0,0,0,0.3);
+  background: linear-gradient(160deg, rgba(250,246,236,0.95), rgba(155, 232, 154,0.25));
+  box-shadow: 0 0 0 1.5px rgba(155, 232, 154,0.5), 0 4px 12px rgba(0,0,0,0.3);
 }
 .admin-brand b { display: block; font-family: var(--font-display); font-size: 1.08rem; }
 .admin-brand span { font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(250,246,236,0.55); }
@@ -1401,7 +1408,7 @@ input:focus-visible + .filter-radio { outline: 2px solid var(--gold-2); outline-
 }
 .admin-sidebar nav a:hover { background: rgba(250,246,236,0.06); color: var(--paper); }
 .admin-sidebar nav a.active {
-  background: rgba(232,184,75,0.12);
+  background: rgba(155, 232, 154,0.12);
   color: var(--gold-3);
   border-left-color: var(--gold-2);
 }
@@ -1602,13 +1609,13 @@ input:focus-visible + .filter-radio { outline: 2px solid var(--gold-2); outline-
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background: radial-gradient(ellipse at top right, rgba(232,184,75,0.1), transparent 55%), var(--forest-deep);
+  background: radial-gradient(ellipse at top right, rgba(155, 232, 154,0.1), transparent 55%), var(--forest-deep);
 }
 .admin-login-card {
   width: 100%;
   max-width: 420px;
   background: var(--forest);
-  border: 1px solid rgba(232,184,75,0.18);
+  border: 1px solid rgba(155, 232, 154,0.18);
   border-radius: var(--radius-lg);
   padding: 40px;
   box-shadow: 0 24px 60px rgba(0,0,0,0.35);
@@ -1617,7 +1624,7 @@ input:focus-visible + .filter-radio { outline: 2px solid var(--gold-2); outline-
   background: var(--paper);
 }
 .admin-login-card .alert-error { background: rgba(203,63,44,0.18); color: #ffd7d0; }
-.admin-login-card .alert-info { background: rgba(232,184,75,0.14); color: var(--gold-3); }
+.admin-login-card .alert-info { background: rgba(155, 232, 154,0.14); color: var(--gold-3); }
 .admin-login-back {
   display: block;
   text-align: center;
