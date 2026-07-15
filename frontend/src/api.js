@@ -53,6 +53,7 @@ export const api = {
   // orders
   placeOrder: (token, payload) => request('/orders', { method: 'POST', body: payload, token }),
   getOrders: (token) => request('/orders', { token }),
+  getOrder: (token, id) => request(`/orders/${id}`, { token }),
   createRazorpayOrder: (token, items) => request('/orders/razorpay/create', { method: 'POST', body: { items }, token }),
   verifyRazorpayPayment: (token, payload) => request('/orders/razorpay/verify', { method: 'POST', body: payload, token }),
 

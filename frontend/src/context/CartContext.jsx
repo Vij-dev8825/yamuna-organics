@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
 import { useAuth } from './AuthContext';
 import { api } from '../api';
 
@@ -17,6 +17,13 @@ export function CartProvider({ children }) {
   const { token, isLoggedIn } = useAuth();
   const [items, setItems] = useState(loadGuestCart);
   const [synced, setSynced] = useState(false);
+
+  // Mirrors `items` synchronously (refs update immediately, state doesn't) so
+  // addItem/removeItem/etc. can be called several times back-to-back in the
+  // same tick (e.g. "Buy Again" re-adding every line of a past order) without
+  // each call reading the same stale pre-update array from a state closure.
+  const itemsRef = useRef(items);
+  itemsRef.current = items;
 
   // Re-sync whenever the logged-in identity changes (login, logout, or
   // switching accounts on the same device) — otherwise `synced` stays true
@@ -54,6 +61,7 @@ export function CartProvider({ children }) {
 
   const persist = useCallback(
     (newItems) => {
+      itemsRef.current = newItems;
       setItems(newItems);
       if (isLoggedIn && token) {
         api.syncCart(token, newItems).catch(() => {});
@@ -65,27 +73,28 @@ export function CartProvider({ children }) {
   );
 
   function addItem(productId, size, quantity = 1) {
-    const existing = items.find((i) => i.productId === productId && i.size === size);
+    const current = itemsRef.current;
+    const existing = current.find((i) => i.productId === productId && i.size === size);
     let next;
     if (existing) {
-      next = items.map((i) =>
+      next = current.map((i) =>
         i.productId === productId && i.size === size ? { ...i, quantity: i.quantity + quantity } : i
       );
     } else {
-      next = [...items, { productId, size, quantity }];
+      next = [...current, { productId, size, quantity }];
     }
     persist(next);
   }
 
   function updateQuantity(productId, size, quantity) {
-    const next = items
+    const next = itemsRef.current
       .map((i) => (i.productId === productId && i.size === size ? { ...i, quantity } : i))
       .filter((i) => i.quantity > 0);
     persist(next);
   }
 
   function removeItem(productId, size) {
-    persist(items.filter((i) => !(i.productId === productId && i.size === size)));
+    persist(itemsRef.current.filter((i) => !(i.productId === productId && i.size === size)));
   }
 
   function clearCart() {

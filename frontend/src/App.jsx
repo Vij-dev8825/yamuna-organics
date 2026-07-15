@@ -14,6 +14,7 @@ import Wishlist from './pages/Wishlist';
 import Login from './pages/Login';
 import Profile from './pages/Profile';
 import Notifications from './pages/Notifications';
+import Invoice from './pages/Invoice';
 import BulkEnquiry from './pages/BulkEnquiry';
 import ContactUs from './pages/ContactUs';
 import PrivacyPolicy from './pages/PrivacyPolicy';
@@ -97,6 +98,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <Notifications />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/invoice/:orderId"
+          element={
+            <ProtectedRoute>
+              <Invoice />
             </ProtectedRoute>
           }
         />

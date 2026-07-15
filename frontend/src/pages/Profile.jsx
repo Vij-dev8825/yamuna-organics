@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { api } from '../api';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import ChakkiWheel from '../components/ChakkiWheel';
 
 export default function Profile() {
   const { user, token, logout, updateUser } = useAuth();
+  const { addItem } = useCart();
   const { showToast } = useToast();
   const navigate = useNavigate();
 
@@ -46,6 +48,12 @@ export default function Profile() {
   function handleLogout() {
     logout();
     navigate('/');
+  }
+
+  function handleBuyAgain(order) {
+    order.items.forEach((it) => addItem(it.productId, it.size, it.quantity));
+    showToast(`${order.items.length} item(s) added to your cart.`);
+    navigate('/cart');
   }
 
   if (!user) {
@@ -117,6 +125,10 @@ export default function Profile() {
               </div>
               <div className="summary-row total" style={{ marginTop: 8 }}>
                 <span>Total</span><span>₹{o.total}</span>
+              </div>
+              <div className="flex gap-1" style={{ marginTop: 14 }}>
+                <button className="btn btn-forest btn-sm" onClick={() => handleBuyAgain(o)}>Buy Again</button>
+                <Link to={`/invoice/${o.id}`} className="btn btn-outline btn-sm">Invoice</Link>
               </div>
             </div>
           ))}

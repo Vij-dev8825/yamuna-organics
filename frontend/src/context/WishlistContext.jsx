@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
 import { useAuth } from './AuthContext';
 import { api } from '../api';
 
@@ -17,6 +17,12 @@ export function WishlistProvider({ children }) {
   const { token, isLoggedIn } = useAuth();
   const [productIds, setProductIds] = useState(loadGuest);
   const [synced, setSynced] = useState(false);
+
+  // Mirrors `productIds` synchronously — see CartContext for why (guards
+  // against stale-closure overwrites if toggleWishlist is ever called more
+  // than once in the same tick, e.g. a future "add all to wishlist" action).
+  const idsRef = useRef(productIds);
+  idsRef.current = productIds;
 
   // Re-sync whenever the logged-in identity changes (login, logout, or
   // switching accounts on the same device) — otherwise `synced` stays true
@@ -53,8 +59,10 @@ export function WishlistProvider({ children }) {
   }, []);
 
   function toggleWishlist(productId) {
-    const has = productIds.includes(productId);
-    const next = has ? productIds.filter((id) => id !== productId) : [...productIds, productId];
+    const current = idsRef.current;
+    const has = current.includes(productId);
+    const next = has ? current.filter((id) => id !== productId) : [...current, productId];
+    idsRef.current = next;
     setProductIds(next);
 
     if (isLoggedIn && token) {
