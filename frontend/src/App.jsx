@@ -13,6 +13,8 @@ import Cart from './pages/Cart';
 import Wishlist from './pages/Wishlist';
 import Login from './pages/Login';
 import Profile from './pages/Profile';
+import Orders from './pages/Orders';
+import OrderSuccess from './pages/OrderSuccess';
 import Notifications from './pages/Notifications';
 import Invoice from './pages/Invoice';
 import BulkEnquiry from './pages/BulkEnquiry';
@@ -90,6 +92,22 @@ export default function App() {
           element={
             <ProtectedRoute>
               <Profile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/orders"
+          element={
+            <ProtectedRoute>
+              <Orders />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/order-success/:orderId"
+          element={
+            <ProtectedRoute>
+              <OrderSuccess />
             </ProtectedRoute>
           }
         />

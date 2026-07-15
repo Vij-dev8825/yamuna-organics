@@ -21,7 +21,7 @@ export default function Invoice() {
     return (
       <div className="container section center">
         <p className="alert alert-error" style={{ display: 'inline-block' }}>{error}</p>
-        <div><Link to="/profile" className="btn btn-gold">Back to my orders</Link></div>
+        <div><Link to="/orders" className="btn btn-gold">Back to my orders</Link></div>
       </div>
     );
   }
@@ -40,7 +40,7 @@ export default function Invoice() {
   return (
     <div className="invoice-page">
       <div className="invoice-toolbar no-print">
-        <Link to="/profile" className="link-btn">← Back to my orders</Link>
+        <Link to="/orders" className="link-btn">← Back to my orders</Link>
         <button className="btn btn-gold btn-sm" onClick={() => window.print()}>Print / Save as PDF</button>
       </div>
 

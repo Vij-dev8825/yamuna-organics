@@ -6,7 +6,7 @@ import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useAuth } from '../context/AuthContext';
 import { useLang, LANGS } from '../i18n';
-import { IconHeart, IconBag, IconUser, IconBell, IconMenu } from './Icons';
+import { IconHeart, IconBag, IconUser, IconBell, IconMenu, IconBox } from './Icons';
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
@@ -96,6 +96,11 @@ export default function Navbar() {
             <IconBag />
             {totalCount > 0 && <span className="badge-count">{totalCount}</span>}
           </button>
+          {isLoggedIn && (
+            <button className="icon-btn" aria-label="My Orders" onClick={() => navigate('/orders')}>
+              <IconBox />
+            </button>
+          )}
           <button
             className={`icon-btn account-btn ${isLoggedIn ? 'has-initial' : ''}`}
             aria-label="Account"

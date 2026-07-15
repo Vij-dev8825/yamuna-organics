@@ -7,14 +7,18 @@ const razorpay = require('../utils/razorpay');
 
 const router = express.Router();
 
+function calculateShipping(subtotal) {
+  return subtotal > 999 || subtotal === 0 ? 0 : 60;
+}
+
 async function buildOrderItems(items) {
   const products = await db.list('products');
-  let total = 0;
+  let subtotal = 0;
   const orderItems = items.map((item) => {
     const product = products.find((p) => p.id === item.productId);
     const sizeInfo = product?.sizes.find((s) => s.label === item.size);
     const price = sizeInfo ? sizeInfo.price : 0;
-    total += price * item.quantity;
+    subtotal += price * item.quantity;
     return {
       productId: item.productId,
       name: product?.name,
@@ -23,7 +27,8 @@ async function buildOrderItems(items) {
       price,
     };
   });
-  return { orderItems, total };
+  const shipping = calculateShipping(subtotal);
+  return { orderItems, subtotal, shipping, total: subtotal + shipping };
 }
 
 async function createOrderRecord({ userId, orderItems, address, total, paymentMethod, payment }) {

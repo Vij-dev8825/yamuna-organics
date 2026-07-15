@@ -71,10 +71,9 @@ export default function Cart() {
       if (paymentMethod === 'razorpay') {
         await payWithRazorpay(orderItems);
       } else {
-        await api.placeOrder(token, { items: orderItems, address, paymentMethod: 'cod' });
+        const data = await api.placeOrder(token, { items: orderItems, address, paymentMethod: 'cod' });
         if (!isBuyNow) clearCart();
-        showToast('Order placed! We will call to confirm delivery.');
-        navigate('/profile');
+        navigate(`/order-success/${data.order.id}`);
       }
     } catch (err) {
       showToast(err.message, 'error');
@@ -99,7 +98,7 @@ export default function Cart() {
           name: user?.name || '',
           contact: address.phone,
         },
-        theme: { color: '#c9962c' },
+        theme: { color: '#6fae4f' },
         modal: {
           ondismiss: () => {
             setPlacing(false);
@@ -108,10 +107,9 @@ export default function Cart() {
         },
         handler: async (response) => {
           try {
-            await api.verifyRazorpayPayment(token, { items: orderItems, address, ...response });
+            const data = await api.verifyRazorpayPayment(token, { items: orderItems, address, ...response });
             if (!isBuyNow) clearCart();
-            showToast('Payment successful — order placed!');
-            navigate('/profile');
+            navigate(`/order-success/${data.order.id}`);
             resolve();
           } catch (err) {
             showToast(err.message, 'error');
@@ -203,19 +201,25 @@ export default function Cart() {
           <div className="summary-row total"><span>Total</span><span>₹{total}</span></div>
 
           {!showAddressForm ? (
-            <button
-              className="btn btn-gold btn-block"
-              style={{ marginTop: 18 }}
-              onClick={() => {
-                if (!isLoggedIn) {
-                  navigate('/login', { state: { from: '/cart', buyNow: buyNowItem || undefined } });
-                  return;
-                }
-                setShowAddressForm(true);
-              }}
-            >
-              {isLoggedIn ? 'Proceed to checkout' : 'Log in to checkout'}
-            </button>
+            <div className="cart-cta-bar">
+              <div className="cart-cta-total">
+                <span className="muted">Total</span>
+                <b>₹{total}</b>
+              </div>
+              <button
+                className="btn btn-gold btn-block"
+                style={{ marginTop: 18 }}
+                onClick={() => {
+                  if (!isLoggedIn) {
+                    navigate('/login', { state: { from: '/cart', buyNow: buyNowItem || undefined } });
+                    return;
+                  }
+                  setShowAddressForm(true);
+                }}
+              >
+                {isLoggedIn ? 'Proceed to checkout' : 'Log in to checkout'}
+              </button>
+            </div>
           ) : (
             <form onSubmit={handlePlaceOrder} style={{ marginTop: 18 }}>
               <div className="checkout-step">
@@ -276,13 +280,19 @@ export default function Cart() {
                 </label>
               </div>
 
-              <button className="btn btn-gold btn-block" style={{ marginTop: 18 }} disabled={placing}>
-                {placing
-                  ? 'Processing…'
-                  : paymentMethod === 'razorpay'
-                    ? `Pay ₹${total} securely`
-                    : `Place order · Cash on Delivery · ₹${total}`}
-              </button>
+              <div className="cart-cta-bar">
+                <div className="cart-cta-total">
+                  <span className="muted">Total</span>
+                  <b>₹{total}</b>
+                </div>
+                <button className="btn btn-gold btn-block" style={{ marginTop: 18 }} disabled={placing}>
+                  {placing
+                    ? 'Processing…'
+                    : paymentMethod === 'razorpay'
+                      ? `Pay ₹${total} securely`
+                      : `Place order · Cash on Delivery · ₹${total}`}
+                </button>
+              </div>
             </form>
           )}
         </div>
