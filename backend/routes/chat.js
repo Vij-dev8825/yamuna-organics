@@ -2,11 +2,23 @@ const express = require('express');
 const { v4: uuid } = require('uuid');
 const db = require('../data/db');
 const { requireAuth } = require('../middleware/auth');
+const { sendMail } = require('../utils/mailer');
 
 const router = express.Router();
 
 // Customer side of the support chat. The admin console polls the same
 // collection through /api/admin/chat.
+
+// GET /api/chat/unread — count of admin replies not yet opened (does not mark read)
+router.get('/unread', requireAuth, async (req, res, next) => {
+  try {
+    const messages = (await db.list('chat-messages')).filter((m) => m.userId === req.user.id);
+    const unread = messages.filter((m) => m.from === 'admin' && !m.readByUser).length;
+    res.json({ success: true, unread });
+  } catch (err) {
+    next(err);
+  }
+});
 
 // GET /api/chat?since=<ISO> — my conversation (optionally only new messages)
 router.get('/', requireAuth, async (req, res, next) => {
@@ -53,6 +65,22 @@ router.post('/', requireAuth, async (req, res, next) => {
     };
     await db.put('chat-messages', message);
     res.status(201).json({ success: true, message });
+
+    // Alert the admin by email, since the in-app unread badge only helps
+    // while the admin panel is actually open. Best-effort and detached from
+    // the response above — a failure here must never surface as a second
+    // response or an unhandled rejection.
+    if (process.env.CONTACT_NOTIFY_EMAIL) {
+      db.get('users', req.user.id)
+        .then((customer) =>
+          sendMail({
+            to: process.env.CONTACT_NOTIFY_EMAIL,
+            subject: `New chat message from ${customer?.name || customer?.phone || 'a customer'}`,
+            text: `${customer?.name || 'Customer'} <${customer?.phone || ''}>\n\n${text}`,
+          })
+        )
+        .catch(() => {});
+    }
   } catch (err) {
     next(err);
   }

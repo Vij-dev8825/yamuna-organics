@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { NavLink, Outlet, Navigate } from 'react-router-dom';
+import { api } from '../../api';
 import { useAuth } from '../../context/AuthContext';
 import ChakkiWheel from '../../components/ChakkiWheel';
 import { IconMenu } from '../../components/Icons';
@@ -16,8 +17,28 @@ const links = [
 ];
 
 export default function AdminLayout() {
-  const { user, loading, isLoggedIn } = useAuth();
+  const { user, loading, isLoggedIn, token } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [unreadChats, setUnreadChats] = useState(0);
+
+  // Poll the total unread customer-chat count across all conversations, so
+  // the sidebar "Chat" link can show a badge without opening any thread
+  // (opening a thread is what marks its messages read, server-side).
+  useEffect(() => {
+    if (!token) return undefined;
+    let cancelled = false;
+    const load = () =>
+      api.admin
+        .getConversations(token)
+        .then((d) => !cancelled && setUnreadChats(d.conversations.reduce((sum, c) => sum + c.unread, 0)))
+        .catch(() => {});
+    load();
+    const id = setInterval(load, 15000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [token]);
 
   if (loading) {
     return (
@@ -60,7 +81,12 @@ export default function AdminLayout() {
               className={({ isActive }) => (isActive ? 'active' : '')}
               onClick={() => setMenuOpen(false)}
             >
-              {l.label}
+              <span className="admin-nav-label">
+                {l.label}
+                {l.to === '/admin/chat' && unreadChats > 0 && (
+                  <span className="badge-count static">{unreadChats}</span>
+                )}
+              </span>
             </NavLink>
           ))}
           <NavLink to="/" className="admin-back" onClick={() => setMenuOpen(false)}>

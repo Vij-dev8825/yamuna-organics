@@ -11,11 +11,30 @@ export default function ChatWidget() {
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
+  const [unread, setUnread] = useState(0);
   const bottomRef = useRef(null);
   const location = useLocation();
 
   // Hide on admin pages and login
   const hidden = location.pathname.startsWith('/admin') || location.pathname === '/login';
+
+  // Poll for unread admin replies while the panel is closed, so the FAB can
+  // show a count without opening the thread (which marks everything read).
+  useEffect(() => {
+    if (open || !token) return undefined;
+    let cancelled = false;
+    const load = () =>
+      api
+        .getChatUnread(token)
+        .then((d) => !cancelled && setUnread(d.unread))
+        .catch(() => {});
+    load();
+    const id = setInterval(load, 20000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [open, token]);
 
   // Poll the thread while the panel is open
   useEffect(() => {
@@ -24,7 +43,11 @@ export default function ChatWidget() {
     const load = () =>
       api
         .getChat(token)
-        .then((d) => !cancelled && setMessages(d.messages))
+        .then((d) => {
+          if (cancelled) return;
+          setMessages(d.messages);
+          setUnread(0); // opening the thread marks admin replies read server-side
+        })
         .catch(() => {});
     load();
     const id = setInterval(load, 5000);
@@ -108,6 +131,7 @@ export default function ChatWidget() {
         onClick={() => setOpen((o) => !o)}
       >
         {open ? '✕' : '💬'}
+        {!open && unread > 0 && <span className="badge-count">{unread}</span>}
       </button>
     </>
   );

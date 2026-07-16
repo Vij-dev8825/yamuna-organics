@@ -71,6 +71,7 @@ export const api = {
 
   // chat (customer)
   getChat: (token) => request('/chat', { token }),
+  getChatUnread: (token) => request('/chat/unread', { token }),
   sendChat: (token, text) => request('/chat', { method: 'POST', body: { text }, token }),
 
   // admin
