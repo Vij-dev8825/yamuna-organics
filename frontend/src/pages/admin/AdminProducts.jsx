@@ -10,17 +10,24 @@ const EMPTY = {
   shortDescription: '',
   description: '',
   image: '',
+  extraImages: [],
   sizes: [{ label: '500 ml', price: '', mrp: '', stock: '' }],
   tags: '',
 };
 
 function toForm(p) {
-  return { ...p, tags: (p.tags || []).join(', ') };
+  return {
+    ...p,
+    extraImages: (p.images || []).filter((img) => img && img !== p.image),
+    tags: (p.tags || []).join(', '),
+  };
 }
 
 function fromForm(f) {
+  const { extraImages, ...rest } = f;
   return {
-    ...f,
+    ...rest,
+    images: [f.image, ...extraImages].filter(Boolean),
     sizes: f.sizes.map((s) => ({
       label: s.label,
       price: Number(s.price),
@@ -136,7 +143,42 @@ export default function AdminProducts() {
           </div>
 
           <ImageUploadField value={form.image} onChange={(url) => setForm({ ...form, image: url })} />
-          <div className="field">
+
+          <label style={{ fontWeight: 600, fontSize: '0.85rem', display: 'block', marginTop: 4 }}>
+            Additional photos (gallery)
+          </label>
+          {form.extraImages.map((url, i) => (
+            <div key={i} className="flex gap-1" style={{ alignItems: 'flex-end', marginBottom: 10 }}>
+              <div style={{ flex: 1 }}>
+                <ImageUploadField
+                  value={url}
+                  onChange={(next) =>
+                    setForm((f) => ({
+                      ...f,
+                      extraImages: f.extraImages.map((u, idx) => (idx === i ? next : u)),
+                    }))
+                  }
+                />
+              </div>
+              <button
+                type="button"
+                className="link-btn danger"
+                style={{ marginBottom: 14 }}
+                onClick={() => setForm((f) => ({ ...f, extraImages: f.extraImages.filter((_, idx) => idx !== i) }))}
+              >
+                remove
+              </button>
+            </div>
+          ))}
+          <button
+            type="button"
+            className="link-btn"
+            onClick={() => setForm((f) => ({ ...f, extraImages: [...f.extraImages, ''] }))}
+          >
+            + add another photo
+          </button>
+
+          <div className="field" style={{ marginTop: 16 }}>
             <label>Short description</label>
             <input value={form.shortDescription} onChange={(e) => setForm({ ...form, shortDescription: e.target.value })} />
           </div>

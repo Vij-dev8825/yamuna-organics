@@ -224,7 +224,52 @@ p { margin: 0 0 1em; }
   justify-content: space-between;
   gap: 20px;
 }
+.navbar-inner > a { order: 1; }
+
+/* ---------- Header search (site-wide, not just the Shop page) ---------- */
+.navbar-search {
+  order: 2;
+  flex: 1 1 auto;
+  max-width: 420px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--cream);
+  border: 1.5px solid rgba(31,61,43,0.14);
+  border-radius: 999px;
+  padding: 4px 4px 4px 16px;
+  transition: border-color 0.15s ease;
+}
+.navbar-search:focus-within { border-color: var(--gold-2); }
+.navbar-search input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: none;
+  outline: none;
+  font-size: 0.9rem;
+  padding: 8px 0;
+  color: var(--ink);
+  font-family: var(--font-body);
+}
+.navbar-search input::-webkit-search-cancel-button { display: none; }
+.navbar-search button {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: none;
+  background-image: var(--gold-shine);
+  background-size: 240% 100%;
+  animation: shineSweep 6s ease-in-out infinite;
+  color: var(--forest-deep);
+}
+
 .nav-links {
+  order: 3;
   display: flex;
   gap: 28px;
   align-items: center;
@@ -249,6 +294,7 @@ p { margin: 0 0 1em; }
 .nav-links a:hover::after, .nav-links a.active::after { transform: scaleX(1); }
 
 .nav-icons {
+  order: 4;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -427,6 +473,20 @@ p { margin: 0 0 1em; }
   transition: transform 0.4s ease;
 }
 .product-card:hover .product-media img { transform: scale(1.06); }
+
+.product-gallery-thumbs { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+.product-gallery-thumb {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  padding: 0;
+  border: 2px solid transparent;
+  background: var(--cream-deep);
+  cursor: pointer;
+}
+.product-gallery-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.product-gallery-thumb.active { border-color: var(--gold-2); }
 .wishlist-toggle {
   position: absolute;
   top: 12px; right: 12px;
@@ -587,8 +647,6 @@ input:focus-visible + .filter-radio { outline: 2px solid var(--gold-2); outline-
   background: var(--paper);
   font-size: 0.88rem;
 }
-.shop-search { min-width: 220px; }
-
 /* ---------- Forms ---------- */
 .form-card {
   background: var(--paper);
@@ -900,6 +958,61 @@ input:focus-visible + .filter-radio { outline: 2px solid var(--gold-2); outline-
 .status-delivered { background: #e5f3e8; color: #1e6b34; }
 .status-cancelled { background: #fbe7e4; color: #a52f1e; }
 
+/* ---------- Order tracking stepper ---------- */
+.order-tracker { display: flex; align-items: flex-start; margin: 18px 0 20px; }
+.order-tracker-step {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.order-tracker-line {
+  position: absolute;
+  top: 13px;
+  left: -50%;
+  width: 100%;
+  height: 2px;
+  background: rgba(31,61,43,0.15);
+}
+.order-tracker-step:first-child .order-tracker-line { display: none; }
+.order-tracker-step.done .order-tracker-line,
+.order-tracker-step.active .order-tracker-line { background: var(--gold-2); }
+.order-tracker-dot {
+  position: relative;
+  z-index: 1;
+  width: 27px;
+  height: 27px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--paper);
+  color: var(--forest-light);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: 2px solid rgba(31,61,43,0.15);
+}
+.order-tracker-step.done .order-tracker-dot { background: var(--gold-2); border-color: var(--gold-2); color: var(--forest-deep); }
+.order-tracker-step.active .order-tracker-dot { background: var(--forest); border-color: var(--forest); color: var(--cream); box-shadow: 0 0 0 4px rgba(111,174,79,0.18); }
+.order-tracker-label { margin-top: 7px; font-size: 0.7rem; color: var(--forest-light); line-height: 1.2; }
+.order-tracker-step.done .order-tracker-label,
+.order-tracker-step.active .order-tracker-label { color: var(--forest-deep); font-weight: 600; }
+.order-tracker-cancelled {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fbe7e4;
+  color: #a52f1e;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  margin: 18px 0 20px;
+  font-size: 0.88rem;
+}
+.order-tracker-cancelled-icon { font-weight: 700; font-size: 1rem; }
+
 .order-items-row {
   display: flex;
   align-items: center;
@@ -1003,6 +1116,10 @@ input:focus-visible + .filter-radio { outline: 2px solid var(--gold-2); outline-
   .summary-card { position: static; }
   .footer-grid { grid-template-columns: 1fr 1fr; }
 
+  /* Header search drops to its own full-width row below logo/icons */
+  .navbar-inner { flex-wrap: wrap; }
+  .navbar-search { order: 5; flex-basis: 100%; max-width: none; margin-top: 2px; }
+
   /* Shop filters collapse into a toggleable drawer */
   .filter-toggle { display: flex; }
   .filter-panel {
@@ -1011,9 +1128,7 @@ input:focus-visible + .filter-radio { outline: 2px solid var(--gold-2); outline-
   }
   .filter-panel.open { display: block; }
   .filter-apply { display: block; }
-  .shop-search { width: 100%; }
   .section-head { align-items: stretch; }
-  .section-head input.shop-search { min-width: 0; }
 
   /* Cart/checkout: pin price + primary action to the bottom of the screen.
      Bottom padding is generously larger than the bar's own height so the

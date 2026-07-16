@@ -6,6 +6,7 @@ import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { getProductImage } from '../utils/productImages';
 import ChakkiWheel from '../components/ChakkiWheel';
+import OrderTracker from '../components/OrderTracker';
 
 const STATUS_LABELS = {
   placed: 'Order Placed',
@@ -90,6 +91,8 @@ export default function Orders() {
                     <b>₹{o.total}</b>
                   </div>
                 </div>
+
+                <OrderTracker status={o.status} />
 
                 <div className="order-items-row">
                   <div className="order-item-thumbs">

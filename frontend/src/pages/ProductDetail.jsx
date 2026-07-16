@@ -14,6 +14,7 @@ export default function ProductDetail() {
   const [product, setProduct] = useState(null);
   const [size, setSize] = useState(null);
   const [qty, setQty] = useState(1);
+  const [activeImage, setActiveImage] = useState(0);
   const { addItem } = useCart();
   const { productIds, toggleWishlist } = useWishlist();
   const { showToast } = useToast();
@@ -24,6 +25,7 @@ export default function ProductDetail() {
       setProduct(d.product);
       setSize(d.product.sizes[1]?.label || d.product.sizes[0].label);
       setQty(1);
+      setActiveImage(0);
     });
   }, [id]);
 
@@ -38,6 +40,7 @@ export default function ProductDetail() {
   const activeSize = product.sizes.find((s) => s.label === size) || product.sizes[0];
   const discount = Math.round(((activeSize.mrp - activeSize.price) / activeSize.mrp) * 100);
   const isWished = productIds.includes(product.id);
+  const gallery = product.images?.length ? product.images : [product.image];
 
   function handleAdd() {
     addItem(product.id, size, qty);
@@ -60,9 +63,26 @@ export default function ProductDetail() {
       </div>
 
       <div className="product-detail-grid">
-        <div className="product-media" style={{ borderRadius: 'var(--radius-lg)' }}>
-          {discount > 0 && <span className="product-badge">{discount}% OFF</span>}
-          <img src={getProductImage(product.image)} alt={product.name} />
+        <div>
+          <div className="product-media" style={{ borderRadius: 'var(--radius-lg)' }}>
+            {discount > 0 && <span className="product-badge">{discount}% OFF</span>}
+            <img src={getProductImage(gallery[activeImage])} alt={product.name} />
+          </div>
+          {gallery.length > 1 && (
+            <div className="product-gallery-thumbs">
+              {gallery.map((img, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  className={`product-gallery-thumb ${i === activeImage ? 'active' : ''}`}
+                  onClick={() => setActiveImage(i)}
+                  aria-label={`Show photo ${i + 1}`}
+                >
+                  <img src={getProductImage(img)} alt="" />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         <div>

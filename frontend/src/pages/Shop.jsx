@@ -49,16 +49,8 @@ export default function Shop() {
       <div className="section-head">
         <div>
           <span className="eyebrow">{t('shopTitle')}</span>
-          <h2>{heading}</h2>
+          <h2>{search ? `${t('searchResultsFor')} "${search}"` : heading}</h2>
         </div>
-        <input
-          className="select shop-search"
-          placeholder={t('searchPlaceholder')}
-          defaultValue={search}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') updateParam('search', e.target.value);
-          }}
-        />
       </div>
 
       <button

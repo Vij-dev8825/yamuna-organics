@@ -120,6 +120,7 @@ router.post('/products', async (req, res, next) => {
       shortDescription: req.body.shortDescription || '',
       description: req.body.description || '',
       image: req.body.image || '',
+      images: Array.isArray(req.body.images) && req.body.images.length ? req.body.images : (req.body.image ? [req.body.image] : []),
       sizes: req.body.sizes.map((s) => ({
         label: s.label,
         price: Number(s.price),

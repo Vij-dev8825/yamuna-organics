@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import logo from '../assets/logo.svg';
 import { api } from '../api';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useAuth } from '../context/AuthContext';
 import { useLang, LANGS } from '../i18n';
-import { IconHeart, IconBag, IconUser, IconBell, IconMenu, IconBox } from './Icons';
+import { IconHeart, IconBag, IconUser, IconBell, IconMenu, IconBox, IconSearch } from './Icons';
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
@@ -16,6 +16,16 @@ export default function Navbar() {
   const { isLoggedIn, user, token } = useAuth();
   const { lang, setLang, t } = useLang();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const [query, setQuery] = useState(location.pathname === '/shop' ? searchParams.get('search') || '' : '');
+
+  function handleSearch(e) {
+    e.preventDefault();
+    const q = query.trim();
+    navigate(q ? `/shop?search=${encodeURIComponent(q)}` : '/shop');
+    setOpen(false);
+  }
 
   const isAdmin = user?.role === 'admin';
 
@@ -53,6 +63,19 @@ export default function Navbar() {
         <NavLink to="/" aria-label="Yamuna Organic home">
           <img src={logo} alt="Yamuna Organic" height={52} />
         </NavLink>
+
+        <form className="navbar-search" role="search" onSubmit={handleSearch}>
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={t('searchPlaceholder')}
+            aria-label="Search products"
+          />
+          <button type="submit" aria-label="Search">
+            <IconSearch />
+          </button>
+        </form>
 
         <nav className={`nav-links ${open ? 'open' : ''}`}>
           {links.map((l) => (

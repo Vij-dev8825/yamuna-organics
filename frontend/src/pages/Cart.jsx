@@ -34,6 +34,12 @@ export default function Cart() {
     api.getConfig().then((d) => setRazorpayEnabled(!!d.razorpayEnabled)).catch(() => {});
   }, []);
 
+  // Prefill from the last saved address so returning customers don't have
+  // to retype it every order.
+  useEffect(() => {
+    if (user?.addresses?.[0]) setAddress(user.addresses[0]);
+  }, [user]);
+
   const lines = useMemo(() => {
     if (isBuyNow) {
       const product = products.find((p) => p.id === buyNowItem.productId);
@@ -74,6 +80,7 @@ export default function Cart() {
       } else {
         const data = await api.placeOrder(token, { items: orderItems, address, paymentMethod: 'cod' });
         if (!isBuyNow) clearCart();
+        api.updateProfile(token, { addresses: [address] }).catch(() => {});
         navigate(`/order-success/${data.order.id}`);
       }
     } catch (err) {
@@ -110,6 +117,7 @@ export default function Cart() {
           try {
             const data = await api.verifyRazorpayPayment(token, { items: orderItems, address, ...response });
             if (!isBuyNow) clearCart();
+            api.updateProfile(token, { addresses: [address] }).catch(() => {});
             navigate(`/order-success/${data.order.id}`);
             resolve();
           } catch (err) {
@@ -231,6 +239,11 @@ export default function Cart() {
                 <span className="checkout-step-num">1</span>
                 <h4>Delivery Address</h4>
               </div>
+              {user?.addresses?.[0] && (
+                <p className="muted" style={{ fontSize: '0.82rem', marginTop: -8 }}>
+                  Filled in from your saved address — edit any field if it's changed.
+                </p>
+              )}
               <div className="field">
                 <label>Address line</label>
                 <input required value={address.line1} onChange={(e) => setAddress({ ...address, line1: e.target.value })} />
