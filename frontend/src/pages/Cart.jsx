@@ -30,6 +30,10 @@ export default function Cart() {
   const [paymentMethod, setPaymentMethod] = useState('cod'); // 'cod' | 'razorpay'
   const [razorpayEnabled, setRazorpayEnabled] = useState(false);
   const [buyNowQty, setBuyNowQty] = useState(buyNowItem?.quantity || 1);
+  const [couponInput, setCouponInput] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState(null); // { code, discount, subtotalAtApply }
+  const [couponError, setCouponError] = useState('');
+  const [applyingCoupon, setApplyingCoupon] = useState(false);
 
   useEffect(() => {
     api.getProducts().then((d) => setProducts(d.products));
@@ -62,11 +66,36 @@ export default function Cart() {
 
   const subtotal = lines.reduce((sum, l) => sum + l.sizeInfo.price * l.quantity, 0);
   const shipping = subtotal > 999 || subtotal === 0 ? 0 : 60;
-  const total = subtotal + shipping;
+  const couponStale = appliedCoupon && appliedCoupon.subtotalAtApply !== subtotal;
+  const discount = appliedCoupon && !couponStale ? appliedCoupon.discount : 0;
+  const total = subtotal + shipping - discount;
 
   function updateAddress(field, value) {
     setAddress((a) => ({ ...a, [field]: value }));
     setAddressErrors((errs) => (errs[field] ? { ...errs, [field]: undefined } : errs));
+  }
+
+  async function handleApplyCoupon() {
+    const code = couponInput.trim();
+    if (!code) return;
+    setApplyingCoupon(true);
+    setCouponError('');
+    try {
+      const res = await api.validateCoupon(token, { code, subtotal });
+      setAppliedCoupon({ code: res.code, discount: res.discount, subtotalAtApply: subtotal });
+      showToast(`Coupon "${res.code}" applied — you saved ₹${res.discount}.`);
+    } catch (err) {
+      setAppliedCoupon(null);
+      setCouponError(err.message);
+    } finally {
+      setApplyingCoupon(false);
+    }
+  }
+
+  function removeCoupon() {
+    setAppliedCoupon(null);
+    setCouponInput('');
+    setCouponError('');
   }
 
   async function handlePlaceOrder(e) {
@@ -79,11 +108,12 @@ export default function Cart() {
     }
     setPlacing(true);
     const orderItems = lines.map((l) => ({ productId: l.productId, size: l.size, quantity: l.quantity }));
+    const couponCode = !couponStale && appliedCoupon ? appliedCoupon.code : undefined;
     try {
       if (paymentMethod === 'razorpay') {
-        await payWithRazorpay(orderItems);
+        await payWithRazorpay(orderItems, couponCode);
       } else {
-        const data = await api.placeOrder(token, { items: orderItems, address, paymentMethod: 'cod' });
+        const data = await api.placeOrder(token, { items: orderItems, address, paymentMethod: 'cod', couponCode });
         if (!isBuyNow) clearCart();
         api.updateProfile(token, { addresses: [address] }).catch(() => {});
         navigate(`/order-success/${data.order.id}`);
@@ -95,8 +125,8 @@ export default function Cart() {
     }
   }
 
-  async function payWithRazorpay(orderItems) {
-    const rzpOrder = await api.createRazorpayOrder(token, orderItems);
+  async function payWithRazorpay(orderItems, couponCode) {
+    const rzpOrder = await api.createRazorpayOrder(token, { items: orderItems, couponCode });
     await loadRazorpay();
 
     return new Promise((resolve, reject) => {
@@ -120,7 +150,7 @@ export default function Cart() {
         },
         handler: async (response) => {
           try {
-            const data = await api.verifyRazorpayPayment(token, { items: orderItems, address, ...response });
+            const data = await api.verifyRazorpayPayment(token, { items: orderItems, address, couponCode, ...response });
             if (!isBuyNow) clearCart();
             api.updateProfile(token, { addresses: [address] }).catch(() => {});
             navigate(`/order-success/${data.order.id}`);
@@ -216,7 +246,44 @@ export default function Cart() {
           <div className="summary-row">
             <span>Shipping</span><span>{shipping === 0 ? 'Free' : `₹${shipping}`}</span>
           </div>
+          {discount > 0 && (
+            <div className="summary-row" style={{ color: '#1e6b34' }}>
+              <span>Coupon ({appliedCoupon.code})</span><span>−₹{discount}</span>
+            </div>
+          )}
           <div className="summary-row total"><span>Total</span><span>₹{total}</span></div>
+
+          <div className="coupon-field">
+            {appliedCoupon && !couponStale ? (
+              <div className="coupon-applied">
+                <span>
+                  🎉 <b>{appliedCoupon.code}</b> applied
+                </span>
+                <button type="button" className="link-btn" onClick={removeCoupon}>Remove</button>
+              </div>
+            ) : (
+              <>
+                <div className="flex gap-1">
+                  <input
+                    placeholder="Coupon code"
+                    value={couponInput}
+                    onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                    style={{ flex: 1 }}
+                  />
+                  <button
+                    type="button"
+                    className="btn btn-outline btn-sm"
+                    disabled={!couponInput.trim() || applyingCoupon}
+                    onClick={handleApplyCoupon}
+                  >
+                    {applyingCoupon ? 'Applying…' : 'Apply'}
+                  </button>
+                </div>
+                {couponStale && <div className="field-error">Your cart changed — apply the code again.</div>}
+                {couponError && <div className="field-error">{couponError}</div>}
+              </>
+            )}
+          </div>
 
           {!showAddressForm ? (
             <div className="cart-cta-bar">

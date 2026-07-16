@@ -25,6 +25,8 @@ const COLLECTIONS = [
   'chat-messages',
   'notifications',
   'notification-logs',
+  'reviews',
+  'coupons',
 ];
 
 let mode = 'json';

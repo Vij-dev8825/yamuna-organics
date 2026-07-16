@@ -9,6 +9,7 @@ const links = [
   { to: '/admin', label: 'Dashboard', end: true },
   { to: '/admin/products', label: 'Products' },
   { to: '/admin/categories', label: 'Categories' },
+  { to: '/admin/coupons', label: 'Coupons' },
   { to: '/admin/banners', label: 'Home Banners' },
   { to: '/admin/orders', label: 'Orders' },
   { to: '/admin/leads', label: 'Enquiries & Leads' },

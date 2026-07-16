@@ -72,6 +72,12 @@ export default function OrderSuccess() {
               <span>₹{it.price * it.quantity}</span>
             </div>
           ))}
+          {order.discount > 0 && (
+            <div className="flex-between" style={{ fontSize: '0.9rem', padding: '6px 0', color: '#1e6b34' }}>
+              <span>Coupon {order.couponCode ? `(${order.couponCode})` : ''}</span>
+              <span>−₹{order.discount}</span>
+            </div>
+          )}
           <div className="summary-row total" style={{ marginTop: 6 }}>
             <span>Total</span><span>₹{order.total}</span>
           </div>

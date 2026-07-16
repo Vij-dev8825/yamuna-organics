@@ -4,6 +4,7 @@ const db = require('../data/db');
 const { requireAuth } = require('../middleware/auth');
 const { notifyUser } = require('../utils/notify');
 const razorpay = require('../utils/razorpay');
+const { findValidCoupon, computeDiscount } = require('../utils/coupons');
 
 const router = express.Router();
 
@@ -11,7 +12,7 @@ function calculateShipping(subtotal) {
   return subtotal > 999 || subtotal === 0 ? 0 : 60;
 }
 
-async function buildOrderItems(items) {
+async function buildOrderItems(items, couponCode) {
   const products = await db.list('products');
   let subtotal = 0;
   const orderItems = items.map((item) => {
@@ -28,10 +29,21 @@ async function buildOrderItems(items) {
     };
   });
   const shipping = calculateShipping(subtotal);
-  return { orderItems, subtotal, shipping, total: subtotal + shipping };
+
+  const coupon = await findValidCoupon(couponCode);
+  const discount = computeDiscount(coupon, subtotal);
+
+  return {
+    orderItems,
+    subtotal,
+    shipping,
+    discount,
+    couponCode: discount > 0 ? coupon.code : null,
+    total: subtotal + shipping - discount,
+  };
 }
 
-async function createOrderRecord({ userId, orderItems, address, total, paymentMethod, payment }) {
+async function createOrderRecord({ userId, orderItems, address, total, discount, couponCode, paymentMethod, payment }) {
   const order = {
     id: uuid(),
     orderNumber: `YO${Date.now().toString().slice(-8)}`,
@@ -41,6 +53,8 @@ async function createOrderRecord({ userId, orderItems, address, total, paymentMe
     paymentMethod,
     paymentStatus: paymentMethod === 'razorpay' ? 'paid' : 'pending',
     payment: payment || null,
+    discount: discount || 0,
+    couponCode: couponCode || null,
     total,
     status: 'placed',
     createdAt: new Date().toISOString(),
@@ -63,7 +77,7 @@ async function createOrderRecord({ userId, orderItems, address, total, paymentMe
 // POST /api/orders  { items, address, paymentMethod }  — COD path
 router.post('/', requireAuth, async (req, res, next) => {
   try {
-    const { items, address, paymentMethod } = req.body;
+    const { items, address, paymentMethod, couponCode } = req.body;
 
     if (!items || !items.length) {
       return res.status(400).json({ success: false, message: 'Your cart is empty.' });
@@ -72,12 +86,14 @@ router.post('/', requireAuth, async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'A complete delivery address is required.' });
     }
 
-    const { orderItems, total } = await buildOrderItems(items);
+    const { orderItems, total, discount, couponCode: appliedCode } = await buildOrderItems(items, couponCode);
     const order = await createOrderRecord({
       userId: req.user.id,
       orderItems,
       address,
       total,
+      discount,
+      couponCode: appliedCode,
       paymentMethod: paymentMethod || 'cod',
     });
 
@@ -96,11 +112,11 @@ router.post('/razorpay/create', requireAuth, async (req, res, next) => {
         message: 'Online payment isn’t set up yet — please choose Cash on Delivery instead.',
       });
     }
-    const { items } = req.body;
+    const { items, couponCode } = req.body;
     if (!items || !items.length) {
       return res.status(400).json({ success: false, message: 'Your cart is empty.' });
     }
-    const { total } = await buildOrderItems(items);
+    const { total } = await buildOrderItems(items, couponCode);
     if (total <= 0) {
       return res.status(400).json({ success: false, message: 'Order total must be greater than zero.' });
     }
@@ -121,7 +137,7 @@ router.post('/razorpay/create', requireAuth, async (req, res, next) => {
 // { items, address, razorpay_order_id, razorpay_payment_id, razorpay_signature }
 router.post('/razorpay/verify', requireAuth, async (req, res, next) => {
   try {
-    const { items, address, razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+    const { items, address, couponCode, razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
       return res.status(400).json({ success: false, message: 'Missing payment confirmation details.' });
@@ -133,12 +149,14 @@ router.post('/razorpay/verify', requireAuth, async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Payment verification failed. Please contact support before retrying.' });
     }
 
-    const { orderItems, total } = await buildOrderItems(items);
+    const { orderItems, total, discount, couponCode: appliedCode } = await buildOrderItems(items, couponCode);
     const order = await createOrderRecord({
       userId: req.user.id,
       orderItems,
       address,
       total,
+      discount,
+      couponCode: appliedCode,
       paymentMethod: 'razorpay',
       payment: { razorpay_order_id, razorpay_payment_id },
     });

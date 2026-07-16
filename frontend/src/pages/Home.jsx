@@ -5,6 +5,7 @@ import ProductCard from '../components/ProductCard';
 import SectionDivider from '../components/SectionDivider';
 import ChakkiWheel from '../components/ChakkiWheel';
 import { getProductImage } from '../utils/productImages';
+import { getRecentlyViewedIds } from '../utils/recentlyViewed';
 import { useLang } from '../i18n';
 
 const USP_ICONS = ['🌾', '🪵', '🧪', '🚚'];
@@ -49,6 +50,11 @@ export default function Home() {
     }, 9000);
     return () => clearInterval(timerRef.current);
   }, [banners.length]);
+
+  const recentIds = getRecentlyViewedIds();
+  const recentProducts = recentIds
+    .map((id) => products.find((p) => p.id === id))
+    .filter(Boolean);
 
   const activeBanner = banners[current];
   // Admin-entered banner text is shown as-is in English; translated brand copy otherwise.
@@ -169,6 +175,23 @@ export default function Home() {
           ))}
         </div>
       </section>
+
+      {/* ---------- Recently viewed ---------- */}
+      {recentProducts.length > 0 && (
+        <section className="section container">
+          <div className="section-head">
+            <div>
+              <span className="eyebrow">Welcome back</span>
+              <h2>Recently viewed</h2>
+            </div>
+          </div>
+          <div className="grid">
+            {recentProducts.map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
+          </div>
+        </section>
+      )}
 
       <SectionDivider />
 

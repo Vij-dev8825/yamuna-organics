@@ -1,7 +1,20 @@
 const express = require('express');
+const { v4: uuid } = require('uuid');
 const db = require('../data/db');
+const { requireAuth } = require('../middleware/auth');
 
 const router = express.Router();
+
+async function recomputeRating(productId) {
+  const reviews = (await db.list('reviews')).filter((r) => r.productId === productId);
+  const product = await db.get('products', productId);
+  if (!product) return;
+  product.reviewsCount = reviews.length;
+  product.rating = reviews.length
+    ? Math.round((reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length) * 10) / 10
+    : 0;
+  await db.put('products', product);
+}
 
 // GET /api/products?category=&search=&sort=
 router.get('/', async (req, res, next) => {
@@ -58,6 +71,54 @@ router.get('/:id', async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Product not found.' });
     }
     res.json({ success: true, product });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/products/:id/reviews
+router.get('/:id/reviews', async (req, res, next) => {
+  try {
+    const reviews = (await db.list('reviews'))
+      .filter((r) => r.productId === req.params.id)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    res.json({ success: true, reviews });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/products/:id/reviews  { rating, text? } — one review per customer per
+// product; re-submitting updates their existing review instead of duplicating it.
+router.post('/:id/reviews', requireAuth, async (req, res, next) => {
+  try {
+    const product = await db.get('products', req.params.id);
+    if (!product) {
+      return res.status(404).json({ success: false, message: 'Product not found.' });
+    }
+    const rating = Number(req.body.rating);
+    if (!rating || rating < 1 || rating > 5) {
+      return res.status(400).json({ success: false, message: 'Rating must be between 1 and 5.' });
+    }
+    const text = (req.body.text || '').trim().slice(0, 1000);
+
+    const reviews = await db.list('reviews');
+    const existing = reviews.find((r) => r.productId === req.params.id && r.userId === req.user.id);
+    const author = await db.get('users', req.user.id);
+
+    const review = {
+      id: existing?.id || uuid(),
+      productId: req.params.id,
+      userId: req.user.id,
+      userName: author?.name || 'Customer',
+      rating,
+      text,
+      createdAt: existing?.createdAt || new Date().toISOString(),
+    };
+    await db.put('reviews', review);
+    await recomputeRating(req.params.id);
+
+    res.status(existing ? 200 : 201).json({ success: true, review });
   } catch (err) {
     next(err);
   }

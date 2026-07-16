@@ -259,6 +259,73 @@ router.delete('/categories/:id', async (req, res, next) => {
   }
 });
 
+/* --------------------------------- Coupons -------------------------------- */
+
+// GET /api/admin/coupons
+router.get('/coupons', async (req, res, next) => {
+  try {
+    const coupons = (await db.list('coupons')).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    res.json({ success: true, coupons });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/admin/coupons  { code, type: 'percent'|'flat', value, minOrder?, expiresAt? }
+router.post('/coupons', async (req, res, next) => {
+  try {
+    const code = (req.body.code || '').trim().toUpperCase();
+    const type = req.body.type === 'flat' ? 'flat' : 'percent';
+    const value = Number(req.body.value);
+    if (!code) return res.status(400).json({ success: false, message: 'Coupon code is required.' });
+    if (!value || value <= 0) return res.status(400).json({ success: false, message: 'Discount value must be greater than 0.' });
+    if (type === 'percent' && value > 100) return res.status(400).json({ success: false, message: 'Percentage discount can\'t exceed 100.' });
+
+    const coupons = await db.list('coupons');
+    if (coupons.some((c) => c.code === code)) {
+      return res.status(409).json({ success: false, message: `Coupon "${code}" already exists.` });
+    }
+
+    const coupon = {
+      id: uuid(),
+      code,
+      type,
+      value,
+      minOrder: Number(req.body.minOrder) || 0,
+      expiresAt: req.body.expiresAt || null,
+      active: true,
+      createdAt: new Date().toISOString(),
+    };
+    await db.put('coupons', coupon);
+    res.status(201).json({ success: true, coupon });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// PATCH /api/admin/coupons/:id  (e.g. { active: false })
+router.patch('/coupons/:id', async (req, res, next) => {
+  try {
+    const existing = await db.get('coupons', req.params.id);
+    if (!existing) return res.status(404).json({ success: false, message: 'Coupon not found.' });
+    const coupon = { ...existing, ...req.body, id: existing.id, code: existing.code };
+    await db.put('coupons', coupon);
+    res.json({ success: true, coupon });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// DELETE /api/admin/coupons/:id
+router.delete('/coupons/:id', async (req, res, next) => {
+  try {
+    await db.remove('coupons', req.params.id);
+    res.json({ success: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
 /* --------------------------------- Banners -------------------------------- */
 
 // GET /api/admin/banners — all banners including inactive

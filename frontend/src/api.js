@@ -34,6 +34,8 @@ export const api = {
   },
   getCategories: () => request('/products/categories'),
   getProduct: (id) => request(`/products/${id}`),
+  getReviews: (id) => request(`/products/${id}/reviews`),
+  submitReview: (token, id, payload) => request(`/products/${id}/reviews`, { method: 'POST', body: payload, token }),
 
   // banners (home page hero)
   getBanners: () => request('/banners'),
@@ -54,8 +56,11 @@ export const api = {
   placeOrder: (token, payload) => request('/orders', { method: 'POST', body: payload, token }),
   getOrders: (token) => request('/orders', { token }),
   getOrder: (token, id) => request(`/orders/${id}`, { token }),
-  createRazorpayOrder: (token, items) => request('/orders/razorpay/create', { method: 'POST', body: { items }, token }),
+  createRazorpayOrder: (token, payload) => request('/orders/razorpay/create', { method: 'POST', body: payload, token }),
   verifyRazorpayPayment: (token, payload) => request('/orders/razorpay/verify', { method: 'POST', body: payload, token }),
+
+  // coupons
+  validateCoupon: (token, payload) => request('/coupons/validate', { method: 'POST', body: payload, token }),
 
   // public config flags
   getConfig: () => request('/config'),
@@ -97,6 +102,11 @@ export const api = {
     getOrders: (token) => request('/admin/orders', { token }),
     updateOrderStatus: (token, id, status) =>
       request(`/admin/orders/${id}`, { method: 'PATCH', body: { status }, token }),
+
+    getCoupons: (token) => request('/admin/coupons', { token }),
+    createCoupon: (token, coupon) => request('/admin/coupons', { method: 'POST', body: coupon, token }),
+    updateCoupon: (token, id, patch) => request(`/admin/coupons/${id}`, { method: 'PATCH', body: patch, token }),
+    deleteCoupon: (token, id) => request(`/admin/coupons/${id}`, { method: 'DELETE', token }),
 
     getCustomers: (token) => request('/admin/customers', { token }),
     getEnquiries: (token) => request('/admin/enquiries', { token }),

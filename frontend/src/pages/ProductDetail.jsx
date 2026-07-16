@@ -4,30 +4,76 @@ import { api } from '../api';
 import { getProductImage } from '../utils/productImages';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
+import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { recordProductView } from '../utils/recentlyViewed';
 import ChakkiWheel from '../components/ChakkiWheel';
+import ProductCard from '../components/ProductCard';
 import { IconHeart } from '../components/Icons';
+
+function StarPicker({ value, onChange }) {
+  return (
+    <div className="star-picker" role="radiogroup" aria-label="Rating">
+      {[1, 2, 3, 4, 5].map((n) => (
+        <button
+          key={n}
+          type="button"
+          className={`star-picker-star ${n <= value ? 'filled' : ''}`}
+          aria-label={`${n} star${n > 1 ? 's' : ''}`}
+          onClick={() => onChange(n)}
+        >
+          ★
+        </button>
+      ))}
+    </div>
+  );
+}
 
 export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [product, setProduct] = useState(null);
+  const [related, setRelated] = useState([]);
+  const [reviews, setReviews] = useState([]);
   const [size, setSize] = useState(null);
   const [qty, setQty] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
+  const [myRating, setMyRating] = useState(0);
+  const [myText, setMyText] = useState('');
+  const [submittingReview, setSubmittingReview] = useState(false);
   const { addItem } = useCart();
   const { productIds, toggleWishlist } = useWishlist();
+  const { isLoggedIn, token, user } = useAuth();
   const { showToast } = useToast();
 
   useEffect(() => {
     setProduct(null);
+    setReviews([]);
+    setMyRating(0);
+    setMyText('');
     api.getProduct(id).then((d) => {
       setProduct(d.product);
       setSize(d.product.sizes[1]?.label || d.product.sizes[0].label);
       setQty(1);
       setActiveImage(0);
+      recordProductView(d.product.id);
+
+      api
+        .getProducts({ category: d.product.category })
+        .then((r) => setRelated(r.products.filter((p) => p.id !== d.product.id).slice(0, 4)))
+        .catch(() => {});
     });
+    api.getReviews(id).then((d) => setReviews(d.reviews)).catch(() => {});
   }, [id]);
+
+  useEffect(() => {
+    if (!user) return;
+    const mine = reviews.find((r) => r.userId === user.id);
+    if (mine) {
+      setMyRating(mine.rating);
+      setMyText(mine.text || '');
+    }
+  }, [reviews, user]);
 
   if (!product) {
     return (
@@ -54,6 +100,27 @@ export default function ProductDetail() {
   function handleWishlist() {
     toggleWishlist(product.id);
     showToast(isWished ? 'Removed from wishlist' : `${product.name} added to wishlist`);
+  }
+
+  async function handleSubmitReview(e) {
+    e.preventDefault();
+    if (!myRating) {
+      showToast('Pick a star rating first.', 'error');
+      return;
+    }
+    setSubmittingReview(true);
+    try {
+      await api.submitReview(token, product.id, { rating: myRating, text: myText });
+      const d = await api.getReviews(id);
+      setReviews(d.reviews);
+      const p = await api.getProduct(id);
+      setProduct(p.product);
+      showToast('Thanks for your review!');
+    } catch (err) {
+      showToast(err.message, 'error');
+    } finally {
+      setSubmittingReview(false);
+    }
   }
 
   return (
@@ -135,6 +202,67 @@ export default function ProductDetail() {
           </div>
         </div>
       </div>
+
+      {/* ---------- Reviews ---------- */}
+      <div className="reviews-section">
+        <h2>Customer Reviews</h2>
+
+        {isLoggedIn ? (
+          <form className="review-form" onSubmit={handleSubmitReview}>
+            <label className="muted" style={{ fontSize: '0.85rem' }}>
+              {reviews.some((r) => r.userId === user?.id) ? 'Update your review' : 'Write a review'}
+            </label>
+            <StarPicker value={myRating} onChange={setMyRating} />
+            <textarea
+              placeholder="What did you think of this product? (optional)"
+              value={myText}
+              onChange={(e) => setMyText(e.target.value)}
+              maxLength={1000}
+            />
+            <button className="btn btn-gold btn-sm" disabled={submittingReview}>
+              {submittingReview ? 'Saving…' : 'Submit review'}
+            </button>
+          </form>
+        ) : (
+          <p className="muted">
+            <Link to="/login" state={{ from: `/product/${id}` }} className="link-btn">Log in</Link> to write a review.
+          </p>
+        )}
+
+        {reviews.length === 0 ? (
+          <p className="muted" style={{ marginTop: 18 }}>No reviews yet — be the first to share your thoughts.</p>
+        ) : (
+          <ul className="review-list">
+            {reviews.map((r) => (
+              <li key={r.id} className="review-item">
+                <div className="review-item-head">
+                  <b>{r.userName}</b>
+                  <span className="review-item-stars" aria-label={`${r.rating} star rating`}>
+                    {'★'.repeat(r.rating)}
+                    <span className="muted">{'★'.repeat(5 - r.rating)}</span>
+                  </span>
+                </div>
+                {r.text && <p>{r.text}</p>}
+                <span className="review-item-date muted">
+                  {new Date(r.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      {/* ---------- Related products ---------- */}
+      {related.length > 0 && (
+        <div className="related-section">
+          <h2>You might also like</h2>
+          <div className="grid">
+            {related.map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
