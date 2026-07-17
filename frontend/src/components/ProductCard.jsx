@@ -13,6 +13,7 @@ export default function ProductCard({ product }) {
   const navigate = useNavigate();
   const [size, setSize] = useState(product.sizes[1]?.label || product.sizes[0].label);
   const [hoverIndex, setHoverIndex] = useState(0);
+  const [qty, setQty] = useState(1);
 
   const gallery = product.images?.length ? product.images : [product.image];
   const isWished = productIds.includes(product.id);
@@ -29,13 +30,19 @@ export default function ProductCard({ product }) {
 
   function handleAdd(e) {
     e.preventDefault();
-    addItem(product.id, size, 1);
-    showToast(`${product.name} (${size}) added to cart`);
+    addItem(product.id, size, qty);
+    showToast(`${product.name} (${size}) ×${qty} added to cart`);
   }
 
   function handleBuyNow(e) {
     e.preventDefault();
-    navigate('/cart', { state: { buyNow: { productId: product.id, size, quantity: 1 } } });
+    navigate('/cart', { state: { buyNow: { productId: product.id, size, quantity: qty } } });
+  }
+
+  function stepQty(e, delta) {
+    e.preventDefault();
+    e.stopPropagation();
+    setQty((q) => Math.max(1, q + delta));
   }
 
   function handleWishlist(e) {
@@ -67,6 +74,15 @@ export default function ProductCard({ product }) {
           </div>
         )}
         <img src={getProductImage(gallery[hoverIndex])} alt={product.name} loading="lazy" />
+
+        <div className="product-media-quickadd">
+          <div className="qty-stepper qty-stepper-sm" onClick={(e) => e.preventDefault()}>
+            <button onClick={(e) => stepQty(e, -1)} aria-label="Decrease quantity">−</button>
+            <span>{qty}</span>
+            <button onClick={(e) => stepQty(e, 1)} aria-label="Increase quantity">+</button>
+          </div>
+          <button className="btn btn-gold btn-sm" onClick={handleAdd}>Add to cart</button>
+        </div>
       </div>
       <div className="product-body">
         <h3>{product.name}</h3>

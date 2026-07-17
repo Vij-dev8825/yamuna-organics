@@ -495,6 +495,36 @@ p { margin: 0 0 1em; }
 }
 .product-media-segments span.active { background: var(--paper); }
 
+.product-media-quickadd {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.product-card:hover .product-media-quickadd {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.product-media-quickadd .btn { flex: 1; }
+.qty-stepper-sm { background: var(--paper); flex: 0 0 auto; }
+.qty-stepper-sm button { width: 26px; height: 30px; }
+.qty-stepper-sm span { width: 22px; font-size: 0.85rem; }
+
+/* Hover quick-add is a desktop-hover affordance only; touch devices keep
+   the always-visible Buy Now / Add to cart row below the card body. */
+@media (hover: none) {
+  .product-media-quickadd { display: none; }
+}
+
 .product-gallery-thumbs { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
 .product-gallery-thumb {
   width: 64px;
