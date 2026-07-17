@@ -1997,7 +1997,7 @@ input:focus-visible + .filter-radio { outline: 2px solid var(--gold-2); outline-
   position: fixed;
   inset: 0;
   z-index: 200;
-  background: rgba(10, 18, 12, 0.92);
+  background: var(--paper);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2017,7 +2017,7 @@ input:focus-visible + .filter-radio { outline: 2px solid var(--gold-2); outline-
   right: 20px;
   background: none;
   border: 0;
-  color: var(--paper);
+  color: var(--forest-deep);
   font-size: 2rem;
   line-height: 1;
   cursor: pointer;
@@ -2026,8 +2026,8 @@ input:focus-visible + .filter-radio { outline: 2px solid var(--gold-2); outline-
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background: rgba(255, 255, 255, 0.12);
-  color: var(--paper);
+  background: var(--cream-deep);
+  color: var(--forest-deep);
   border: 0;
   width: 44px;
   height: 44px;
