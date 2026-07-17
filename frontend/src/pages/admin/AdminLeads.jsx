@@ -51,7 +51,14 @@ export default function AdminLeads() {
                   <tr key={e2.id}>
                     <td><b>{e2.name}</b>{e2.company && <div className="muted" style={{ fontSize: '0.75rem' }}>{e2.company}</div>}</td>
                     <td>{e2.phone}<div className="muted" style={{ fontSize: '0.75rem' }}>{e2.email}</div></td>
-                    <td>{e2.quantity} {e2.unit} of {e2.productCategory}{e2.city && <div className="muted" style={{ fontSize: '0.75rem' }}>{e2.city}</div>}</td>
+                    <td>
+                      {e2.quantity} {e2.unit} of {e2.productCategory}
+                      {(e2.country || e2.city) && (
+                        <div className="muted" style={{ fontSize: '0.75rem' }}>
+                          {[e2.city, e2.country].filter(Boolean).join(', ')}
+                        </div>
+                      )}
+                    </td>
                     <td style={{ maxWidth: 220 }}>{e2.message}</td>
                     <td>
                       <select className="select" value={e2.status} onChange={(ev) => setStatus(e2, ev.target.value)}>

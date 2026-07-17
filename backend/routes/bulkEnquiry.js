@@ -7,7 +7,7 @@ const { sendMail } = require('../utils/mailer');
 const router = express.Router();
 
 // POST /api/bulk-enquiry
-// { name, company, phone, email, city, productCategory, quantity, unit, message }
+// { name, company, phone, email, city, country, productCategory, quantity, unit, message }
 router.post('/', optionalAuth, async (req, res, next) => {
   try {
     const { name, phone, productCategory, quantity } = req.body;
@@ -27,6 +27,7 @@ router.post('/', optionalAuth, async (req, res, next) => {
       phone,
       email: req.body.email || '',
       city: req.body.city || '',
+      country: req.body.country || '',
       productCategory,
       quantity,
       unit: req.body.unit || 'Litres',
@@ -40,7 +41,7 @@ router.post('/', optionalAuth, async (req, res, next) => {
     await sendMail({
       to: process.env.CONTACT_NOTIFY_EMAIL,
       subject: `Bulk enquiry: ${quantity} ${enquiry.unit} of ${productCategory}`,
-      text: `${name} (${phone}${enquiry.email ? ', ' + enquiry.email : ''}) from ${enquiry.city || 'N/A'}\n\n${enquiry.message}`,
+      text: `${name} (${phone}${enquiry.email ? ', ' + enquiry.email : ''}) from ${enquiry.country || enquiry.city || 'N/A'}\n\n${enquiry.message}`,
     });
 
     res.status(201).json({
