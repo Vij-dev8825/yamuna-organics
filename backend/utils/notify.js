@@ -13,6 +13,14 @@ function absoluteImageUrl(image) {
   return /^https?:\/\//.test(image) ? image : `${SITE_URL}${image}`;
 }
 
+/** Where clicking the notification (push toast or in-app list item) should
+ * land — product page takes priority over the order it may also reference. */
+function notificationUrl(meta) {
+  if (meta.productId) return `/product/${meta.productId}`;
+  if (meta.orderId) return '/orders';
+  return '/notifications';
+}
+
 /**
  * Push a notification to one user over the selected channels.
  * channels: { inapp?: bool, email?: bool, sms?: bool, push?: bool }
@@ -52,7 +60,7 @@ async function notifyUser(user, { title, message, image, meta = {}, channels = {
       title,
       message,
       image: imageUrl,
-      url: meta.orderId ? `/orders` : '/notifications',
+      url: notificationUrl(meta),
     });
     results.push = r.sent > 0;
   }
@@ -80,6 +88,7 @@ async function broadcast({ title, message, image, channels, meta = {} }) {
     title,
     message,
     image: image || null,
+    meta,
     channels,
     counts,
     createdAt: new Date().toISOString(),

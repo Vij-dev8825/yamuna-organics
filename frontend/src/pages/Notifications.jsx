@@ -1,10 +1,17 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { api } from '../api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { isPushSupported, getPushPermission, enablePushNotifications, disablePushNotifications } from '../utils/pushNotifications';
 import { getProductImage } from '../utils/productImages';
 import ChakkiWheel from '../components/ChakkiWheel';
+
+function notificationLink(n) {
+  if (n.meta?.productId) return `/product/${n.meta.productId}`;
+  if (n.meta?.orderId) return '/orders';
+  return null;
+}
 
 function timeAgo(iso) {
   const diff = Date.now() - new Date(iso).getTime();
@@ -105,14 +112,20 @@ export default function Notifications() {
         </div>
       ) : (
         <ul className="notification-list">
-          {notifications.map((n) => (
-            <li key={n.id} className={n.read ? '' : 'unread'}>
-              {n.image && <img src={getProductImage(n.image)} alt="" className="notification-image" />}
-              <div className="notification-title">{n.title}</div>
-              <p>{n.message}</p>
-              <span className="notification-time">{timeAgo(n.createdAt)}</span>
-            </li>
-          ))}
+          {notifications.map((n) => {
+            const link = notificationLink(n);
+            const Wrapper = link ? Link : 'div';
+            return (
+              <li key={n.id} className={n.read ? '' : 'unread'}>
+                <Wrapper {...(link ? { to: link } : {})} className={link ? 'notification-body notification-body-link' : 'notification-body'}>
+                  {n.image && <img src={getProductImage(n.image)} alt="" className="notification-image" />}
+                  <div className="notification-title">{n.title}</div>
+                  <p>{n.message}</p>
+                  <span className="notification-time">{timeAgo(n.createdAt)}</span>
+                </Wrapper>
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>

@@ -535,7 +535,7 @@ router.get('/contacts', async (req, res, next) => {
 // POST /api/admin/notify  { title, message, image?, channels: { inapp, email, sms, push } }
 router.post('/notify', async (req, res, next) => {
   try {
-    const { title, message, image } = req.body;
+    const { title, message, image, productId } = req.body;
     if (!title || !message) {
       return res.status(400).json({ success: false, message: 'Title and message are required.' });
     }
@@ -545,7 +545,8 @@ router.post('/notify', async (req, res, next) => {
       sms: !!req.body.channels?.sms,
       push: !!req.body.channels?.push,
     };
-    const counts = await broadcast({ title, message, image, channels });
+    const meta = productId ? { productId } : {};
+    const counts = await broadcast({ title, message, image, channels, meta });
     res.json({ success: true, counts });
   } catch (err) {
     next(err);

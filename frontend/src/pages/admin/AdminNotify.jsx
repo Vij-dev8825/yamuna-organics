@@ -9,6 +9,8 @@ export default function AdminNotify() {
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
   const [image, setImage] = useState('');
+  const [productId, setProductId] = useState('');
+  const [products, setProducts] = useState([]);
   const [channels, setChannels] = useState({ inapp: true, email: true, sms: false, push: true });
   const [logs, setLogs] = useState([]);
   const [message, setMessage] = useState(null);
@@ -18,6 +20,13 @@ export default function AdminNotify() {
     api.admin.notifyLogs(token).then((d) => setLogs(d.logs)).catch(() => {});
   }
   useEffect(load, [token]);
+  useEffect(() => {
+    api.getProducts().then((d) => setProducts(d.products)).catch(() => {});
+  }, []);
+
+  function productName(id) {
+    return products.find((p) => p.id === id)?.name || null;
+  }
 
   async function send(e) {
     e.preventDefault();
@@ -25,7 +34,7 @@ export default function AdminNotify() {
     setSending(true);
     setMessage(null);
     try {
-      const res = await api.admin.notify(token, { title, message: body, image, channels });
+      const res = await api.admin.notify(token, { title, message: body, image, productId: productId || undefined, channels });
       setMessage({
         type: 'success',
         text: `Sent to ${res.counts.audience} customers — ${res.counts.inapp} in-app, ${res.counts.email} emails, ${res.counts.sms} SMS, ${res.counts.push || 0} push.`,
@@ -33,6 +42,7 @@ export default function AdminNotify() {
       setTitle('');
       setBody('');
       setImage('');
+      setProductId('');
       load();
     } catch (err) {
       setMessage({ type: 'error', text: err.message });
@@ -64,6 +74,16 @@ export default function AdminNotify() {
           <textarea value={body} onChange={(e) => setBody(e.target.value)} placeholder="Write the message customers will receive…" required />
         </div>
         <ImageUploadField value={image} onChange={setImage} label="Image (optional)" />
+        <div className="field">
+          <label>Link to product (optional)</label>
+          <select value={productId} onChange={(e) => setProductId(e.target.value)}>
+            <option value="">No product — go to Notifications page</option>
+            {products.map((p) => (
+              <option key={p.id} value={p.id}>{p.name}</option>
+            ))}
+          </select>
+          <p className="muted" style={{ fontSize: '0.78rem', marginTop: 6 }}>Tapping the notification will open this product's page.</p>
+        </div>
         <div className="check-row-group">
           {[
             ['inapp', 'In-app notification'],
@@ -104,6 +124,9 @@ export default function AdminNotify() {
                       <div>
                         <b>{l.title}</b>
                         <div className="muted" style={{ fontSize: '0.78rem', maxWidth: 320 }}>{l.message}</div>
+                        {l.meta?.productId && productName(l.meta.productId) && (
+                          <div className="muted" style={{ fontSize: '0.75rem' }}>→ {productName(l.meta.productId)}</div>
+                        )}
                       </div>
                     </div>
                   </td>
