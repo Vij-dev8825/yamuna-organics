@@ -7,6 +7,7 @@ const db = require('../data/db');
 const { requireAdmin } = require('../middleware/auth');
 const { notifyUser, broadcast } = require('../utils/notify');
 const { UPLOADS_DIR } = require('../data/seed');
+const cloudinary = require('../utils/cloudinary');
 
 const router = express.Router();
 router.use(requireAdmin);
@@ -86,9 +87,18 @@ const imageUpload = multer({
   },
 });
 
-router.post('/upload-image', imageUpload.single('file'), (req, res) => {
-  if (!req.file) return res.status(400).json({ success: false, message: 'An image file is required.' });
-  res.status(201).json({ success: true, url: `/uploads/${req.file.filename}` });
+router.post('/upload-image', imageUpload.single('file'), async (req, res, next) => {
+  try {
+    if (!req.file) return res.status(400).json({ success: false, message: 'An image file is required.' });
+    if (cloudinary.isConfigured()) {
+      const { url } = await cloudinary.uploadFile(req.file.path, { resourceType: 'image' });
+      fs.unlink(req.file.path, () => {});
+      return res.status(201).json({ success: true, url });
+    }
+    res.status(201).json({ success: true, url: `/uploads/${req.file.filename}` });
+  } catch (err) {
+    next(err);
+  }
 });
 
 /* -------------------------------- Products -------------------------------- */
@@ -348,12 +358,24 @@ router.post('/banners', upload.single('file'), async (req, res, next) => {
   try {
     if (!req.file) return res.status(400).json({ success: false, message: 'A video or image file is required.' });
     const banners = await db.list('banners');
+    const isVideo = /\.(mp4|webm|ogg)$/i.test(req.file.filename);
+
+    let url = `/uploads/${req.file.filename}`;
+    let cloudinaryPublicId = null;
+    if (cloudinary.isConfigured()) {
+      const uploaded = await cloudinary.uploadFile(req.file.path, { resourceType: isVideo ? 'video' : 'image' });
+      url = uploaded.url;
+      cloudinaryPublicId = uploaded.publicId;
+      fs.unlink(req.file.path, () => {});
+    }
+
     const banner = {
       id: uuid(),
       title: req.body.title || '',
       subtitle: req.body.subtitle || '',
-      type: /\.(mp4|webm|ogg)$/i.test(req.file.filename) ? 'video' : 'image',
-      url: `/uploads/${req.file.filename}`,
+      type: isVideo ? 'video' : 'image',
+      url,
+      cloudinaryPublicId,
       active: true,
       sort: banners.length,
       createdAt: new Date().toISOString(),
@@ -387,8 +409,12 @@ router.delete('/banners/:id', async (req, res, next) => {
   try {
     const banner = await db.get('banners', req.params.id);
     if (banner) {
-      const file = path.join(UPLOADS_DIR, path.basename(banner.url || ''));
-      if (fs.existsSync(file)) fs.unlinkSync(file);
+      if (banner.cloudinaryPublicId) {
+        await cloudinary.destroyFile(banner.cloudinaryPublicId, banner.type === 'video' ? 'video' : 'image').catch(() => {});
+      } else {
+        const file = path.join(UPLOADS_DIR, path.basename(banner.url || ''));
+        if (fs.existsSync(file)) fs.unlinkSync(file);
+      }
       await db.remove('banners', req.params.id);
     }
     res.json({ success: true });

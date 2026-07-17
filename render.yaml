@@ -5,10 +5,14 @@
 # Deploy: push this repo to GitHub → Render dashboard → New → Blueprint.
 #
 # NOTE (free plan): the service spins down after ~15 min of inactivity (first
-# request then takes ~50s), and files uploaded from the admin panel are lost on
-# redeploy — the two seeded hero videos always survive because they ship in the
-# repo. To keep admin uploads permanently, upgrade the plan to "starter" and
-# uncomment the disk + UPLOADS_DIR lines below.
+# request then takes ~50s). Also, local disk is wiped on every redeploy, so
+# admin-panel uploads (product/category photos, banners) would be lost —
+# set CLOUDINARY_CLOUD_NAME/CLOUDINARY_API_KEY/CLOUDINARY_API_SECRET (free
+# tier at https://cloudinary.com) to store them there instead; without those,
+# uploads fall back to local disk (fine for local dev, not for production).
+# The two seeded hero videos always survive either way since they ship in
+# the repo. Alternatively, upgrade to the "starter" plan and uncomment the
+# disk + UPLOADS_DIR lines below for a persistent local disk instead.
 services:
   - type: web
     name: yamuna-organics
@@ -28,6 +32,12 @@ services:
       - key: DATABASE_URL # paste your Neon connection string
         sync: false
       - key: ADMIN_PHONE # phone number that gets admin access via OTP login
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
         sync: false
       # - key: UPLOADS_DIR
       #   value: /var/data/uploads
