@@ -8,6 +8,7 @@ const { requireAdmin } = require('../middleware/auth');
 const { notifyUser, broadcast } = require('../utils/notify');
 const { UPLOADS_DIR } = require('../data/seed');
 const cloudinary = require('../utils/cloudinary');
+const { processDueSubscriptions } = require('../utils/subscriptions');
 
 const router = express.Router();
 router.use(requireAdmin);
@@ -620,6 +621,36 @@ router.post('/chat/:userId', async (req, res, next) => {
     };
     await db.put('chat-messages', message);
     res.status(201).json({ success: true, message });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/* ------------------------------ Subscriptions ------------------------------ */
+
+// GET /api/admin/subscriptions
+router.get('/subscriptions', async (req, res, next) => {
+  try {
+    const [subscriptions, users] = await Promise.all([db.list('subscriptions'), db.list('users')]);
+    const withCustomer = subscriptions
+      .slice()
+      .reverse()
+      .map((s) => {
+        const user = users.find((u) => u.id === s.userId);
+        return { ...s, customerName: user?.name || '', customerPhone: user?.phone || '' };
+      });
+    res.json({ success: true, subscriptions: withCustomer });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/admin/subscriptions/run — manually process due renewals (fallback
+// alongside the automatic hourly check in server.js)
+router.post('/subscriptions/run', async (req, res, next) => {
+  try {
+    const results = await processDueSubscriptions();
+    res.json({ success: true, results });
   } catch (err) {
     next(err);
   }

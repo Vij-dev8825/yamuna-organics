@@ -63,6 +63,11 @@ export const api = {
   validateCoupon: (token, payload) => request('/coupons/validate', { method: 'POST', body: payload, token }),
   getFeaturedCoupon: () => request('/coupons/featured'),
 
+  // subscriptions (Subscribe & Save)
+  getSubscriptions: (token) => request('/subscriptions', { token }),
+  createSubscription: (token, payload) => request('/subscriptions', { method: 'POST', body: payload, token }),
+  updateSubscription: (token, id, patch) => request(`/subscriptions/${id}`, { method: 'PATCH', body: patch, token }),
+
   // public config flags
   getConfig: () => request('/config'),
 
@@ -108,6 +113,9 @@ export const api = {
     createCoupon: (token, coupon) => request('/admin/coupons', { method: 'POST', body: coupon, token }),
     updateCoupon: (token, id, patch) => request(`/admin/coupons/${id}`, { method: 'PATCH', body: patch, token }),
     deleteCoupon: (token, id) => request(`/admin/coupons/${id}`, { method: 'DELETE', token }),
+
+    getSubscriptions: (token) => request('/admin/subscriptions', { token }),
+    runSubscriptions: (token) => request('/admin/subscriptions/run', { method: 'POST', token }),
 
     getCustomers: (token) => request('/admin/customers', { token }),
     getEnquiries: (token) => request('/admin/enquiries', { token }),

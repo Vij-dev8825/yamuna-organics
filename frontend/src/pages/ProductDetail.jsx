@@ -7,10 +7,18 @@ import { useWishlist } from '../context/WishlistContext';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { recordProductView } from '../utils/recentlyViewed';
+import { validateAddress } from '../utils/validators';
 import ChakkiWheel from '../components/ChakkiWheel';
 import ProductCard from '../components/ProductCard';
 import ImageLightbox from '../components/ImageLightbox';
 import { IconHeart } from '../components/Icons';
+
+const SUBSCRIPTION_DISCOUNT_PERCENT = 10;
+const FREQUENCIES = [
+  { weeks: 2, label: 'Every 2 weeks' },
+  { weeks: 4, label: 'Every 4 weeks' },
+  { weeks: 6, label: 'Every 6 weeks' },
+];
 
 function StarPicker({ value, onChange }) {
   return (
@@ -43,6 +51,11 @@ export default function ProductDetail() {
   const [myRating, setMyRating] = useState(0);
   const [myText, setMyText] = useState('');
   const [submittingReview, setSubmittingReview] = useState(false);
+  const [subFrequency, setSubFrequency] = useState(4);
+  const [subShowForm, setSubShowForm] = useState(false);
+  const [subAddress, setSubAddress] = useState({ line1: '', city: '', state: '', pincode: '', phone: '' });
+  const [subAddressErrors, setSubAddressErrors] = useState({});
+  const [subscribing, setSubscribing] = useState(false);
   const { addItem } = useCart();
   const { productIds, toggleWishlist } = useWishlist();
   const { isLoggedIn, token, user } = useAuth();
@@ -77,6 +90,10 @@ export default function ProductDetail() {
     }
   }, [reviews, user]);
 
+  useEffect(() => {
+    if (user?.addresses?.[0]) setSubAddress(user.addresses[0]);
+  }, [user]);
+
   if (!product) {
     return (
       <div className="center" style={{ padding: '120px 0' }}>
@@ -102,6 +119,45 @@ export default function ProductDetail() {
   function handleWishlist() {
     toggleWishlist(product.id);
     showToast(isWished ? 'Removed from wishlist' : `${product.name} added to wishlist`);
+  }
+
+  function handleSubscribeClick() {
+    if (!isLoggedIn) {
+      navigate('/login', { state: { from: `/product/${id}` } });
+      return;
+    }
+    setSubShowForm(true);
+  }
+
+  function updateSubAddress(field, value) {
+    setSubAddress((a) => ({ ...a, [field]: value }));
+    setSubAddressErrors((errs) => (errs[field] ? { ...errs, [field]: undefined } : errs));
+  }
+
+  async function handleSubscribeSubmit(e) {
+    e.preventDefault();
+    const errors = validateAddress(subAddress);
+    setSubAddressErrors(errors);
+    if (Object.keys(errors).length) {
+      showToast('Please fix the highlighted fields in your delivery address.', 'error');
+      return;
+    }
+    setSubscribing(true);
+    try {
+      await api.createSubscription(token, {
+        productId: product.id,
+        size,
+        quantity: qty,
+        frequencyWeeks: subFrequency,
+        address: subAddress,
+      });
+      showToast('Subscription started! Manage it anytime from My Subscriptions.');
+      navigate('/subscriptions');
+    } catch (err) {
+      showToast(err.message, 'error');
+    } finally {
+      setSubscribing(false);
+    }
   }
 
   async function handleSubmitReview(e) {
@@ -219,6 +275,80 @@ export default function ProductDetail() {
 
           <div className="alert alert-info">
             In stock: {activeSize.stock} units · Delivered in 3-5 business days
+          </div>
+
+          <div className="subscribe-box">
+            <span className="subscribe-badge">🔁 Subscribe &amp; Save {SUBSCRIPTION_DISCOUNT_PERCENT}%</span>
+            <p className="muted" style={{ margin: '6px 0 12px' }}>
+              Never run out — auto-delivered on your schedule, {SUBSCRIPTION_DISCOUNT_PERCENT}% off every order.
+            </p>
+
+            {!subShowForm ? (
+              <div className="flex gap-1" style={{ flexWrap: 'wrap' }}>
+                <select value={subFrequency} onChange={(e) => setSubFrequency(Number(e.target.value))}>
+                  {FREQUENCIES.map((f) => (
+                    <option key={f.weeks} value={f.weeks}>{f.label}</option>
+                  ))}
+                </select>
+                <button className="btn btn-forest" onClick={handleSubscribeClick}>
+                  Subscribe — ₹{Math.round(activeSize.price * (1 - SUBSCRIPTION_DISCOUNT_PERCENT / 100))}/delivery
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleSubscribeSubmit} noValidate>
+                {user?.addresses?.[0] && (
+                  <p className="muted" style={{ fontSize: '0.82rem' }}>
+                    Filled in from your saved address — edit any field if it's changed.
+                  </p>
+                )}
+                <div className="field">
+                  <label>Address line</label>
+                  <input required value={subAddress.line1} onChange={(e) => updateSubAddress('line1', e.target.value)} />
+                  {subAddressErrors.line1 && <div className="field-error">{subAddressErrors.line1}</div>}
+                </div>
+                <div className="field">
+                  <label>City</label>
+                  <input required value={subAddress.city} onChange={(e) => updateSubAddress('city', e.target.value)} />
+                  {subAddressErrors.city && <div className="field-error">{subAddressErrors.city}</div>}
+                </div>
+                <div className="field">
+                  <label>State</label>
+                  <input required value={subAddress.state} onChange={(e) => updateSubAddress('state', e.target.value)} />
+                  {subAddressErrors.state && <div className="field-error">{subAddressErrors.state}</div>}
+                </div>
+                <div className="field">
+                  <label>Pincode</label>
+                  <input
+                    required
+                    inputMode="numeric"
+                    maxLength={6}
+                    value={subAddress.pincode}
+                    onChange={(e) => updateSubAddress('pincode', e.target.value.replace(/\D/g, ''))}
+                  />
+                  {subAddressErrors.pincode && <div className="field-error">{subAddressErrors.pincode}</div>}
+                </div>
+                <div className="field">
+                  <label>Phone</label>
+                  <input
+                    required
+                    type="tel"
+                    inputMode="numeric"
+                    maxLength={10}
+                    value={subAddress.phone}
+                    onChange={(e) => updateSubAddress('phone', e.target.value.replace(/\D/g, ''))}
+                  />
+                  {subAddressErrors.phone && <div className="field-error">{subAddressErrors.phone}</div>}
+                </div>
+                <div className="flex gap-1">
+                  <button className="btn btn-forest" disabled={subscribing}>
+                    {subscribing ? 'Setting up…' : 'Confirm subscription'}
+                  </button>
+                  <button type="button" className="btn btn-outline" onClick={() => setSubShowForm(false)}>
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         </div>
       </div>

@@ -79,6 +79,17 @@ export default function Profile() {
         <span className="profile-orders-link-arrow">→</span>
       </Link>
 
+      <Link to="/subscriptions" className="profile-orders-link">
+        <span className="profile-orders-link-icon" aria-hidden="true">🔁</span>
+        <span>
+          <b>My Subscriptions</b>
+          <span className="muted" style={{ display: 'block', fontSize: '0.82rem' }}>
+            Manage auto-delivery — pause, resume, or cancel anytime
+          </span>
+        </span>
+        <span className="profile-orders-link-arrow">→</span>
+      </Link>
+
       <form className="form-card" style={{ margin: 0 }} onSubmit={handleSave} noValidate>
         <div className="field">
           <label>Mobile number</label>

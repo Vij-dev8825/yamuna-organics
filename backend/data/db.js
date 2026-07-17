@@ -27,6 +27,7 @@ const COLLECTIONS = [
   'notification-logs',
   'reviews',
   'coupons',
+  'subscriptions',
 ];
 
 let mode = 'json';

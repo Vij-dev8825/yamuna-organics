@@ -17,6 +17,7 @@ import Wishlist from './pages/Wishlist';
 import Login from './pages/Login';
 import Profile from './pages/Profile';
 import Orders from './pages/Orders';
+import Subscriptions from './pages/Subscriptions';
 import OrderSuccess from './pages/OrderSuccess';
 import Notifications from './pages/Notifications';
 import Invoice from './pages/Invoice';
@@ -33,6 +34,7 @@ import Dashboard from './pages/admin/Dashboard';
 import AdminProducts from './pages/admin/AdminProducts';
 import AdminCategories from './pages/admin/AdminCategories';
 import AdminCoupons from './pages/admin/AdminCoupons';
+import AdminSubscriptions from './pages/admin/AdminSubscriptions';
 import AdminBanners from './pages/admin/AdminBanners';
 import AdminOrders from './pages/admin/AdminOrders';
 import AdminLeads from './pages/admin/AdminLeads';
@@ -89,6 +91,7 @@ export default function App() {
         <Route path="products" element={<AdminProducts />} />
         <Route path="categories" element={<AdminCategories />} />
         <Route path="coupons" element={<AdminCoupons />} />
+        <Route path="subscriptions" element={<AdminSubscriptions />} />
         <Route path="banners" element={<AdminBanners />} />
         <Route path="orders" element={<AdminOrders />} />
         <Route path="leads" element={<AdminLeads />} />
@@ -119,6 +122,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <Orders />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/subscriptions"
+          element={
+            <ProtectedRoute>
+              <Subscriptions />
             </ProtectedRoute>
           }
         />

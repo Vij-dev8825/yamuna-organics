@@ -21,6 +21,8 @@ const notificationRoutes = require('./routes/notifications');
 const adminRoutes = require('./routes/admin');
 const configRoutes = require('./routes/config');
 const couponRoutes = require('./routes/coupons');
+const subscriptionRoutes = require('./routes/subscriptions');
+const { processDueSubscriptions } = require('./utils/subscriptions');
 
 const app = express();
 
@@ -45,6 +47,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/config', configRoutes);
 app.use('/api/coupons', couponRoutes);
+app.use('/api/subscriptions', subscriptionRoutes);
 
 // Uploaded banner videos/images
 app.use('/uploads', express.static(UPLOADS_DIR, { maxAge: '7d' }));
@@ -82,6 +85,14 @@ const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => {
       console.log(`Yamuna Organics API listening on http://localhost:${PORT} (db: ${mode})`);
     });
+
+    // No worker/cron process on Render's free plan — piggyback on this
+    // long-lived request process instead (kept alive by the external
+    // keep-alive ping). Runs once on boot, then hourly.
+    processDueSubscriptions().catch((err) => console.error('processDueSubscriptions failed:', err));
+    setInterval(() => {
+      processDueSubscriptions().catch((err) => console.error('processDueSubscriptions failed:', err));
+    }, 60 * 60 * 1000);
   } catch (err) {
     console.error('Failed to start:', err);
     process.exit(1);
