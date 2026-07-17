@@ -975,8 +975,24 @@ input:focus-visible + .filter-radio { outline: 2px solid var(--gold-2); outline-
 }
 .footer-accordion-chevron { transition: transform 0.2s ease; font-size: 0.9rem; }
 .footer-accordion-chevron.open { transform: rotate(180deg); }
-.footer-accordion-body { padding-bottom: 20px; }
+.footer-accordion-body { display: none; padding-bottom: 20px; }
+.footer-accordion-body.open { display: block; }
 .footer-accordion-body p { color: rgba(250,246,236,0.75); line-height: 1.6; }
+
+/* Desktop: show all four sections expanded side-by-side, accordion
+   behaviour (collapse/chevron) is a mobile-only space-saving affordance. */
+@media (min-width: 641px) {
+  .footer-accordions {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 32px;
+    border-top: none;
+  }
+  .footer-accordion { border-bottom: none; }
+  .footer-accordion-head { cursor: default; padding: 0 0 16px; }
+  .footer-accordion-chevron { display: none; }
+  .footer-accordion-body { display: block !important; padding-bottom: 0; }
+}
 
 .back-to-top {
   position: fixed;

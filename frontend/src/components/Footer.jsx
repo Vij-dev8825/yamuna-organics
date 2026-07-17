@@ -17,7 +17,7 @@ function FooterAccordion({ title, isOpen, onToggle, children }) {
         <span>{title}</span>
         <span className={`footer-accordion-chevron ${isOpen ? 'open' : ''}`}>▾</span>
       </button>
-      {isOpen && <div className="footer-accordion-body">{children}</div>}
+      <div className={`footer-accordion-body ${isOpen ? 'open' : ''}`}>{children}</div>
     </div>
   );
 }
