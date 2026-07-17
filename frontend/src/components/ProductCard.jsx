@@ -20,12 +20,20 @@ export default function ProductCard({ product }) {
   const activeSize = product.sizes.find((s) => s.label === size) || product.sizes[0];
   const discount = Math.round(((activeSize.mrp - activeSize.price) / activeSize.mrp) * 100);
 
-  function handleMediaMouseMove(e) {
-    if (gallery.length < 2) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const ratio = (e.clientX - rect.left) / rect.width;
+  function scrubToClientX(clientX, rect) {
+    const ratio = (clientX - rect.left) / rect.width;
     const idx = Math.min(gallery.length - 1, Math.max(0, Math.floor(ratio * gallery.length)));
     setHoverIndex(idx);
+  }
+
+  function handleMediaMouseMove(e) {
+    if (gallery.length < 2) return;
+    scrubToClientX(e.clientX, e.currentTarget.getBoundingClientRect());
+  }
+
+  function handleMediaTouchMove(e) {
+    if (gallery.length < 2) return;
+    scrubToClientX(e.touches[0].clientX, e.currentTarget.getBoundingClientRect());
   }
 
   function handleAdd(e) {
@@ -57,6 +65,7 @@ export default function ProductCard({ product }) {
         className="product-media"
         onMouseMove={handleMediaMouseMove}
         onMouseLeave={() => setHoverIndex(0)}
+        onTouchMove={handleMediaTouchMove}
       >
         {discount > 0 && <span className="product-badge">{discount}% OFF</span>}
         <button

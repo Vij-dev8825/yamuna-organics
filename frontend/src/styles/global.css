@@ -523,6 +523,9 @@ p { margin: 0 0 1em; }
    the always-visible Buy Now / Add to cart row below the card body. */
 @media (hover: none) {
   .product-media-quickadd { display: none; }
+  /* No hover to reveal these on touch, so show them as a swipe hint whenever
+     a card has more than one photo (component only renders this when it does). */
+  .product-media-segments { opacity: 1; }
 }
 
 .product-gallery-thumbs { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
