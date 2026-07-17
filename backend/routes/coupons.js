@@ -1,8 +1,29 @@
 const express = require('express');
 const { requireAuth } = require('../middleware/auth');
+const db = require('../data/db');
 const { findValidCoupon, computeDiscount } = require('../utils/coupons');
 
 const router = express.Router();
+
+// GET /api/coupons/featured — the one active, non-expired coupon (if any)
+// an admin has flagged for site-wide advertising (e.g. a homepage popup).
+// No auth required: a coupon code is only useful once shown to shoppers.
+router.get('/featured', async (req, res, next) => {
+  try {
+    const coupons = await db.list('coupons');
+    const now = new Date();
+    const coupon = coupons.find(
+      (c) => c.featured && c.active && (!c.expiresAt || new Date(c.expiresAt) >= now)
+    );
+    if (!coupon) return res.json({ success: true, coupon: null });
+    res.json({
+      success: true,
+      coupon: { code: coupon.code, type: coupon.type, value: coupon.value, minOrder: coupon.minOrder },
+    });
+  } catch (err) {
+    next(err);
+  }
+});
 
 // POST /api/coupons/validate  { code, subtotal } — checkout preview only;
 // the order-placement routes re-validate and recompute the discount

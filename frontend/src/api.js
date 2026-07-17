@@ -61,6 +61,7 @@ export const api = {
 
   // coupons
   validateCoupon: (token, payload) => request('/coupons/validate', { method: 'POST', body: payload, token }),
+  getFeaturedCoupon: () => request('/coupons/featured'),
 
   // public config flags
   getConfig: () => request('/config'),

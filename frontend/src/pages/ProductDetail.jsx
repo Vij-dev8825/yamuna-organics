@@ -9,6 +9,7 @@ import { useToast } from '../context/ToastContext';
 import { recordProductView } from '../utils/recentlyViewed';
 import ChakkiWheel from '../components/ChakkiWheel';
 import ProductCard from '../components/ProductCard';
+import ImageLightbox from '../components/ImageLightbox';
 import { IconHeart } from '../components/Icons';
 
 function StarPicker({ value, onChange }) {
@@ -38,6 +39,7 @@ export default function ProductDetail() {
   const [size, setSize] = useState(null);
   const [qty, setQty] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   const [myRating, setMyRating] = useState(0);
   const [myText, setMyText] = useState('');
   const [submittingReview, setSubmittingReview] = useState(false);
@@ -131,10 +133,17 @@ export default function ProductDetail() {
 
       <div className="product-detail-grid">
         <div>
-          <div className="product-media" style={{ borderRadius: 'var(--radius-lg)' }}>
+          <button
+            type="button"
+            className="product-media product-media-zoomable"
+            style={{ borderRadius: 'var(--radius-lg)' }}
+            onClick={() => setLightboxOpen(true)}
+            aria-label="View larger image"
+          >
             {discount > 0 && <span className="product-badge">{discount}% OFF</span>}
             <img src={getProductImage(gallery[activeImage])} alt={product.name} />
-          </div>
+            <span className="product-media-zoom-hint">🔍 Tap to zoom</span>
+          </button>
           {gallery.length > 1 && (
             <div className="product-gallery-thumbs">
               {gallery.map((img, i) => (
@@ -202,6 +211,15 @@ export default function ProductDetail() {
           </div>
         </div>
       </div>
+
+      {lightboxOpen && (
+        <ImageLightbox
+          images={gallery}
+          index={activeImage}
+          onIndexChange={setActiveImage}
+          onClose={() => setLightboxOpen(false)}
+        />
+      )}
 
       {/* ---------- Reviews ---------- */}
       <div className="reviews-section">

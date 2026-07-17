@@ -4,6 +4,7 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ProtectedRoute from './components/ProtectedRoute';
 import ChatWidget from './components/ChatWidget';
+import PromoPopup from './components/PromoPopup';
 
 import Home from './pages/Home';
 import Shop from './pages/Shop';
@@ -59,6 +60,7 @@ function StoreLayout() {
       </main>
       <Footer />
       <ChatWidget />
+      <PromoPopup />
     </div>
   );
 }

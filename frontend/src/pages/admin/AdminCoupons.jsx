@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { api } from '../../api';
 import { useAuth } from '../../context/AuthContext';
 
-const EMPTY = { code: '', type: 'percent', value: '', minOrder: '', expiresAt: '' };
+const EMPTY = { code: '', type: 'percent', value: '', minOrder: '', expiresAt: '', featured: false };
 
 export default function AdminCoupons() {
   const { token } = useAuth();
@@ -27,6 +27,7 @@ export default function AdminCoupons() {
         value: Number(form.value),
         minOrder: Number(form.minOrder) || 0,
         expiresAt: form.expiresAt ? new Date(form.expiresAt).toISOString() : null,
+        featured: form.featured,
       });
       setForm(EMPTY);
       setMessage({ type: 'success', text: 'Coupon created.' });
@@ -41,6 +42,15 @@ export default function AdminCoupons() {
   async function toggleActive(c) {
     try {
       await api.admin.updateCoupon(token, c.id, { active: !c.active });
+      load();
+    } catch (err) {
+      setMessage({ type: 'error', text: err.message });
+    }
+  }
+
+  async function toggleFeatured(c) {
+    try {
+      await api.admin.updateCoupon(token, c.id, { featured: !c.featured });
       load();
     } catch (err) {
       setMessage({ type: 'error', text: err.message });
@@ -107,18 +117,34 @@ export default function AdminCoupons() {
             <label>Expires on (optional)</label>
             <input type="date" value={form.expiresAt} onChange={(e) => setForm({ ...form, expiresAt: e.target.value })} />
           </div>
+          <div className="field">
+            <label>Advertise on site</label>
+            <label className="flex gap-1" style={{ alignItems: 'center', fontWeight: 400 }}>
+              <input
+                type="checkbox"
+                checked={form.featured}
+                onChange={(e) => setForm({ ...form, featured: e.target.checked })}
+              />
+              Show in homepage promo popup
+            </label>
+          </div>
         </div>
         <button className="btn btn-gold btn-sm" disabled={busy}>{busy ? 'Saving…' : '+ Add coupon'}</button>
       </form>
 
+      <p className="muted" style={{ fontSize: '0.85rem' }}>
+        Only one featured coupon is shown at a time — mark the one you want advertised in the
+        homepage popup. If several are marked, the first active one found is used.
+      </p>
+
       <div className="admin-card">
         <table className="admin-table">
           <thead>
-            <tr><th>Code</th><th>Discount</th><th>Min order</th><th>Expires</th><th>Status</th><th>Actions</th></tr>
+            <tr><th>Code</th><th>Discount</th><th>Min order</th><th>Expires</th><th>Status</th><th>Featured</th><th>Actions</th></tr>
           </thead>
           <tbody>
             {coupons.length === 0 && (
-              <tr><td colSpan={6} className="muted">No coupons yet.</td></tr>
+              <tr><td colSpan={7} className="muted">No coupons yet.</td></tr>
             )}
             {coupons.map((c) => (
               <tr key={c.id}>
@@ -132,8 +158,14 @@ export default function AdminCoupons() {
                   </span>
                 </td>
                 <td>
+                  {c.featured ? <span className="pill status-placed">Featured</span> : <span className="muted">—</span>}
+                </td>
+                <td>
                   <button className="link-btn" onClick={() => toggleActive(c)}>
                     {c.active ? 'disable' : 'enable'}
+                  </button>{' '}
+                  <button className="link-btn" onClick={() => toggleFeatured(c)}>
+                    {c.featured ? 'unfeature' : 'feature'}
                   </button>{' '}
                   <button className="link-btn danger" onClick={() => del(c)}>delete</button>
                 </td>

@@ -294,6 +294,7 @@ router.post('/coupons', async (req, res, next) => {
       minOrder: Number(req.body.minOrder) || 0,
       expiresAt: req.body.expiresAt || null,
       active: true,
+      featured: !!req.body.featured,
       createdAt: new Date().toISOString(),
     };
     await db.put('coupons', coupon);
