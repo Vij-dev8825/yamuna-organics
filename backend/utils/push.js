@@ -24,12 +24,12 @@ function ensureConfigured() {
 /** Sends a push notification to every subscription this user has registered
  * (e.g. multiple browsers/devices), dropping any that the push service
  * reports as expired/invalid (410/404). */
-async function sendPush(userId, { title, message, url }) {
+async function sendPush(userId, { title, message, image, url }) {
   if (!isConfigured()) return { sent: 0 };
   ensureConfigured();
 
   const subs = (await db.list('push-subscriptions')).filter((s) => s.userId === userId);
-  const payload = JSON.stringify({ title, body: message, url: url || '/' });
+  const payload = JSON.stringify({ title, body: message, image: image || undefined, url: url || '/' });
   let sent = 0;
 
   for (const sub of subs) {

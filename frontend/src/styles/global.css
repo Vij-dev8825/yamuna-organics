@@ -1611,6 +1611,7 @@ input:focus-visible + .filter-radio { outline: 2px solid var(--gold-2); outline-
   padding: 16px 18px;
 }
 .notification-list li.unread { border-left-color: var(--gold-2); background: #fffaef; }
+.notification-image { width: 100%; max-height: 220px; object-fit: cover; border-radius: var(--radius-sm); margin-bottom: 10px; }
 .notification-title { font-weight: 600; color: var(--forest-deep); margin-bottom: 4px; }
 .notification-list p { margin: 0 0 6px; font-size: 0.9rem; }
 .notification-time { font-size: 0.75rem; color: #a09a89; font-family: var(--font-mono); }

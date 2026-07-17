@@ -3,6 +3,7 @@ import { api } from '../api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { isPushSupported, getPushPermission, enablePushNotifications, disablePushNotifications } from '../utils/pushNotifications';
+import { getProductImage } from '../utils/productImages';
 import ChakkiWheel from '../components/ChakkiWheel';
 
 function timeAgo(iso) {
@@ -106,6 +107,7 @@ export default function Notifications() {
         <ul className="notification-list">
           {notifications.map((n) => (
             <li key={n.id} className={n.read ? '' : 'unread'}>
+              {n.image && <img src={getProductImage(n.image)} alt="" className="notification-image" />}
               <div className="notification-title">{n.title}</div>
               <p>{n.message}</p>
               <span className="notification-time">{timeAgo(n.createdAt)}</span>

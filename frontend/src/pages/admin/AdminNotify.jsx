@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../api';
 import { useAuth } from '../../context/AuthContext';
+import { getProductImage } from '../../utils/productImages';
+import ImageUploadField from '../../components/admin/ImageUploadField';
 
 export default function AdminNotify() {
   const { token } = useAuth();
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
+  const [image, setImage] = useState('');
   const [channels, setChannels] = useState({ inapp: true, email: true, sms: false, push: true });
   const [logs, setLogs] = useState([]);
   const [message, setMessage] = useState(null);
@@ -22,13 +25,14 @@ export default function AdminNotify() {
     setSending(true);
     setMessage(null);
     try {
-      const res = await api.admin.notify(token, { title, message: body, channels });
+      const res = await api.admin.notify(token, { title, message: body, image, channels });
       setMessage({
         type: 'success',
         text: `Sent to ${res.counts.audience} customers — ${res.counts.inapp} in-app, ${res.counts.email} emails, ${res.counts.sms} SMS, ${res.counts.push || 0} push.`,
       });
       setTitle('');
       setBody('');
+      setImage('');
       load();
     } catch (err) {
       setMessage({ type: 'error', text: err.message });
@@ -59,6 +63,7 @@ export default function AdminNotify() {
           <label>Message</label>
           <textarea value={body} onChange={(e) => setBody(e.target.value)} placeholder="Write the message customers will receive…" required />
         </div>
+        <ImageUploadField value={image} onChange={setImage} label="Image (optional)" />
         <div className="check-row-group">
           {[
             ['inapp', 'In-app notification'],
@@ -94,8 +99,13 @@ export default function AdminNotify() {
               {logs.map((l) => (
                 <tr key={l.id}>
                   <td>
-                    <b>{l.title}</b>
-                    <div className="muted" style={{ fontSize: '0.78rem', maxWidth: 320 }}>{l.message}</div>
+                    <div className="flex gap-1" style={{ alignItems: 'flex-start' }}>
+                      {l.image && <img src={getProductImage(l.image)} alt="" className="thumb" />}
+                      <div>
+                        <b>{l.title}</b>
+                        <div className="muted" style={{ fontSize: '0.78rem', maxWidth: 320 }}>{l.message}</div>
+                      </div>
+                    </div>
                   </td>
                   <td>{Object.entries(l.channels).filter(([, v]) => v).map(([k]) => k).join(', ')}</td>
                   <td>

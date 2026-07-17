@@ -13,6 +13,7 @@ self.addEventListener('push', (event) => {
       body: data.body,
       icon: '/favicon.svg',
       badge: '/favicon.svg',
+      image: data.image || undefined,
       data: { url: data.url },
     })
   );
