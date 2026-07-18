@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useLang } from '../i18n';
 
-const SUPPORT_PHONE = '+919000000000';
+const SUPPORT_PHONE = '+918825875607';
 const SUPPORT_EMAIL = 'hello@yamunaorganics.com';
 
 function FooterAccordion({ title, isOpen, onToggle, children }) {

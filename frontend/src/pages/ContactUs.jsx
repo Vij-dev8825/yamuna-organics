@@ -55,7 +55,7 @@ export default function ContactUs() {
             <h3>Visit the mill</h3>
             <p className="muted">Yamuna Organics Mill, Village Road, Mathura, Uttar Pradesh, India</p>
             <h3>Call us</h3>
-            <p className="muted"><a href="tel:+919000000000">+91 90000 00000</a> (Mon–Sat, 9am–7pm)</p>
+            <p className="muted"><a href="tel:+918825875607">+91 88258 75607</a> (Mon–Sat, 9am–7pm)</p>
             <h3>Email</h3>
             <p className="muted"><a href="mailto:hello@yamunaorganics.com">hello@yamunaorganics.com</a></p>
           </div>

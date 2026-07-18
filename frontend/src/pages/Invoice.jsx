@@ -51,7 +51,7 @@ export default function Invoice() {
           <div className="invoice-header-address">
             <b>Shri Gopal Flour &amp; Oil Mills</b>
             <span>Udumalpet, Tiruppur District, Tamil Nadu – 642126</span>
-            <span>hello@yamunaorganics.com · +91 90000 00000</span>
+            <span>hello@yamunaorganics.com · +91 88258 75607</span>
           </div>
         </div>
 
