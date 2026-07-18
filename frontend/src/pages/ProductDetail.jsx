@@ -11,6 +11,8 @@ import { validateAddress } from '../utils/validators';
 import ChakkiWheel from '../components/ChakkiWheel';
 import ProductCard from '../components/ProductCard';
 import ImageLightbox from '../components/ImageLightbox';
+import DeliveryEstimate from '../components/DeliveryEstimate';
+import TrustBadges from '../components/TrustBadges';
 import { IconHeart } from '../components/Icons';
 
 const SUBSCRIPTION_DISCOUNT_PERCENT = 10;
@@ -288,6 +290,9 @@ export default function ProductDetail() {
           <div className="alert alert-info">
             In stock: {activeSize.stock} units · Delivered in 3-5 business days
           </div>
+
+          <DeliveryEstimate />
+          <TrustBadges />
 
           <div className="subscribe-box">
             <span className="subscribe-badge">🔁 Subscribe &amp; Save {SUBSCRIPTION_DISCOUNT_PERCENT}%</span>
