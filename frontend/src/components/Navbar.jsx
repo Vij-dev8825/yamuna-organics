@@ -27,14 +27,11 @@ export default function Navbar() {
     setOpen(false);
   }
 
-  const isAdmin = user?.role === 'admin';
-
   const links = [
     { to: '/', label: t('navHome') },
     { to: '/shop', label: t('navShop') },
     { to: '/categories', label: t('navCategories') },
     { to: '/combos', label: t('navCombos') },
-    { to: '/bulk-enquiry', label: t('navBulk') },
     { to: '/contact', label: t('navContact') },
   ];
 
@@ -84,11 +81,6 @@ export default function Navbar() {
               {l.label}
             </NavLink>
           ))}
-          {isAdmin && (
-            <NavLink to="/admin" onClick={() => setOpen(false)} className="admin-link">
-              {t('navAdmin')}
-            </NavLink>
-          )}
         </nav>
 
         <div className="nav-icons">
