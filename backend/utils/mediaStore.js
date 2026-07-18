@@ -8,11 +8,22 @@
  * adds real CDN/caching benefits — this is the fallback that always works.
  */
 const sharp = require('sharp');
+const ffmpegPath = require('ffmpeg-static');
+const ffmpeg = require('fluent-ffmpeg');
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
 const { v4: uuid } = require('uuid');
 const db = require('../data/db');
 
+ffmpeg.setFfmpegPath(ffmpegPath);
+
 const MAX_DIMENSION = 1600;
 const JPEG_QUALITY = 78;
+
+const VIDEO_MAX_HEIGHT = 720;
+const VIDEO_BITRATE = '1200k';
+const VIDEO_MAX_OUTPUT_BYTES = 20 * 1024 * 1024; // 20 MB — keeps DB rows and page loads reasonable
 
 /** Compresses an image buffer (resize + re-encode as JPEG) and stores it,
  * returning a URL the frontend can load directly. */
@@ -33,8 +44,45 @@ async function compressAndStore(buffer) {
   return `/api/media/${id}`;
 }
 
+/** Transcodes a video file to a size-capped, muted-friendly web MP4 (720p
+ * max, H.264/no-audio since banner videos always autoplay muted) and stores
+ * it the same way as images. Throws if the result is still too large for a
+ * database row — the fix there is a shorter/lower-res source clip. */
+async function compressVideoAndStore(inputPath) {
+  const outputPath = path.join(os.tmpdir(), `${uuid()}.mp4`);
+  await new Promise((resolve, reject) => {
+    ffmpeg(inputPath)
+      .videoCodec('libx264')
+      .noAudio()
+      .videoFilters(`scale=-2:'min(${VIDEO_MAX_HEIGHT},ih)'`)
+      .videoBitrate(VIDEO_BITRATE)
+      .outputOptions(['-preset veryfast', '-movflags +faststart'])
+      .output(outputPath)
+      .on('end', resolve)
+      .on('error', reject)
+      .run();
+  });
+
+  const buffer = fs.readFileSync(outputPath);
+  fs.unlink(outputPath, () => {});
+
+  if (buffer.length > VIDEO_MAX_OUTPUT_BYTES) {
+    const mb = (buffer.length / (1024 * 1024)).toFixed(1);
+    throw new Error(`Compressed video is still ${mb} MB — please upload a shorter clip (10-20 seconds works best).`);
+  }
+
+  const id = uuid();
+  await db.put('media', {
+    id,
+    mimeType: 'video/mp4',
+    data: buffer.toString('base64'),
+    createdAt: new Date().toISOString(),
+  });
+  return `/api/media/${id}`;
+}
+
 async function getMedia(id) {
   return db.get('media', id);
 }
 
-module.exports = { compressAndStore, getMedia };
+module.exports = { compressAndStore, compressVideoAndStore, getMedia };

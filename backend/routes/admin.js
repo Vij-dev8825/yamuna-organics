@@ -8,7 +8,7 @@ const { requireAdmin } = require('../middleware/auth');
 const { notifyUser, broadcast } = require('../utils/notify');
 const { UPLOADS_DIR } = require('../data/seed');
 const cloudinary = require('../utils/cloudinary');
-const { compressAndStore } = require('../utils/mediaStore');
+const { compressAndStore, compressVideoAndStore } = require('../utils/mediaStore');
 const { processDueSubscriptions } = require('../utils/subscriptions');
 
 const router = express.Router();
@@ -374,9 +374,14 @@ router.post('/banners', upload.single('file'), async (req, res, next) => {
       url = uploaded.url;
       cloudinaryPublicId = uploaded.publicId;
       fs.unlink(req.file.path, () => {});
-    } else if (!isVideo) {
-      // No Cloudinary and this is an image (not a large video) — compress
-      // and store in the database so it survives Render's disk wipes.
+    } else if (isVideo) {
+      // No Cloudinary — transcode to a size-capped MP4 and store in the
+      // database so it survives Render's disk wipes, same as images below.
+      url = await compressVideoAndStore(req.file.path);
+      fs.unlink(req.file.path, () => {});
+    } else {
+      // No Cloudinary and this is an image — compress and store in the
+      // database so it survives Render's disk wipes.
       const buffer = fs.readFileSync(req.file.path);
       url = await compressAndStore(buffer);
       fs.unlink(req.file.path, () => {});
