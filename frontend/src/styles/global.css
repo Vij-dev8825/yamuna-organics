@@ -224,7 +224,11 @@ p { margin: 0 0 1em; }
   justify-content: space-between;
   gap: 20px;
 }
-.navbar-inner > a { order: 1; }
+.navbar-inner > a {
+  order: 1;
+  flex-shrink: 0;
+}
+.navbar-inner > a img { width: auto; }
 
 /* ---------- Header search (site-wide, not just the Shop page) ---------- */
 .navbar-search {
