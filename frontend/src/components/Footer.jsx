@@ -51,7 +51,9 @@ export default function Footer() {
           <div className="social-row">
             <a href="#" aria-label="Instagram">IG</a>
             <a href="#" aria-label="Facebook">FB</a>
-            <a href="#" aria-label="WhatsApp">WA</a>
+            <a href={`https://wa.me/${SUPPORT_PHONE.replace('+', '')}`} target="_blank" rel="noreferrer" aria-label="WhatsApp">
+              WA
+            </a>
           </div>
         </div>
 
