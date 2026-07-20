@@ -28,6 +28,11 @@ const catalogRoutes = require('./routes/catalog');
 
 const app = express();
 
+// Render terminates TLS and proxies to this app over plain HTTP, setting
+// X-Forwarded-Proto: https — without this, req.protocol always reports
+// 'http' (breaking absolute URLs built from it, e.g. the catalog feed below).
+app.set('trust proxy', 1);
+
 app.use(cors());
 app.use(express.json({ limit: '2mb' }));
 app.use(morgan('dev'));
