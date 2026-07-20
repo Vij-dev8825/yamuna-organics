@@ -16,7 +16,7 @@ export const LANGS = [
 
 const en = {
   // announcement + nav
-  announcement: '🚚 Free shipping above ₹499 · Cash on Delivery available · Pressed fresh every week',
+  announcement: '🚚 Free shipping above ₹899 · Cash on Delivery available · Pressed fresh every week',
   navHome: 'Home',
   navShop: 'Shop',
   navCategories: 'Categories',
@@ -158,7 +158,7 @@ const en = {
 };
 
 const hi = {
-  announcement: '🚚 ₹499 से ऊपर मुफ़्त डिलीवरी · कैश ऑन डिलीवरी उपलब्ध · हर हफ़्ते ताज़ा पेराई',
+  announcement: '🚚 ₹899 से ऊपर मुफ़्त डिलीवरी · कैश ऑन डिलीवरी उपलब्ध · हर हफ़्ते ताज़ा पेराई',
   navHome: 'होम',
   navShop: 'दुकान',
   navCategories: 'श्रेणियाँ',
@@ -289,7 +289,7 @@ const hi = {
 };
 
 const ta = {
-  announcement: '🚚 ₹499க்கு மேல் இலவச டெலிவரி · கேஷ் ஆன் டெலிவரி உண்டு · வாரந்தோறும் புதிதாக ஆட்டப்படுகிறது',
+  announcement: '🚚 ₹899க்கு மேல் இலவச டெலிவரி · கேஷ் ஆன் டெலிவரி உண்டு · வாரந்தோறும் புதிதாக ஆட்டப்படுகிறது',
   navHome: 'முகப்பு',
   navShop: 'கடை',
   navCategories: 'வகைகள்',
@@ -420,7 +420,7 @@ const ta = {
 };
 
 const te = {
-  announcement: '🚚 ₹499 పైన ఉచిత డెలివరీ · క్యాష్ ఆన్ డెలివరీ అందుబాటులో ఉంది · ప్రతి వారం తాజాగా ఆడుతారు',
+  announcement: '🚚 ₹899 పైన ఉచిత డెలివరీ · క్యాష్ ఆన్ డెలివరీ అందుబాటులో ఉంది · ప్రతి వారం తాజాగా ఆడుతారు',
   navHome: 'హోమ్',
   navShop: 'షాప్',
   navCategories: 'వర్గాలు',
@@ -551,7 +551,7 @@ const te = {
 };
 
 const kn = {
-  announcement: '🚚 ₹499 ಮೇಲೆ ಉಚಿತ ಶಿಪ್ಪಿಂಗ್ · ಕ್ಯಾಶ್ ಆನ್ ಡೆಲಿವರಿ ಲಭ್ಯವಿದೆ · ಪ್ರತಿ ವಾರ ತಾಜಾ ಆಗಿ ಅರೆಯಲಾಗುತ್ತದೆ',
+  announcement: '🚚 ₹899 ಮೇಲೆ ಉಚಿತ ಶಿಪ್ಪಿಂಗ್ · ಕ್ಯಾಶ್ ಆನ್ ಡೆಲಿವರಿ ಲಭ್ಯವಿದೆ · ಪ್ರತಿ ವಾರ ತಾಜಾ ಆಗಿ ಅರೆಯಲಾಗುತ್ತದೆ',
   navHome: 'ಮುಖಪುಟ',
   navShop: 'ಅಂಗಡಿ',
   navCategories: 'ವರ್ಗಗಳು',
