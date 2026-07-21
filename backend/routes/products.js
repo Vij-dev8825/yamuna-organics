@@ -40,10 +40,11 @@ router.get('/', async (req, res, next) => {
       );
     }
 
+    const minPrice = (p) => Math.min(...p.sizes.map((s) => s.price));
     if (sort === 'price-asc') {
-      products = [...products].sort((a, b) => a.sizes[0].price - b.sizes[0].price);
+      products = [...products].sort((a, b) => minPrice(a) - minPrice(b));
     } else if (sort === 'price-desc') {
-      products = [...products].sort((a, b) => b.sizes[0].price - a.sizes[0].price);
+      products = [...products].sort((a, b) => minPrice(b) - minPrice(a));
     } else if (sort === 'rating') {
       products = [...products].sort((a, b) => b.rating - a.rating);
     }
