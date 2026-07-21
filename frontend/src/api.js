@@ -43,6 +43,9 @@ export const api = {
   // blog
   getBlogPosts: () => request('/blog'),
   getBlogPost: (slug) => request(`/blog/${slug}`),
+  likeBlogPost: (slug) => request(`/blog/${slug}/like`, { method: 'POST' }),
+  getBlogComments: (slug) => request(`/blog/${slug}/comments`),
+  addBlogComment: (token, slug, text) => request(`/blog/${slug}/comments`, { method: 'POST', body: { text }, token }),
 
   // cart
   getCart: (token) => request('/cart', { token }),
@@ -122,6 +125,7 @@ export const api = {
     deleteBlogPost: (token, id) => request(`/admin/blog/${id}`, { method: 'DELETE', token }),
     getBlogSettings: (token) => request('/admin/blog-settings', { token }),
     updateBlogSettings: (token, settings) => request('/admin/blog-settings', { method: 'PUT', body: settings, token }),
+    deleteBlogComment: (token, id) => request(`/admin/blog-comments/${id}`, { method: 'DELETE', token }),
 
     getCoupons: (token) => request('/admin/coupons', { token }),
     createCoupon: (token, coupon) => request('/admin/coupons', { method: 'POST', body: coupon, token }),

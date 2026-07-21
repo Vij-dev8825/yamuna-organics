@@ -37,6 +37,12 @@ export default function BlogShare({ url, title }) {
     setOpen(false);
   }
 
+  async function handleCopyLink() {
+    const ok = await copyToClipboard(url);
+    showToast(ok ? t('shareLinkCopied') : t('shareCopyFailed'));
+    setOpen(false);
+  }
+
   return (
     <div className="blog-share" ref={wrapRef}>
       <button
@@ -81,8 +87,21 @@ export default function BlogShare({ url, title }) {
           >
             WhatsApp
           </a>
+          <a
+            className="blog-share-item"
+            href={`https://t.me/share/url?url=${encodedUrl}&text=${encodedTitle}`}
+            target="_blank"
+            rel="noreferrer"
+            role="menuitem"
+            onClick={() => setOpen(false)}
+          >
+            Telegram
+          </a>
           <button type="button" className="blog-share-item" role="menuitem" onClick={handleInstagram}>
             Instagram
+          </button>
+          <button type="button" className="blog-share-item" role="menuitem" onClick={handleCopyLink}>
+            {t('shareCopyLink')}
           </button>
         </div>
       )}

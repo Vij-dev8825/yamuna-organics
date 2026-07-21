@@ -4,6 +4,8 @@ import { api } from '../api';
 import { getProductImage } from '../utils/productImages';
 import ChakkiWheel from '../components/ChakkiWheel';
 import BlogShare from '../components/BlogShare';
+import BlogLike from '../components/BlogLike';
+import BlogComments from '../components/BlogComments';
 import { useLang } from '../i18n';
 
 export default function BlogPost() {
@@ -49,7 +51,10 @@ export default function BlogPost() {
 
       {post.category && <span className="blog-card-tag">{post.category}</span>}
       <h1 className="blog-post-title">{post.title}</h1>
-      <BlogShare url={window.location.href} title={post.title} />
+      <div className="blog-post-actions">
+        <BlogLike slug={post.id} likes={post.likes} />
+        <BlogShare url={window.location.href} title={post.title} />
+      </div>
 
       {post.image && (
         <div className="blog-post-media">
@@ -64,6 +69,8 @@ export default function BlogPost() {
       </div>
 
       <Link className="btn btn-outline btn-sm" to="/blog">← {t('blogBackToAll')}</Link>
+
+      <BlogComments slug={post.id} />
     </div>
   );
 }

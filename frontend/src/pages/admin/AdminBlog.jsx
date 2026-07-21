@@ -25,6 +25,8 @@ export default function AdminBlog() {
   const [bannerSaving, setBannerSaving] = useState(false);
   const [bannerMessage, setBannerMessage] = useState(null);
 
+  const [comments, setComments] = useState([]);
+
   function load() {
     api.admin.getBlogPosts(token).then((d) => setPosts(d.posts)).catch(() => {});
     api.admin
@@ -63,6 +65,18 @@ export default function AdminBlog() {
     setForm(p);
     setEditing(p.id);
     setMessage(null);
+    setComments([]);
+    api.getBlogComments(p.id).then((d) => setComments(d.comments)).catch(() => {});
+  }
+
+  async function delComment(id) {
+    if (!window.confirm('Delete this comment? This cannot be undone.')) return;
+    try {
+      await api.admin.deleteBlogComment(token, id);
+      setComments((cs) => cs.filter((c) => c.id !== id));
+    } catch (err) {
+      setMessage({ type: 'error', text: err.message });
+    }
   }
 
   function validate(f) {
@@ -196,6 +210,25 @@ export default function AdminBlog() {
             <button type="button" className="btn btn-ghost btn-sm" onClick={() => setEditing(null)}>Cancel</button>
           </div>
         </form>
+      )}
+
+      {editing && editing !== 'new' && (
+        <div className="admin-card">
+          <h3>Comments {comments.length > 0 && `(${comments.length})`}</h3>
+          {comments.length === 0 ? (
+            <p className="muted">No comments on this post yet.</p>
+          ) : (
+            comments.map((c) => (
+              <div key={c.id} className="admin-comment-row">
+                <div>
+                  <b>{c.userName}</b> <span className="muted">{new Date(c.createdAt).toLocaleDateString()}</span>
+                  <p style={{ margin: '4px 0 0' }}>{c.text}</p>
+                </div>
+                <button className="link-btn danger" onClick={() => delComment(c.id)}>delete</button>
+              </div>
+            ))
+          )}
+        </div>
       )}
 
       <div className="admin-card">

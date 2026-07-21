@@ -344,6 +344,16 @@ router.delete('/blog/:id', async (req, res, next) => {
   }
 });
 
+// DELETE /api/admin/blog-comments/:id — moderation (remove spam/inappropriate comments)
+router.delete('/blog-comments/:id', async (req, res, next) => {
+  try {
+    await db.remove('blog-comments', req.params.id);
+    res.json({ success: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // GET /api/admin/blog-settings
 router.get('/blog-settings', async (req, res, next) => {
   try {

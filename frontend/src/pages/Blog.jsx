@@ -4,6 +4,7 @@ import { api } from '../api';
 import { getProductImage } from '../utils/productImages';
 import ChakkiWheel from '../components/ChakkiWheel';
 import BlogShare from '../components/BlogShare';
+import BlogLike from '../components/BlogLike';
 import { useLang } from '../i18n';
 
 export default function Blog() {
@@ -58,6 +59,7 @@ export default function Blog() {
                   </div>
                 </Link>
                 <div className="blog-card-share">
+                  <BlogLike slug={p.id} likes={p.likes} />
                   <BlogShare url={`${window.location.origin}/blog/${p.id}`} title={p.title} />
                 </div>
               </div>
