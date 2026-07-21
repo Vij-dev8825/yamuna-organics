@@ -344,6 +344,27 @@ router.delete('/blog/:id', async (req, res, next) => {
   }
 });
 
+// GET /api/admin/blog-settings
+router.get('/blog-settings', async (req, res, next) => {
+  try {
+    const settings = await db.get('blog-settings', 'main');
+    res.json({ success: true, settings: settings || { id: 'main', bannerImage: '' } });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// PUT /api/admin/blog-settings  { bannerImage }
+router.put('/blog-settings', async (req, res, next) => {
+  try {
+    const settings = { id: 'main', bannerImage: req.body.bannerImage || '' };
+    await db.put('blog-settings', settings);
+    res.json({ success: true, settings });
+  } catch (err) {
+    next(err);
+  }
+});
+
 /* --------------------------------- Coupons -------------------------------- */
 
 // GET /api/admin/coupons

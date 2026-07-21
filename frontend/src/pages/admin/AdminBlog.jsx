@@ -21,10 +21,28 @@ export default function AdminBlog() {
   const [message, setMessage] = useState(null);
   const [busy, setBusy] = useState(false);
 
+  const [bannerImage, setBannerImage] = useState('');
+  const [bannerSaving, setBannerSaving] = useState(false);
+  const [bannerMessage, setBannerMessage] = useState(null);
+
   function load() {
     api.admin.getBlogPosts(token).then((d) => setPosts(d.posts)).catch(() => {});
+    api.admin.getBlogSettings(token).then((d) => setBannerImage(d.settings.bannerImage || '')).catch(() => {});
   }
   useEffect(load, [token]);
+
+  async function saveBanner() {
+    setBannerSaving(true);
+    setBannerMessage(null);
+    try {
+      await api.admin.updateBlogSettings(token, { bannerImage });
+      setBannerMessage({ type: 'success', text: 'Banner updated.' });
+    } catch (err) {
+      setBannerMessage({ type: 'error', text: err.message });
+    } finally {
+      setBannerSaving(false);
+    }
+  }
 
   function startNew() {
     setForm(EMPTY);
@@ -88,6 +106,19 @@ export default function AdminBlog() {
       </div>
 
       {message && <div className={`alert alert-${message.type}`}>{message.text}</div>}
+
+      <div className="admin-card">
+        <h3>Blog page banner</h3>
+        <p className="muted" style={{ marginBottom: 14 }}>
+          Background photo for the "From the Ghani" banner at the top of the public /blog page.
+          Leave empty to keep the plain green background.
+        </p>
+        {bannerMessage && <div className={`alert alert-${bannerMessage.type}`}>{bannerMessage.text}</div>}
+        <ImageUploadField value={bannerImage} onChange={setBannerImage} label="Banner background" />
+        <button type="button" className="btn btn-gold btn-sm" disabled={bannerSaving} onClick={saveBanner}>
+          {bannerSaving ? 'Saving…' : 'Save banner'}
+        </button>
+      </div>
 
       {editing && (
         <form className="admin-card" onSubmit={save}>

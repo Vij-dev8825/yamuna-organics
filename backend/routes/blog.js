@@ -6,12 +6,12 @@ const router = express.Router();
 // GET /api/blog — published posts only, newest first
 router.get('/', async (req, res, next) => {
   try {
-    const posts = (await db.list('blog-posts'))
-      .filter((p) => p.published)
-      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    const [posts, settings] = await Promise.all([db.list('blog-posts'), db.get('blog-settings', 'main')]);
+    const published = posts.filter((p) => p.published).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
     res.json({
       success: true,
-      posts: posts.map(({ content, ...rest }) => rest), // full body only on the detail route
+      posts: published.map(({ content, ...rest }) => rest), // full body only on the detail route
+      bannerImage: settings?.bannerImage || '',
     });
   } catch (err) {
     next(err);

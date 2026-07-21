@@ -8,15 +8,25 @@ import { useLang } from '../i18n';
 export default function Blog() {
   const { t } = useLang();
   const [posts, setPosts] = useState([]);
+  const [bannerImage, setBannerImage] = useState('');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.getBlogPosts().then((d) => setPosts(d.posts)).finally(() => setLoading(false));
+    api
+      .getBlogPosts()
+      .then((d) => {
+        setPosts(d.posts);
+        setBannerImage(d.bannerImage || '');
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   return (
     <div className="section" style={{ paddingTop: 0 }}>
-      <div className="blog-banner">
+      <div
+        className={`blog-banner ${bannerImage ? 'has-image' : ''}`}
+        style={bannerImage ? { backgroundImage: `url(${getProductImage(bannerImage)})` } : undefined}
+      >
         <h1>{t('blogBannerTitle')}</h1>
         <p>{t('blogBannerSub')}</p>
       </div>

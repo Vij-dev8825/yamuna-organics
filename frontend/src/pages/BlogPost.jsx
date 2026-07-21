@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { api } from '../api';
 import { getProductImage } from '../utils/productImages';
 import ChakkiWheel from '../components/ChakkiWheel';
+import BlogShare from '../components/BlogShare';
 import { useLang } from '../i18n';
 
 export default function BlogPost() {
@@ -48,6 +49,7 @@ export default function BlogPost() {
 
       {post.category && <span className="blog-card-tag">{post.category}</span>}
       <h1 className="blog-post-title">{post.title}</h1>
+      <BlogShare url={window.location.href} title={post.title} />
 
       {post.image && (
         <div className="blog-post-media">

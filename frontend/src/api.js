@@ -120,6 +120,8 @@ export const api = {
     createBlogPost: (token, post) => request('/admin/blog', { method: 'POST', body: post, token }),
     updateBlogPost: (token, id, post) => request(`/admin/blog/${id}`, { method: 'PUT', body: post, token }),
     deleteBlogPost: (token, id) => request(`/admin/blog/${id}`, { method: 'DELETE', token }),
+    getBlogSettings: (token) => request('/admin/blog-settings', { token }),
+    updateBlogSettings: (token, settings) => request('/admin/blog-settings', { method: 'PUT', body: settings, token }),
 
     getCoupons: (token) => request('/admin/coupons', { token }),
     createCoupon: (token, coupon) => request('/admin/coupons', { method: 'POST', body: coupon, token }),
