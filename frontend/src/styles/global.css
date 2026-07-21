@@ -1608,7 +1608,7 @@ input:focus-visible + .filter-radio { outline: 2px solid var(--gold-2); outline-
   padding: 72px 24px;
   margin-bottom: 44px;
   position: relative;
-  background-size: contain;
+  background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
 }
