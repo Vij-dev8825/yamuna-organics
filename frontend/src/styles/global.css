@@ -1636,14 +1636,17 @@ input:focus-visible + .filter-radio { outline: 2px solid var(--gold-2); outline-
 .blog-card {
   background: var(--paper);
   border-radius: var(--radius-md);
-  overflow: hidden;
   box-shadow: var(--shadow-card);
   display: block;
   transition: box-shadow 0.15s ease, transform 0.15s ease;
 }
 .blog-card:hover { box-shadow: var(--shadow-lift); transform: translateY(-2px); }
 .blog-card-link { display: block; color: inherit; text-decoration: none; }
-.blog-card-media { aspect-ratio: 4/3; overflow: hidden; }
+.blog-card-media {
+  aspect-ratio: 4/3;
+  overflow: hidden;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+}
 .blog-card-media img { width: 100%; height: 100%; object-fit: cover; }
 .blog-card-body { padding: 20px 22px 16px; }
 .blog-card-share {
