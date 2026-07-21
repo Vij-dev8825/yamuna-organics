@@ -43,6 +43,9 @@ export const api = {
   // static page banners (shop, categories, combos, contact, bulk-enquiry)
   getPageBanner: (page) => request(`/page-banners/${page}`),
 
+  // pincode -> city/state lookup for the checkout address form
+  lookupPincode: (pincode) => request(`/pincode/${pincode}`),
+
   // blog
   getBlogPosts: () => request('/blog'),
   getBlogPost: (slug) => request(`/blog/${slug}`),

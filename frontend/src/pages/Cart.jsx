@@ -27,6 +27,9 @@ export default function Cart() {
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [address, setAddress] = useState({ line1: '', city: '', state: '', pincode: '', phone: '' });
   const [addressErrors, setAddressErrors] = useState({});
+  const [cityOptions, setCityOptions] = useState([]);
+  const [stateOptions, setStateOptions] = useState([]);
+  const [pincodeLookupError, setPincodeLookupError] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('cod'); // 'cod' | 'razorpay'
   const [razorpayEnabled, setRazorpayEnabled] = useState(false);
   const [buyNowQty, setBuyNowQty] = useState(buyNowItem?.quantity || 1);
@@ -45,6 +48,41 @@ export default function Cart() {
   useEffect(() => {
     if (user?.addresses?.[0]) setAddress(user.addresses[0]);
   }, [user]);
+
+  // Look up city/state options from the pincode once it's 6 digits, so the
+  // customer picks from a dropdown instead of typing them (and can't typo a
+  // city/state that doesn't match their pincode).
+  useEffect(() => {
+    if (!/^\d{6}$/.test(address.pincode)) {
+      setCityOptions([]);
+      setStateOptions([]);
+      setPincodeLookupError('');
+      return;
+    }
+    let cancelled = false;
+    api
+      .lookupPincode(address.pincode)
+      .then((d) => {
+        if (cancelled) return;
+        setCityOptions(d.cities);
+        setStateOptions(d.states);
+        setPincodeLookupError('');
+        setAddress((a) => ({
+          ...a,
+          city: d.cities.includes(a.city) ? a.city : d.cities[0] || '',
+          state: d.states.includes(a.state) ? a.state : d.states[0] || '',
+        }));
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setCityOptions([]);
+        setStateOptions([]);
+        setPincodeLookupError("Couldn't look up this pincode — enter city/state manually.");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [address.pincode]);
 
   const lines = useMemo(() => {
     if (isBuyNow) {
@@ -326,24 +364,6 @@ export default function Cart() {
                 {addressErrors.line1 && <div className="field-error">{addressErrors.line1}</div>}
               </div>
               <div className="field">
-                <label>City</label>
-                <input
-                  required
-                  value={address.city}
-                  onChange={(e) => updateAddress('city', e.target.value)}
-                />
-                {addressErrors.city && <div className="field-error">{addressErrors.city}</div>}
-              </div>
-              <div className="field">
-                <label>State</label>
-                <input
-                  required
-                  value={address.state}
-                  onChange={(e) => updateAddress('state', e.target.value)}
-                />
-                {addressErrors.state && <div className="field-error">{addressErrors.state}</div>}
-              </div>
-              <div className="field">
                 <label>Pincode</label>
                 <input
                   required
@@ -353,6 +373,43 @@ export default function Cart() {
                   onChange={(e) => updateAddress('pincode', e.target.value.replace(/\D/g, ''))}
                 />
                 {addressErrors.pincode && <div className="field-error">{addressErrors.pincode}</div>}
+                {pincodeLookupError && <div className="field-error">{pincodeLookupError}</div>}
+              </div>
+              <div className="field">
+                <label>City</label>
+                {cityOptions.length > 0 ? (
+                  <select value={address.city} onChange={(e) => updateAddress('city', e.target.value)}>
+                    {cityOptions.map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    required
+                    value={address.city}
+                    onChange={(e) => updateAddress('city', e.target.value)}
+                    placeholder="Enter your 6-digit pincode above to auto-fill"
+                  />
+                )}
+                {addressErrors.city && <div className="field-error">{addressErrors.city}</div>}
+              </div>
+              <div className="field">
+                <label>State</label>
+                {stateOptions.length > 0 ? (
+                  <select value={address.state} onChange={(e) => updateAddress('state', e.target.value)}>
+                    {stateOptions.map((s) => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    required
+                    value={address.state}
+                    onChange={(e) => updateAddress('state', e.target.value)}
+                    placeholder="Enter your 6-digit pincode above to auto-fill"
+                  />
+                )}
+                {addressErrors.state && <div className="field-error">{addressErrors.state}</div>}
               </div>
               <div className="field">
                 <label>Phone</label>
