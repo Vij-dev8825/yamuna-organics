@@ -4,6 +4,9 @@ import { useLang } from '../i18n';
 
 const SUPPORT_PHONE = '+918825875607';
 const SUPPORT_EMAIL = 'westerngodsorganic@gmail.com';
+const MILL_ADDRESS = 'Shri Gopal Flour & Oil Mills, Udumalpet, Tiruppur District, Tamil Nadu – 642126';
+const MAP_EMBED_SRC = `https://maps.google.com/maps?q=${encodeURIComponent(MILL_ADDRESS)}&z=14&output=embed`;
+const DIRECTIONS_URL = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(MILL_ADDRESS)}`;
 
 function FooterAccordion({ title, isOpen, onToggle, children }) {
   return (
@@ -108,6 +111,38 @@ export default function Footer() {
               <li><Link to="/policy">{t('footerPrivacy')}</Link></li>
               <li><Link to="/terms">{t('footerTerms')}</Link></li>
             </ul>
+          </FooterAccordion>
+
+          <FooterAccordion title={t('footerSitemap')} isOpen={openSection === 'sitemap'} onToggle={() => toggle('sitemap')}>
+            <ul>
+              <li><Link to="/">{t('navHome')}</Link></li>
+              <li><Link to="/shop">{t('navShop')}</Link></li>
+              <li><Link to="/categories">{t('navCategories')}</Link></li>
+              <li><Link to="/combos">{t('navCombos')}</Link></li>
+              <li><Link to="/blog">{t('navBlog')}</Link></li>
+              <li><Link to="/bulk-enquiry">{t('footerBulk')}</Link></li>
+              <li><Link to="/contact">{t('navContact')}</Link></li>
+              <li><Link to="/cart">{t('footerCart')}</Link></li>
+              <li><Link to="/orders">{t('footerOrders')}</Link></li>
+              <li><Link to="/wishlist">{t('footerWishlist')}</Link></li>
+              <li><Link to="/subscriptions">{t('footerSubscriptions')}</Link></li>
+              <li><Link to="/profile">{t('footerAccount')}</Link></li>
+            </ul>
+          </FooterAccordion>
+
+          <FooterAccordion title={t('footerLocation')} isOpen={openSection === 'location'} onToggle={() => toggle('location')}>
+            <div className="footer-map">
+              <iframe
+                title={t('footerLocation')}
+                src={MAP_EMBED_SRC}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+            </div>
+            <p style={{ fontSize: '0.85rem', margin: '12px 0' }}>{MILL_ADDRESS}</p>
+            <a href={DIRECTIONS_URL} target="_blank" rel="noreferrer" className="footer-service-row" style={{ padding: 0 }}>
+              <span aria-hidden="true">📍</span> {t('footerGetDirections')}
+            </a>
           </FooterAccordion>
         </div>
 

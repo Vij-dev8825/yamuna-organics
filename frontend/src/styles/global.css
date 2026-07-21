@@ -1195,12 +1195,21 @@ input:focus-visible + .filter-radio { outline: 2px solid var(--gold-2); outline-
 .footer-accordion-body.open { display: block; }
 .footer-accordion-body p { color: rgba(250,246,236,0.75); line-height: 1.6; }
 
-/* Desktop: show all four sections expanded side-by-side, accordion
-   behaviour (collapse/chevron) is a mobile-only space-saving affordance. */
+.footer-map {
+  width: 100%;
+  aspect-ratio: 4/3;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: rgba(250,246,236,0.06);
+}
+.footer-map iframe { width: 100%; height: 100%; border: 0; }
+
+/* Desktop: show all sections expanded side-by-side, accordion behaviour
+   (collapse/chevron) is a mobile-only space-saving affordance. */
 @media (min-width: 641px) {
   .footer-accordions {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
     gap: 32px;
     border-top: none;
   }
