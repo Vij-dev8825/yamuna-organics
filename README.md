@@ -1,4 +1,4 @@
-# Yamuna Organic — Cold-Pressed Oils Store
+# Western Gods Organics — Cold-Pressed Oils Store
 
 Full-stack e-commerce site: React (Vite) frontend + Node/Express backend, ready for
 **Render** (hosting) + **Neon** (Postgres database).
