@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { api } from '../api';
 import { isValidEmail, isValidPhone } from '../utils/validators';
 import ChakkiWheel from '../components/ChakkiWheel';
+import PageBanner from '../components/PageBanner';
 
 function validate(form) {
   const errors = {};
@@ -42,16 +43,17 @@ export default function ContactUs() {
   }
 
   return (
-    <div className="container section">
+    <div className="section" style={{ paddingTop: 0 }}>
+      <PageBanner
+        page="contact"
+        title="We'd love to hear from you"
+        subtitle="Questions about an order, a product, or just want to say hello — reach us any way that's easy for you."
+      />
+      <div className="container">
       <div className="breadcrumb">Home / Contact Us</div>
       <div className="two-col-split contact-split">
         <div>
-          <span className="eyebrow">Get in touch</span>
-          <h2>We'd love to hear from you</h2>
-          <p className="muted">
-            Questions about an order, a product, or just want to say hello — reach us any way that's easy for you.
-          </p>
-          <div style={{ marginTop: 28 }}>
+          <div>
             <h3>Visit the mill</h3>
             <p className="muted">Shri Gopal Flour &amp; Oil Mills, Udumalpet, Tiruppur District, Tamil Nadu – 642126</p>
             <h3>Call us</h3>
@@ -100,6 +102,7 @@ export default function ContactUs() {
             {loading ? 'Sending…' : 'Send message'}
           </button>
         </form>
+      </div>
       </div>
     </div>
   );

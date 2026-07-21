@@ -10,6 +10,7 @@ const { UPLOADS_DIR } = require('../data/seed');
 const cloudinary = require('../utils/cloudinary');
 const { compressAndStore, compressVideoAndStore } = require('../utils/mediaStore');
 const { processDueSubscriptions } = require('../utils/subscriptions');
+const { PAGES: PAGE_BANNER_PAGES } = require('./pageBanners');
 
 const router = express.Router();
 router.use(requireAdmin);
@@ -377,6 +378,45 @@ router.put('/blog-settings', async (req, res, next) => {
       bannerSubtitle: req.body.bannerSubtitle || '',
     };
     await db.put('blog-settings', settings);
+    res.json({ success: true, settings });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/* ------------------------------ Page banners ------------------------------ */
+// Shop / Categories / Combos / Contact / Bulk Enquiry — same banner-image +
+// title/subtitle-override pattern as the blog banner above, one per page.
+
+// GET /api/admin/page-banners/:page
+router.get('/page-banners/:page', async (req, res, next) => {
+  try {
+    if (!PAGE_BANNER_PAGES.includes(req.params.page)) {
+      return res.status(404).json({ success: false, message: 'Unknown page.' });
+    }
+    const settings = await db.get('page-banners', req.params.page);
+    res.json({
+      success: true,
+      settings: settings || { id: req.params.page, bannerImage: '', bannerTitle: '', bannerSubtitle: '' },
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// PUT /api/admin/page-banners/:page  { bannerImage, bannerTitle?, bannerSubtitle? }
+router.put('/page-banners/:page', async (req, res, next) => {
+  try {
+    if (!PAGE_BANNER_PAGES.includes(req.params.page)) {
+      return res.status(404).json({ success: false, message: 'Unknown page.' });
+    }
+    const settings = {
+      id: req.params.page,
+      bannerImage: req.body.bannerImage || '',
+      bannerTitle: req.body.bannerTitle || '',
+      bannerSubtitle: req.body.bannerSubtitle || '',
+    };
+    await db.put('page-banners', settings);
     res.json({ success: true, settings });
   } catch (err) {
     next(err);

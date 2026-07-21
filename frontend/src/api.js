@@ -40,6 +40,9 @@ export const api = {
   // banners (home page hero)
   getBanners: () => request('/banners'),
 
+  // static page banners (shop, categories, combos, contact, bulk-enquiry)
+  getPageBanner: (page) => request(`/page-banners/${page}`),
+
   // blog
   getBlogPosts: () => request('/blog'),
   getBlogPost: (slug) => request(`/blog/${slug}`),
@@ -126,6 +129,10 @@ export const api = {
     getBlogSettings: (token) => request('/admin/blog-settings', { token }),
     updateBlogSettings: (token, settings) => request('/admin/blog-settings', { method: 'PUT', body: settings, token }),
     deleteBlogComment: (token, id) => request(`/admin/blog-comments/${id}`, { method: 'DELETE', token }),
+
+    getPageBanner: (token, page) => request(`/admin/page-banners/${page}`, { token }),
+    updatePageBanner: (token, page, settings) =>
+      request(`/admin/page-banners/${page}`, { method: 'PUT', body: settings, token }),
 
     getCoupons: (token) => request('/admin/coupons', { token }),
     createCoupon: (token, coupon) => request('/admin/coupons', { method: 'POST', body: coupon, token }),

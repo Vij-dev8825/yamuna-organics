@@ -3,6 +3,7 @@ import { api } from '../api';
 import { useAuth } from '../context/AuthContext';
 import { isValidEmail, isValidPhone } from '../utils/validators';
 import ChakkiWheel from '../components/ChakkiWheel';
+import PageBanner from '../components/PageBanner';
 
 const initial = {
   name: '', company: '', phone: '', email: '', city: '',
@@ -49,17 +50,16 @@ export default function BulkEnquiry() {
   }
 
   return (
-    <div className="container section">
+    <div className="section" style={{ paddingTop: 0 }}>
+      <PageBanner
+        page="bulk-enquiry"
+        title="Stock our oils in your store or kitchen"
+        subtitle="We supply restaurants, retailers, gyms (for massage oils), and distributors across India in 5L, 15L and 35L containers, with GST invoicing and flexible delivery schedules."
+      />
+      <div className="container">
       <div className="breadcrumb">Home / Bulk Sales Enquiry</div>
       <div className="two-col-split">
         <div>
-          <span className="eyebrow">Wholesale &amp; Bulk Orders</span>
-          <h2>Stock our oils in your store or kitchen</h2>
-          <p className="muted">
-            We supply restaurants, retailers, gyms (for massage oils), and distributors
-            across India in 5L, 15L and 35L containers, with GST invoicing and flexible
-            delivery schedules.
-          </p>
           <ul style={{ listStyle: 'disc', paddingLeft: 20, color: 'var(--forest-light)' }}>
             <li>Minimum order: 20 litres per product</li>
             <li>Custom private-label bottling available on request</li>
@@ -140,6 +140,7 @@ export default function BulkEnquiry() {
             {loading ? 'Sending…' : 'Submit enquiry'}
           </button>
         </form>
+      </div>
       </div>
     </div>
   );

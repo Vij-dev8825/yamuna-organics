@@ -44,6 +44,7 @@ import AdminLeads from './pages/admin/AdminLeads';
 import AdminNotify from './pages/admin/AdminNotify';
 import AdminChat from './pages/admin/AdminChat';
 import AdminBlog from './pages/admin/AdminBlog';
+import AdminPageBanners from './pages/admin/AdminPageBanners';
 
 function NotFound() {
   return (
@@ -103,6 +104,7 @@ export default function App() {
         <Route path="notify" element={<AdminNotify />} />
         <Route path="chat" element={<AdminChat />} />
         <Route path="blog" element={<AdminBlog />} />
+        <Route path="page-banners" element={<AdminPageBanners />} />
       </Route>
 
       {/* Customer storefront */}

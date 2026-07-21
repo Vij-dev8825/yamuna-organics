@@ -30,7 +30,7 @@ export default function Blog() {
   return (
     <div className="section" style={{ paddingTop: 0 }}>
       <div
-        className={`blog-banner ${banner.bannerImage ? 'has-image' : ''}`}
+        className={`page-banner ${banner.bannerImage ? 'has-image' : ''}`}
         style={banner.bannerImage ? { backgroundImage: `url(${getProductImage(banner.bannerImage)})` } : undefined}
       >
         <h1>{banner.bannerTitle || t('blogBannerTitle')}</h1>

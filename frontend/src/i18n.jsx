@@ -91,6 +91,7 @@ const en = {
 
   // shop page
   shopTitle: 'Shop',
+  shopBannerSub: 'Cold-pressed oils, soaps and powders — traditionally made, honestly priced.',
   allProducts: 'All Products',
   searchPlaceholder: 'Search products…',
   searchResultsFor: 'Search results for',
@@ -249,6 +250,7 @@ const hi = {
   bulkCta: 'थोक भाव पाएँ',
 
   shopTitle: 'दुकान',
+  shopBannerSub: 'कोल्ड-प्रेस्ड तेल, साबुन और पाउडर — पारंपरिक तरीक़े से बने, ईमानदार क़ीमत पर।',
   allProducts: 'सभी उत्पाद',
   searchPlaceholder: 'उत्पाद खोजें…',
   searchResultsFor: 'खोज परिणाम',
@@ -404,6 +406,7 @@ const ta = {
   bulkCta: 'மொத்த விலை பெற',
 
   shopTitle: 'கடை',
+  shopBannerSub: 'குளிர் அழுத்தும் எண்ணெய்கள், சோப்புகள் மற்றும் பொடிகள் — பாரம்பரிய முறையில் தயாரிக்கப்பட்டவை, நேர்மையான விலையில்.',
   allProducts: 'அனைத்து பொருட்கள்',
   searchPlaceholder: 'பொருட்களைத் தேடுங்கள்…',
   searchResultsFor: 'தேடல் முடிவுகள்',
@@ -559,6 +562,7 @@ const te = {
   bulkCta: 'టోకు ధర పొందండి',
 
   shopTitle: 'షాప్',
+  shopBannerSub: 'కోల్డ్-ప్రెస్డ్ నూనెలు, సబ్బులు మరియు పొడులు — సాంప్రదాయ పద్ధతిలో తయారు చేయబడినవి, నిజాయితీ ధరలో.',
   allProducts: 'అన్ని ఉత్పత్తులు',
   searchPlaceholder: 'ఉత్పత్తులను వెతకండి…',
   searchResultsFor: 'శోధన ఫలితాలు',
@@ -714,6 +718,7 @@ const kn = {
   bulkCta: 'ಸಗಟು ದರ ಪಡೆಯಿರಿ',
 
   shopTitle: 'ಅಂಗಡಿ',
+  shopBannerSub: 'ಕೋಲ್ಡ್-ಪ್ರೆಸ್ಡ್ ಎಣ್ಣೆಗಳು, ಸಾಬೂನುಗಳು ಮತ್ತು ಪುಡಿಗಳು — ಸಾಂಪ್ರದಾಯಿಕವಾಗಿ ತಯಾರಿಸಲಾಗಿದೆ, ಪ್ರಾಮಾಣಿಕ ಬೆಲೆಯಲ್ಲಿ.',
   allProducts: 'ಎಲ್ಲಾ ಉತ್ಪನ್ನಗಳು',
   searchPlaceholder: 'ಉತ್ಪನ್ನಗಳನ್ನು ಹುಡುಕಿ…',
   searchResultsFor: 'ಹುಡುಕಾಟ ಫಲಿತಾಂಶಗಳು',

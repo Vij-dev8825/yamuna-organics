@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { api } from '../api';
 import ProductCard from '../components/ProductCard';
 import ChakkiWheel from '../components/ChakkiWheel';
+import PageBanner from '../components/PageBanner';
 import { useLang } from '../i18n';
 
 export default function Shop() {
@@ -52,7 +53,9 @@ export default function Shop() {
   }, [category, categories, t]);
 
   return (
-    <div className="container section">
+    <div className="section" style={{ paddingTop: 0 }}>
+      <PageBanner page="shop" title={t('shopTitle')} subtitle={t('shopBannerSub')} />
+      <div className="container">
       <div className="breadcrumb">{t('navHome')} / {t('shopTitle')} {category !== 'all' && `/ ${heading}`}</div>
       <div className="section-head">
         <div>
@@ -215,6 +218,7 @@ export default function Shop() {
             </div>
           )}
         </div>
+      </div>
       </div>
     </div>
   );

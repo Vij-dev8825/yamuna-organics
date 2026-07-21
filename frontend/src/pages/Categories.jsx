@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../api';
 import { getProductImage } from '../utils/productImages';
+import PageBanner from '../components/PageBanner';
 import { useLang } from '../i18n';
 
 export default function Categories() {
@@ -13,27 +14,23 @@ export default function Categories() {
   }, []);
 
   return (
-    <div className="container section">
-      <div className="breadcrumb">{t('navHome')} / {t('navCategories')}</div>
-      <div className="section-head">
-        <div>
-          <span className="eyebrow">{t('catBrowse')}</span>
-          <h2>{t('catEyebrow')}</h2>
-        </div>
-        <p>{t('catPageSub')}</p>
-      </div>
+    <div className="section" style={{ paddingTop: 0 }}>
+      <PageBanner page="categories" title={t('catEyebrow')} subtitle={t('catPageSub')} />
+      <div className="container">
+        <div className="breadcrumb">{t('navHome')} / {t('navCategories')}</div>
 
-      <div className="category-trio">
-        {categories.map((cat) => (
-          <Link key={cat.slug} to={`/shop?category=${cat.slug}`} className="category-tile">
-            <img src={getProductImage(cat.image)} alt={cat.label} />
-            <div className="overlay" />
-            <div className="label">
-              <span>{t('catTag')}</span>
-              <h3>{cat.label}</h3>
-            </div>
-          </Link>
-        ))}
+        <div className="category-trio">
+          {categories.map((cat) => (
+            <Link key={cat.slug} to={`/shop?category=${cat.slug}`} className="category-tile">
+              <img src={getProductImage(cat.image)} alt={cat.label} />
+              <div className="overlay" />
+              <div className="label">
+                <span>{t('catTag')}</span>
+                <h3>{cat.label}</h3>
+              </div>
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   );

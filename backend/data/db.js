@@ -31,6 +31,7 @@ const COLLECTIONS = [
   'blog-posts',
   'blog-settings',
   'blog-comments',
+  'page-banners',
   'media',
   'push-subscriptions',
 ];

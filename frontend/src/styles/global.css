@@ -1599,9 +1599,9 @@ input:focus-visible + .filter-radio { outline: 2px solid var(--gold-2); outline-
 }
 
 /* ============================================================
-   BLOG
+   PAGE BANNER (blog, shop, categories, combos, contact, bulk-enquiry)
    ============================================================ */
-.blog-banner {
+.page-banner {
   background-color: var(--forest-deep);
   color: var(--cream);
   text-align: center;
@@ -1612,21 +1612,21 @@ input:focus-visible + .filter-radio { outline: 2px solid var(--gold-2); outline-
   background-position: center;
   background-repeat: no-repeat;
 }
-.blog-banner.has-image::before {
+.page-banner.has-image::before {
   content: '';
   position: absolute;
   inset: 0;
   background: linear-gradient(180deg, rgba(20,38,27,0.72), rgba(20,38,27,0.82));
 }
-.blog-banner.has-image h1,
-.blog-banner.has-image p { position: relative; z-index: 1; }
-.blog-banner h1 {
+.page-banner.has-image h1,
+.page-banner.has-image p { position: relative; z-index: 1; }
+.page-banner h1 {
   font-family: var(--font-display);
   font-size: clamp(2rem, 5vw, 3rem);
   color: var(--paper);
   margin-bottom: 12px;
 }
-.blog-banner p { color: var(--gold-3); max-width: 52ch; margin: 0 auto; font-size: 1.02rem; }
+.page-banner p { color: var(--gold-3); max-width: 52ch; margin: 0 auto; font-size: 1.02rem; }
 
 .blog-grid {
   display: grid;
@@ -1816,7 +1816,7 @@ input:focus-visible + .filter-radio { outline: 2px solid var(--gold-2); outline-
 .blog-post .btn { margin-top: 12px; }
 
 @media (max-width: 640px) {
-  .blog-banner { padding: 48px 20px; margin-bottom: 28px; }
+  .page-banner { padding: 48px 20px; margin-bottom: 28px; }
   .blog-grid { grid-template-columns: 1fr; gap: 20px; }
 }
 
