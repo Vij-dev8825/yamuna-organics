@@ -57,10 +57,17 @@ router.get('/', async (req, res, next) => {
 // GET /api/products/categories
 router.get('/categories', async (req, res, next) => {
   try {
-    const categories = (await db.list('categories')).sort((a, b) => (a.sort || 0) - (b.sort || 0));
+    const [categories, products] = await Promise.all([db.list('categories'), db.list('products')]);
+    const sorted = categories.slice().sort((a, b) => (a.sort || 0) - (b.sort || 0));
     res.json({
       success: true,
-      categories: categories.map((c) => ({ slug: c.id, label: c.label, image: c.image })),
+      categories: sorted.map((c) => ({
+        slug: c.id,
+        label: c.label,
+        image: c.image,
+        count: products.filter((p) => p.category === c.id).length,
+      })),
+      totalCount: products.length,
     });
   } catch (err) {
     next(err);

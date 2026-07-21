@@ -10,8 +10,10 @@ export default function Shop() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [dense, setDense] = useState(false);
 
   const category = searchParams.get('category') || 'all';
   const sort = searchParams.get('sort') || '';
@@ -19,7 +21,10 @@ export default function Shop() {
   const activeFilterCount = (category !== 'all' ? 1 : 0) + (sort ? 1 : 0);
 
   useEffect(() => {
-    api.getCategories().then((d) => setCategories(d.categories));
+    api.getCategories().then((d) => {
+      setCategories(d.categories);
+      setTotalCount(d.totalCount ?? 0);
+    });
   }, []);
 
   useEffect(() => {
@@ -77,6 +82,7 @@ export default function Shop() {
               />
               <span className="filter-radio" aria-hidden="true" />
               {t('allProducts')}
+              <span className="filter-option-count">({totalCount})</span>
             </label>
             {categories.map((c) => (
               <label className="filter-option" key={c.slug}>
@@ -88,6 +94,7 @@ export default function Shop() {
                 />
                 <span className="filter-radio" aria-hidden="true" />
                 {c.label}
+                <span className="filter-option-count">({c.count})</span>
               </label>
             ))}
           </div>
@@ -121,6 +128,30 @@ export default function Shop() {
         <div>
           <div className="sort-bar">
             <span className="muted">{products.length} {t('productsCount')}</span>
+            <div className="grid-toggle" role="group" aria-label="Grid density">
+              <button
+                type="button"
+                className={!dense ? 'active' : ''}
+                aria-label="Comfortable grid"
+                aria-pressed={!dense}
+                onClick={() => setDense(false)}
+              >
+                <span />
+                <span />
+              </button>
+              <button
+                type="button"
+                className={dense ? 'active' : ''}
+                aria-label="Compact grid"
+                aria-pressed={dense}
+                onClick={() => setDense(true)}
+              >
+                <span />
+                <span />
+                <span />
+                <span />
+              </button>
+            </div>
           </div>
 
           {loading ? (
@@ -128,7 +159,7 @@ export default function Shop() {
               <ChakkiWheel size={50} />
             </div>
           ) : products.length ? (
-            <div className="grid">
+            <div className={`grid ${dense ? 'grid-compact' : ''}`}>
               {products.map((p) => (
                 <ProductCard key={p.id} product={p} />
               ))}
