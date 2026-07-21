@@ -68,7 +68,7 @@ export default function BlogPost() {
       <div className="blog-post-actions">
         <BlogLike slug={post.id} likes={post.likes} />
         <a href="#comments" className="blog-comment-count" aria-label={t('commentsHeading')}>
-          <span aria-hidden="true">💬</span> {post.commentsCount ?? 0}
+          <span className="blog-comment-icon" aria-hidden="true">💬</span> {post.commentsCount ?? 0}
         </a>
         <BlogShare url={window.location.href} title={post.title} />
       </div>

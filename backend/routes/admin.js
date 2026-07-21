@@ -283,8 +283,11 @@ router.delete('/categories/:id', async (req, res, next) => {
 // GET /api/admin/blog (includes unpublished drafts)
 router.get('/blog', async (req, res, next) => {
   try {
-    const posts = (await db.list('blog-posts')).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-    res.json({ success: true, posts });
+    const [posts, comments] = await Promise.all([db.list('blog-posts'), db.list('blog-comments')]);
+    const sorted = posts
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .map((p) => ({ ...p, commentsCount: comments.filter((c) => c.postId === p.id).length }));
+    res.json({ success: true, posts: sorted });
   } catch (err) {
     next(err);
   }

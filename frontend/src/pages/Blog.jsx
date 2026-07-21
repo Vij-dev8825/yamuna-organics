@@ -62,7 +62,7 @@ export default function Blog() {
                   <div className="blog-card-share-left">
                     <BlogLike slug={p.id} likes={p.likes} />
                     <Link to={`/blog/${p.id}#comments`} className="blog-comment-count" aria-label={t('commentsHeading')}>
-                      <span aria-hidden="true">💬</span> {p.commentsCount || 0}
+                      <span className="blog-comment-icon" aria-hidden="true">💬</span> {p.commentsCount || 0}
                     </Link>
                   </div>
                   <BlogShare url={`${window.location.origin}/blog/${p.id}`} title={p.title} />

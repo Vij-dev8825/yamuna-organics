@@ -234,7 +234,7 @@ export default function AdminBlog() {
       <div className="admin-card">
         <table className="admin-table">
           <thead>
-            <tr><th /><th>Title</th><th>Category</th><th>Status</th><th>Actions</th></tr>
+            <tr><th /><th>Title</th><th>Category</th><th>Status</th><th>♡ Likes</th><th>💬 Comments</th><th>Actions</th></tr>
           </thead>
           <tbody>
             {posts.map((p) => (
@@ -243,6 +243,8 @@ export default function AdminBlog() {
                 <td><b>{p.title}</b></td>
                 <td>{p.category || '—'}</td>
                 <td>{p.published ? 'Published' : 'Draft'}</td>
+                <td>{p.likes || 0}</td>
+                <td>{p.commentsCount || 0}</td>
                 <td>
                   <button className="link-btn" onClick={() => startEdit(p)}>edit</button>{' '}
                   <button className="link-btn danger" onClick={() => del(p)}>delete</button>
