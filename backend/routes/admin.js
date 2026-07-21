@@ -39,13 +39,15 @@ const upload = multer({
 // GET /api/admin/stats
 router.get('/stats', async (req, res, next) => {
   try {
-    const [users, products, orders, enquiries, contacts, chats] = await Promise.all([
+    const [users, products, orders, enquiries, contacts, chats, comments, posts] = await Promise.all([
       db.list('users'),
       db.list('products'),
       db.list('orders'),
       db.list('bulk-enquiries'),
       db.list('contacts'),
       db.list('chat-messages'),
+      db.list('blog-comments'),
+      db.list('blog-posts'),
     ]);
 
     const revenue = orders.reduce((sum, o) => sum + (o.total || 0), 0);
@@ -56,6 +58,10 @@ router.get('/stats', async (req, res, next) => {
       }
     }
 
+    const today = new Date().toISOString().slice(0, 10);
+    const todayOrders = orders.filter((o) => o.createdAt?.slice(0, 10) === today);
+    const postTitleById = Object.fromEntries(posts.map((p) => [p.id, p.title]));
+
     res.json({
       success: true,
       dbMode: db.getMode(),
@@ -64,6 +70,9 @@ router.get('/stats', async (req, res, next) => {
         products: products.length,
         orders: orders.length,
         revenue,
+        pendingOrders: orders.filter((o) => o.status === 'placed').length,
+        todayOrders: todayOrders.length,
+        todayRevenue: todayOrders.reduce((sum, o) => sum + (o.total || 0), 0),
         newEnquiries: enquiries.filter((e) => e.status === 'new').length,
         contacts: contacts.length,
         unreadChats: chats.filter((m) => m.from === 'user' && !m.readByAdmin).length,
@@ -71,6 +80,11 @@ router.get('/stats', async (req, res, next) => {
       lowStock,
       recentOrders: orders.slice(-8).reverse(),
       recentEnquiries: enquiries.slice(-5).reverse(),
+      recentContacts: contacts.slice(-5).reverse(),
+      recentComments: comments
+        .slice(-5)
+        .reverse()
+        .map((c) => ({ ...c, postTitle: postTitleById[c.postId] || 'Unknown post' })),
     });
   } catch (err) {
     next(err);

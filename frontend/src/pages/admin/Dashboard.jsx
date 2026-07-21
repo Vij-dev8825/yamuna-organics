@@ -15,14 +15,16 @@ export default function Dashboard() {
   if (error) return <div className="alert alert-error">{error}</div>;
   if (!data) return <p className="muted">Loading…</p>;
 
-  const { stats, lowStock, recentOrders, recentEnquiries } = data;
+  const { stats, lowStock, recentOrders, recentEnquiries, recentContacts, recentComments } = data;
   const tiles = [
-    ['Customers', stats.customers, '/admin/leads'],
-    ['Products', stats.products, '/admin/products'],
-    ['Orders', stats.orders, '/admin/orders'],
-    ['Revenue', `₹${stats.revenue.toLocaleString('en-IN')}`, '/admin/orders'],
-    ['New bulk enquiries', stats.newEnquiries, '/admin/leads'],
-    ['Unread chats', stats.unreadChats, '/admin/chat'],
+    ['Customers', stats.customers, '/admin/leads', false],
+    ['Products', stats.products, '/admin/products', false],
+    ['Orders', stats.orders, '/admin/orders', false],
+    ['Revenue', `₹${stats.revenue.toLocaleString('en-IN')}`, '/admin/orders', false],
+    ['Needs confirmation', stats.pendingOrders, '/admin/orders', stats.pendingOrders > 0],
+    ['New enquiries', stats.newEnquiries, '/admin/leads', stats.newEnquiries > 0],
+    ['Contact messages', stats.contacts, '/admin/leads', false],
+    ['Unread chats', stats.unreadChats, '/admin/chat', stats.unreadChats > 0],
   ];
 
   return (
@@ -34,10 +36,15 @@ export default function Dashboard() {
         </span>
       </div>
 
+      <p className="muted" style={{ marginTop: -10, marginBottom: 20 }}>
+        Today: <b className="gold-text">{stats.todayOrders}</b> order{stats.todayOrders === 1 ? '' : 's'} ·{' '}
+        <b className="gold-text">₹{stats.todayRevenue.toLocaleString('en-IN')}</b> in revenue
+      </p>
+
       <div className="stat-tiles">
-        {tiles.map(([label, value, to]) => (
-          <Link to={to} className="stat-tile" key={label}>
-            <b className="gold-text">{value}</b>
+        {tiles.map(([label, value, to, alert]) => (
+          <Link to={to} className={`stat-tile ${alert ? 'alert' : ''}`} key={label}>
+            <b className={alert ? '' : 'gold-text'}>{value}</b>
             <span>{label}</span>
           </Link>
         ))}
@@ -105,6 +112,52 @@ export default function Dashboard() {
               </tbody>
             </table>
           )}
+        </div>
+      </div>
+
+      <div className="admin-two-col">
+        <div className="admin-card">
+          <h3>Recent contact messages</h3>
+          {recentContacts.length === 0 ? (
+            <p className="muted">No messages yet.</p>
+          ) : (
+            <table className="admin-table">
+              <thead>
+                <tr><th>Name</th><th>Subject</th><th>Message</th></tr>
+              </thead>
+              <tbody>
+                {recentContacts.map((c) => (
+                  <tr key={c.id}>
+                    <td>{c.name}</td>
+                    <td>{c.subject}</td>
+                    <td className="truncate-cell">{c.message}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+          <Link to="/admin/leads" className="link-btn" style={{ display: 'inline-block', marginTop: 10 }}>View all →</Link>
+        </div>
+        <div className="admin-card">
+          <h3>Recent blog comments</h3>
+          {recentComments.length === 0 ? (
+            <p className="muted">No comments yet.</p>
+          ) : (
+            <table className="admin-table">
+              <thead>
+                <tr><th>Post</th><th>Comment</th></tr>
+              </thead>
+              <tbody>
+                {recentComments.map((c) => (
+                  <tr key={c.id}>
+                    <td>{c.postTitle}</td>
+                    <td className="truncate-cell"><b>{c.userName}:</b> {c.text}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+          <Link to="/admin/blog" className="link-btn" style={{ display: 'inline-block', marginTop: 10 }}>Manage →</Link>
         </div>
       </div>
     </>
