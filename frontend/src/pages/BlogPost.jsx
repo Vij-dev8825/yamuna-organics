@@ -28,11 +28,16 @@ export default function BlogPost() {
 
   // React Router doesn't auto-scroll to a #hash on client-side navigation
   // (only real page loads do) — do it ourselves once the post has rendered.
+  // A short delay/retry is needed since the target element mounts in the
+  // same commit as `post` becoming truthy, but querying for it synchronously
+  // in the effect can still run a tick before layout has settled.
   useEffect(() => {
-    if (!loading && location.hash === '#comments') {
+    if (location.hash !== '#comments' || !post) return;
+    const timer = setTimeout(() => {
       document.getElementById('comments')?.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [loading, location.hash]);
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [location.hash, post]);
 
   if (loading) {
     return (
