@@ -38,7 +38,7 @@ export default function RefundPolicy() {
 
       <h2>How to request a refund or replacement</h2>
       <p>
-        Email <a href="mailto:hello@yamunaorganics.com">hello@yamunaorganics.com</a> with your
+        Email <a href="mailto:westerngodsorganic@gmail.com">westerngodsorganic@gmail.com</a> with your
         order number, or use our <a href="/contact">Contact Us</a> page, and our team will
         guide you through the process.
       </p>

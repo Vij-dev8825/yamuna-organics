@@ -12,7 +12,7 @@ const BRAND = 'Western Gods Organics';
 const TAGLINE = 'Directly from Farmers · Traditional Ways';
 const ADDRESS = ['Shri Gopal Flour & Oil Mills,', 'Udumalpet, Tiruppur District,', 'Tamil Nadu – 642126'];
 const PHONE = '+91 88258 75607';
-const EMAIL = 'hello@yamunaorganics.com';
+const EMAIL = 'westerngodsorganic@gmail.com';
 
 const FOREST = '#1f3d2b';
 const LEAF_MID = '#3d6b47';

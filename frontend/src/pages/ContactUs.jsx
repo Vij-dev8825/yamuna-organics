@@ -57,7 +57,7 @@ export default function ContactUs() {
             <h3>Call us</h3>
             <p className="muted"><a href="tel:+918825875607">+91 88258 75607</a> (Mon–Sat, 9am–7pm)</p>
             <h3>Email</h3>
-            <p className="muted"><a href="mailto:hello@yamunaorganics.com">hello@yamunaorganics.com</a></p>
+            <p className="muted"><a href="mailto:westerngodsorganic@gmail.com">westerngodsorganic@gmail.com</a></p>
           </div>
           <ChakkiWheel size={60} />
         </div>

@@ -14,7 +14,7 @@ function isConfigured() {
 function ensureConfigured() {
   if (configured) return;
   webpush.setVapidDetails(
-    process.env.VAPID_SUBJECT || 'mailto:hello@yamunaorganics.com',
+    process.env.VAPID_SUBJECT || 'mailto:westerngodsorganic@gmail.com',
     process.env.VAPID_PUBLIC_KEY,
     process.env.VAPID_PRIVATE_KEY
   );

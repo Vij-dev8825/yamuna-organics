@@ -36,7 +36,7 @@ export default function PrivacyPolicy() {
       <h2>Your choices</h2>
       <p>
         You can update or delete your profile details from your account page at any time,
-        or write to us at <a href="mailto:hello@yamunaorganics.com">hello@yamunaorganics.com</a> to
+        or write to us at <a href="mailto:westerngodsorganic@gmail.com">westerngodsorganic@gmail.com</a> to
         request full data deletion.
       </p>
 
@@ -49,7 +49,7 @@ export default function PrivacyPolicy() {
       <h2>Contact</h2>
       <p>
         Questions about this policy? Reach us at{' '}
-        <a href="mailto:hello@yamunaorganics.com">hello@yamunaorganics.com</a> or through our{' '}
+        <a href="mailto:westerngodsorganic@gmail.com">westerngodsorganic@gmail.com</a> or through our{' '}
         <a href="/contact">Contact Us</a> page.
       </p>
     </div>

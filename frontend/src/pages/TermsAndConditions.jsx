@@ -52,7 +52,7 @@ export default function TermsAndConditions() {
       <h2>Contact</h2>
       <p>
         Questions about these terms? Reach us at{' '}
-        <a href="mailto:hello@yamunaorganics.com">hello@yamunaorganics.com</a> or via our{' '}
+        <a href="mailto:westerngodsorganic@gmail.com">westerngodsorganic@gmail.com</a> or via our{' '}
         <a href="/contact">Contact Us</a> page.
       </p>
     </div>

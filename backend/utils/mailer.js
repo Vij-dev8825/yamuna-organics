@@ -12,7 +12,7 @@ if (process.env.SMTP_HOST) {
   });
 }
 
-const FROM = process.env.MAIL_FROM || 'Western Gods Organics <no-reply@yamunaorganics.com>';
+const FROM = process.env.MAIL_FROM || 'Western Gods Organics <westerngodsorganic@gmail.com>';
 
 /**
  * Sends an email. Without SMTP_* env vars it logs instead of sending, so the

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useLang } from '../i18n';
 
 const SUPPORT_PHONE = '+918825875607';
-const SUPPORT_EMAIL = 'hello@yamunaorganics.com';
+const SUPPORT_EMAIL = 'westerngodsorganic@gmail.com';
 
 function FooterAccordion({ title, isOpen, onToggle, children }) {
   return (
