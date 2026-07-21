@@ -14,6 +14,7 @@ const EMPTY = {
   sizes: [{ label: '500 ml', price: '', mrp: '', stock: '' }],
   tags: '',
   comboItems: '',
+  isNew: false,
 };
 
 function toForm(p) {
@@ -249,6 +250,11 @@ export default function AdminProducts() {
           >
             + add size
           </button>
+
+          <label className="check-row">
+            <input type="checkbox" checked={form.isNew} onChange={(e) => setForm({ ...form, isNew: e.target.checked })} />
+            Mark as New Arrival (shows a "New" badge and appears in the New Arrivals filter)
+          </label>
 
           {editing !== 'new' && (
             <label className="check-row">

@@ -16,11 +16,26 @@ async function recomputeRating(productId) {
   await db.put('products', product);
 }
 
-// GET /api/products?category=&search=&sort=&combo=true
+const PRICE_BANDS = {
+  under200: [0, 200],
+  '200to400': [200, 400],
+  '400to600': [400, 600],
+  above600: [600, Infinity],
+};
+
+// Matches ProductCard's own default-selected size (sizes[1] if present, else
+// sizes[0]) so any price-based filtering/sorting matches the price actually
+// on screen — using a different size (e.g. the cheapest) looked "wrong" to
+// shoppers whenever that wasn't the size the card happened to display.
+function displayPrice(p) {
+  return (p.sizes[1] || p.sizes[0]).price;
+}
+
+// GET /api/products?category=&search=&sort=&combo=true&price=&isNew=true
 router.get('/', async (req, res, next) => {
   try {
     let products = await db.list('products');
-    const { category, search, sort, combo } = req.query;
+    const { category, search, sort, combo, price, isNew } = req.query;
 
     if (category && category !== 'all') {
       products = products.filter((p) => p.category === category);
@@ -28,6 +43,18 @@ router.get('/', async (req, res, next) => {
 
     if (combo === 'true') {
       products = products.filter((p) => Array.isArray(p.comboItems) && p.comboItems.length > 0);
+    }
+
+    if (isNew === 'true') {
+      products = products.filter((p) => p.isNew);
+    }
+
+    if (price && PRICE_BANDS[price]) {
+      const [min, max] = PRICE_BANDS[price];
+      products = products.filter((p) => {
+        const dp = displayPrice(p);
+        return dp >= min && dp <= max;
+      });
     }
 
     if (search) {
@@ -40,11 +67,6 @@ router.get('/', async (req, res, next) => {
       );
     }
 
-    // Matches ProductCard's own default-selected size (sizes[1] if present,
-    // else sizes[0]) so the sort order matches the price actually on screen —
-    // sorting by the cheapest size instead looked "unsorted" whenever that
-    // wasn't the size the card happened to display.
-    const displayPrice = (p) => (p.sizes[1] || p.sizes[0]).price;
     if (sort === 'price-asc') {
       products = [...products].sort((a, b) => displayPrice(a) - displayPrice(b));
     } else if (sort === 'price-desc') {

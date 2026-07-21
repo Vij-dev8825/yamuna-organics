@@ -67,9 +67,17 @@ export default function ProductCard({ product }) {
         onMouseLeave={() => setHoverIndex(0)}
         onTouchMove={handleMediaTouchMove}
       >
-        {discount > 0 && <span className="product-badge">{discount}% OFF</span>}
+        {product.isNew && <span className="product-badge new-badge">New</span>}
+        {discount > 0 && (
+          <span className="product-badge" style={product.isNew ? { top: 44 } : undefined}>
+            {discount}% OFF
+          </span>
+        )}
         {product.comboItems?.length > 0 && (
-          <span className="product-badge combo-badge" style={discount > 0 ? { top: 44 } : undefined}>
+          <span
+            className="product-badge combo-badge"
+            style={{ top: 12 + (product.isNew ? 32 : 0) + (discount > 0 ? 32 : 0) }}
+          >
             Combo
           </span>
         )}

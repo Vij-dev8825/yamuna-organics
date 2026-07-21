@@ -626,6 +626,7 @@ p { margin: 0 0 1em; }
   letter-spacing: 0.04em;
 }
 .combo-badge { background: var(--forest); color: var(--paper); }
+.new-badge { background: #c17a2e; color: #fff8ec; }
 
 .combo-includes {
   background: var(--cream-deep);
@@ -811,6 +812,7 @@ p { margin: 0 0 1em; }
    replaced — reused anywhere a label wraps `input[type=radio] + .filter-radio`
    (Shop filters, Cart payment method, etc.), not just `.filter-option`. */
 .filter-option input[type="radio"],
+.filter-option input[type="checkbox"],
 .payment-option input[type="radio"] {
   position: absolute;
   opacity: 0;
@@ -842,6 +844,9 @@ p { margin: 0 0 1em; }
 input:checked + .filter-radio { border-color: var(--gold-2); }
 input:checked + .filter-radio::after { transform: scale(1); }
 input:focus-visible + .filter-radio { outline: 2px solid var(--gold-2); outline-offset: 2px; }
+
+.filter-radio.filter-checkbox { border-radius: 5px; }
+.filter-radio.filter-checkbox::after { border-radius: 2px; inset: 4px; }
 
 .filter-toggle {
   display: none;

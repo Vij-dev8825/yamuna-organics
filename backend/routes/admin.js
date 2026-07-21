@@ -148,6 +148,7 @@ router.post('/products', async (req, res, next) => {
       reviewsCount: Number(req.body.reviewsCount || 0),
       tags: req.body.tags || [],
       comboItems: Array.isArray(req.body.comboItems) ? req.body.comboItems.filter(Boolean) : [],
+      isNew: Boolean(req.body.isNew),
     };
     await db.put('products', product);
     res.status(201).json({ success: true, product });

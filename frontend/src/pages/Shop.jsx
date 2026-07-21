@@ -18,7 +18,10 @@ export default function Shop() {
   const category = searchParams.get('category') || 'all';
   const sort = searchParams.get('sort') || '';
   const search = searchParams.get('search') || '';
-  const activeFilterCount = (category !== 'all' ? 1 : 0) + (sort ? 1 : 0);
+  const price = searchParams.get('price') || '';
+  const isNewOnly = searchParams.get('isNew') === 'true';
+  const activeFilterCount =
+    (category !== 'all' ? 1 : 0) + (sort ? 1 : 0) + (price ? 1 : 0) + (isNewOnly ? 1 : 0);
 
   useEffect(() => {
     api.getCategories().then((d) => {
@@ -30,10 +33,10 @@ export default function Shop() {
   useEffect(() => {
     setLoading(true);
     api
-      .getProducts({ category, sort, search })
+      .getProducts({ category, sort, search, price, isNew: isNewOnly ? 'true' : '' })
       .then((d) => setProducts(d.products))
       .finally(() => setLoading(false));
-  }, [category, sort, search]);
+  }, [category, sort, search, price, isNewOnly]);
 
   function updateParam(key, value) {
     const next = new URLSearchParams(searchParams);
@@ -98,6 +101,49 @@ export default function Shop() {
                   <span className="filter-option-count">({c.count})</span>
                 </label>
               ))}
+            </div>
+          </details>
+
+          <details className="filter-accordion" open>
+            <summary>{t('priceFilter')}</summary>
+            <div className="filter-group">
+              <label className="filter-option">
+                <input type="radio" name="price" checked={price === ''} onChange={() => updateParam('price', '')} />
+                <span className="filter-radio" aria-hidden="true" />
+                {t('allProducts')}
+              </label>
+              {[
+                ['under200', t('priceUnder200')],
+                ['200to400', t('price200to400')],
+                ['400to600', t('price400to600')],
+                ['above600', t('priceAbove600')],
+              ].map(([value, label]) => (
+                <label className="filter-option" key={value}>
+                  <input
+                    type="radio"
+                    name="price"
+                    checked={price === value}
+                    onChange={() => updateParam('price', value)}
+                  />
+                  <span className="filter-radio" aria-hidden="true" />
+                  {label}
+                </label>
+              ))}
+            </div>
+          </details>
+
+          <details className="filter-accordion" open>
+            <summary>{t('newArrivalFilter')}</summary>
+            <div className="filter-group">
+              <label className="filter-option">
+                <input
+                  type="checkbox"
+                  checked={isNewOnly}
+                  onChange={(e) => updateParam('isNew', e.target.checked ? 'true' : '')}
+                />
+                <span className="filter-radio filter-checkbox" aria-hidden="true" />
+                {t('newArrivalOnly')}
+              </label>
             </div>
           </details>
 
