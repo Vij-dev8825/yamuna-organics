@@ -12,6 +12,8 @@ router.get('/', async (req, res, next) => {
       success: true,
       posts: published.map(({ content, ...rest }) => rest), // full body only on the detail route
       bannerImage: settings?.bannerImage || '',
+      bannerTitle: settings?.bannerTitle || '',
+      bannerSubtitle: settings?.bannerSubtitle || '',
     });
   } catch (err) {
     next(err);

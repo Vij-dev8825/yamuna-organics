@@ -354,10 +354,15 @@ router.get('/blog-settings', async (req, res, next) => {
   }
 });
 
-// PUT /api/admin/blog-settings  { bannerImage }
+// PUT /api/admin/blog-settings  { bannerImage, bannerTitle?, bannerSubtitle? }
 router.put('/blog-settings', async (req, res, next) => {
   try {
-    const settings = { id: 'main', bannerImage: req.body.bannerImage || '' };
+    const settings = {
+      id: 'main',
+      bannerImage: req.body.bannerImage || '',
+      bannerTitle: req.body.bannerTitle || '',
+      bannerSubtitle: req.body.bannerSubtitle || '',
+    };
     await db.put('blog-settings', settings);
     res.json({ success: true, settings });
   } catch (err) {

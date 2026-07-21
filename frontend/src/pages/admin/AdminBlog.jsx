@@ -21,13 +21,22 @@ export default function AdminBlog() {
   const [message, setMessage] = useState(null);
   const [busy, setBusy] = useState(false);
 
-  const [bannerImage, setBannerImage] = useState('');
+  const [banner, setBanner] = useState({ bannerImage: '', bannerTitle: '', bannerSubtitle: '' });
   const [bannerSaving, setBannerSaving] = useState(false);
   const [bannerMessage, setBannerMessage] = useState(null);
 
   function load() {
     api.admin.getBlogPosts(token).then((d) => setPosts(d.posts)).catch(() => {});
-    api.admin.getBlogSettings(token).then((d) => setBannerImage(d.settings.bannerImage || '')).catch(() => {});
+    api.admin
+      .getBlogSettings(token)
+      .then((d) =>
+        setBanner({
+          bannerImage: d.settings.bannerImage || '',
+          bannerTitle: d.settings.bannerTitle || '',
+          bannerSubtitle: d.settings.bannerSubtitle || '',
+        })
+      )
+      .catch(() => {});
   }
   useEffect(load, [token]);
 
@@ -35,7 +44,7 @@ export default function AdminBlog() {
     setBannerSaving(true);
     setBannerMessage(null);
     try {
-      await api.admin.updateBlogSettings(token, { bannerImage });
+      await api.admin.updateBlogSettings(token, banner);
       setBannerMessage({ type: 'success', text: 'Banner updated.' });
     } catch (err) {
       setBannerMessage({ type: 'error', text: err.message });
@@ -110,11 +119,34 @@ export default function AdminBlog() {
       <div className="admin-card">
         <h3>Blog page banner</h3>
         <p className="muted" style={{ marginBottom: 14 }}>
-          Background photo for the "From the Ghani" banner at the top of the public /blog page.
-          Leave empty to keep the plain green background.
+          Controls the banner at the top of the public /blog page. Leave title/subtitle empty to use the
+          default translated text (shown correctly in Hindi/Tamil/Telugu/Kannada too); filling them in
+          overrides that with your own words in English only, on every language.
         </p>
         {bannerMessage && <div className={`alert alert-${bannerMessage.type}`}>{bannerMessage.text}</div>}
-        <ImageUploadField value={bannerImage} onChange={setBannerImage} label="Banner background" />
+        <ImageUploadField
+          value={banner.bannerImage}
+          onChange={(url) => setBanner((b) => ({ ...b, bannerImage: url }))}
+          label="Banner background"
+        />
+        <div className="form-grid">
+          <div className="field">
+            <label>Title override (optional)</label>
+            <input
+              value={banner.bannerTitle}
+              onChange={(e) => setBanner((b) => ({ ...b, bannerTitle: e.target.value }))}
+              placeholder='Default: "From the Ghani"'
+            />
+          </div>
+          <div className="field">
+            <label>Subtitle override (optional)</label>
+            <input
+              value={banner.bannerSubtitle}
+              onChange={(e) => setBanner((b) => ({ ...b, bannerSubtitle: e.target.value }))}
+              placeholder="Default: Notes on traditional pressing…"
+            />
+          </div>
+        </div>
         <button type="button" className="btn btn-gold btn-sm" disabled={bannerSaving} onClick={saveBanner}>
           {bannerSaving ? 'Saving…' : 'Save banner'}
         </button>

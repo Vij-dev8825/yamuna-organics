@@ -9,7 +9,7 @@ import { useLang } from '../i18n';
 export default function Blog() {
   const { t } = useLang();
   const [posts, setPosts] = useState([]);
-  const [bannerImage, setBannerImage] = useState('');
+  const [banner, setBanner] = useState({ bannerImage: '', bannerTitle: '', bannerSubtitle: '' });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -17,7 +17,11 @@ export default function Blog() {
       .getBlogPosts()
       .then((d) => {
         setPosts(d.posts);
-        setBannerImage(d.bannerImage || '');
+        setBanner({
+          bannerImage: d.bannerImage || '',
+          bannerTitle: d.bannerTitle || '',
+          bannerSubtitle: d.bannerSubtitle || '',
+        });
       })
       .finally(() => setLoading(false));
   }, []);
@@ -25,11 +29,11 @@ export default function Blog() {
   return (
     <div className="section" style={{ paddingTop: 0 }}>
       <div
-        className={`blog-banner ${bannerImage ? 'has-image' : ''}`}
-        style={bannerImage ? { backgroundImage: `url(${getProductImage(bannerImage)})` } : undefined}
+        className={`blog-banner ${banner.bannerImage ? 'has-image' : ''}`}
+        style={banner.bannerImage ? { backgroundImage: `url(${getProductImage(banner.bannerImage)})` } : undefined}
       >
-        <h1>{t('blogBannerTitle')}</h1>
-        <p>{t('blogBannerSub')}</p>
+        <h1>{banner.bannerTitle || t('blogBannerTitle')}</h1>
+        <p>{banner.bannerSubtitle || t('blogBannerSub')}</p>
       </div>
 
       <div className="container">

@@ -1602,14 +1602,15 @@ input:focus-visible + .filter-radio { outline: 2px solid var(--gold-2); outline-
    BLOG
    ============================================================ */
 .blog-banner {
-  background: var(--forest-deep);
+  background-color: var(--forest-deep);
   color: var(--cream);
   text-align: center;
   padding: 72px 24px;
   margin-bottom: 44px;
   position: relative;
-  background-size: cover;
+  background-size: contain;
   background-position: center;
+  background-repeat: no-repeat;
 }
 .blog-banner.has-image::before {
   content: '';
