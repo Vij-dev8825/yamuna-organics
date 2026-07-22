@@ -85,10 +85,31 @@ function ScrollToTop() {
   return null;
 }
 
+const CANONICAL_ORIGIN = 'https://westerngodsorganic.com';
+
+// This is a client-rendered SPA on a single static index.html, so the
+// canonical tag has to be updated per-route in JS rather than baked into
+// the HTML — otherwise every page would claim the homepage as canonical
+// and Google would drop the rest of the site from its index.
+function CanonicalTag() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    let link = document.querySelector('link[rel="canonical"]');
+    if (!link) {
+      link = document.createElement('link');
+      link.setAttribute('rel', 'canonical');
+      document.head.appendChild(link);
+    }
+    link.setAttribute('href', `${CANONICAL_ORIGIN}${pathname}`);
+  }, [pathname]);
+  return null;
+}
+
 export default function App() {
   return (
     <>
     <ScrollToTop />
+    <CanonicalTag />
     <Routes>
       {/* Admin area: its own login page and dashboard shell, no store chrome */}
       <Route path="/admin/login" element={<AdminLogin />} />

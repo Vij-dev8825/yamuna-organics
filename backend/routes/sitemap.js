@@ -3,7 +3,7 @@ const db = require('../data/db');
 
 const router = express.Router();
 
-const SITE_URL = 'https://yamuna-organics.onrender.com';
+const SITE_URL = 'https://westerngodsorganic.com';
 
 const STATIC_PATHS = [
   { path: '/', priority: '1.0', changefreq: 'daily' },

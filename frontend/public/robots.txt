@@ -10,4 +10,4 @@ Disallow: /notifications
 Disallow: /invoice
 Disallow: /order-success
 
-Sitemap: https://yamuna-organics.onrender.com/sitemap.xml
+Sitemap: https://westerngodsorganic.com/sitemap.xml
