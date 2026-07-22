@@ -17,7 +17,7 @@ export default function RefundPolicy() {
         <li>We'll arrange a free replacement or a full refund — your choice.</li>
       </ul>
 
-      <h2>Quality issues</h2>
+      <h2>7-Day Return Policy</h2>
       <ul>
         <li>If you believe an unopened, sealed bottle doesn't meet our quality promise, let us know within 7 days of delivery.</li>
         <li>Our team may request the batch code (printed on the label) to investigate.</li>

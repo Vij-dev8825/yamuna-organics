@@ -1,6 +1,7 @@
 const BADGES = [
   { icon: '⭐', label: 'Highly Rated' },
   { icon: '📦', label: 'Easy Order Tracking' },
+  { icon: '↩️', label: '7-Day Return Policy' },
   { icon: '💬', label: 'Fast Support' },
   { icon: '🚚', label: 'Free & Fast Delivery' },
 ];
