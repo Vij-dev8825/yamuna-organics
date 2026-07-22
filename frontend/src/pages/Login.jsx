@@ -36,6 +36,10 @@ export default function Login() {
       setError('Enter a valid 10-digit mobile number.');
       return;
     }
+    if (name.trim().length < 2) {
+      setError('Enter your name.');
+      return;
+    }
     setLoading(true);
     try {
       const data = await api.sendOtp(phone);
@@ -131,8 +135,9 @@ export default function Login() {
               />
             </div>
             <div className="field">
-              <label>Your name (optional)</label>
+              <label>Your name</label>
               <input
+                required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 onKeyDown={onEnterKey(handleSendOtp)}

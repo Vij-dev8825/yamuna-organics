@@ -2,6 +2,25 @@ const { v4: uuid } = require('uuid');
 const db = require('../data/db');
 const { notifyUser } = require('./notify');
 const { findValidCoupon, computeDiscount } = require('./coupons');
+const { sendMail } = require('./mailer');
+
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || process.env.CONTACT_NOTIFY_EMAIL;
+
+function notifyAdminOfOrder(order, user) {
+  if (!ADMIN_EMAIL) return;
+  const itemLines = order.items.map((i) => `${i.quantity}× ${i.name} (${i.size}) — ₹${i.price}`).join('\n');
+  sendMail({
+    to: ADMIN_EMAIL,
+    subject: `New order ${order.orderNumber} — ₹${order.total}`,
+    text:
+      `Customer: ${user?.name || 'Unknown'} (${user?.phone || '—'})\n` +
+      `Payment: ${order.paymentMethod}${order.paymentMethod === 'razorpay' ? ' (paid)' : ' (COD)'}\n\n` +
+      `Items:\n${itemLines}\n\n` +
+      `Total: ₹${order.total}\n\n` +
+      `Delivery address:\n${order.address.line1}, ${order.address.city}, ${order.address.state} - ${order.address.pincode}\n` +
+      `Phone: ${order.address.phone}`,
+  }).catch(() => {});
+}
 
 function calculateShipping(subtotal) {
   return subtotal > 999 || subtotal === 0 ? 0 : 60;
@@ -72,6 +91,7 @@ async function createOrderRecord({ userId, orderItems, address, total, discount,
       channels: { inapp: true, email: true },
     });
   }
+  notifyAdminOfOrder(order, user);
   return order;
 }
 

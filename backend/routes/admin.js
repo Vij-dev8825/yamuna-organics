@@ -11,6 +11,9 @@ const cloudinary = require('../utils/cloudinary');
 const { compressAndStore, compressVideoAndStore } = require('../utils/mediaStore');
 const { processDueSubscriptions } = require('../utils/subscriptions');
 const { PAGES: PAGE_BANNER_PAGES } = require('./pageBanners');
+const { sendMail } = require('../utils/mailer');
+
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || process.env.CONTACT_NOTIFY_EMAIL;
 
 const router = express.Router();
 router.use(requireAdmin);
@@ -644,6 +647,13 @@ router.patch('/orders/:id', async (req, res, next) => {
         meta: { orderId: order.id },
         channels: { inapp: true, email: true, sms: order.status === 'shipped' },
       });
+    }
+    if (ADMIN_EMAIL) {
+      sendMail({
+        to: ADMIN_EMAIL,
+        subject: `Order ${order.orderNumber} status changed to "${order.status}"`,
+        text: `Customer: ${user?.name || 'Unknown'} (${user?.phone || '—'})\nTotal: ₹${order.total}\nNew status: ${order.status}`,
+      }).catch(() => {});
     }
     res.json({ success: true, order });
   } catch (err) {

@@ -89,16 +89,23 @@ router.post('/verify-otp', async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Incorrect OTP. Please try again.' });
     }
 
-    otpStore.delete(phone);
-
     const users = await db.list('users');
     let user = users.find((u) => u.phone === phone);
+
+    // Correct OTP but missing name for a new signup — don't consume the OTP
+    // for this, so the customer can just resubmit with a name using the
+    // same code instead of waiting for a whole new SMS.
+    if (!user && (!name || name.trim().length < 2)) {
+      return res.status(400).json({ success: false, message: 'Enter your name.' });
+    }
+
+    otpStore.delete(phone);
 
     if (!user) {
       user = {
         id: uuid(),
         phone,
-        name: name || '',
+        name: name.trim(),
         email: '',
         role: phone === (process.env.ADMIN_PHONE || '9999999999') ? 'admin' : 'customer',
         addresses: [],
