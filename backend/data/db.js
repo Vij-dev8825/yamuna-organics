@@ -32,6 +32,7 @@ const COLLECTIONS = [
   'blog-settings',
   'blog-comments',
   'page-banners',
+  'sale-banner',
   'media',
   'push-subscriptions',
 ];

@@ -13,6 +13,7 @@ const links = [
   { to: '/admin/subscriptions', label: 'Subscriptions' },
   { to: '/admin/banners', label: 'Home Banners' },
   { to: '/admin/page-banners', label: 'Page Banners' },
+  { to: '/admin/sale-banner', label: 'Sale Banner' },
   { to: '/admin/blog', label: 'Blog' },
   { to: '/admin/orders', label: 'Orders' },
   { to: '/admin/returns', label: 'Returns' },

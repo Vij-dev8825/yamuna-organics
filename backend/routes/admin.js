@@ -699,6 +699,38 @@ router.patch('/orders/:id/return', async (req, res, next) => {
   }
 });
 
+/* -------------------------------- Sale banner ------------------------------ */
+
+// GET /api/admin/sale-banner
+router.get('/sale-banner', async (req, res, next) => {
+  try {
+    const settings = await db.get('sale-banner', 'main');
+    res.json({
+      success: true,
+      settings: settings || { id: 'main', active: false, title: '', subtitle: '', endDate: '' },
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// PUT /api/admin/sale-banner  { active, title, subtitle, endDate }
+router.put('/sale-banner', async (req, res, next) => {
+  try {
+    const settings = {
+      id: 'main',
+      active: !!req.body.active,
+      title: req.body.title || '',
+      subtitle: req.body.subtitle || '',
+      endDate: req.body.endDate || '',
+    };
+    await db.put('sale-banner', settings);
+    res.json({ success: true, settings });
+  } catch (err) {
+    next(err);
+  }
+});
+
 /* ------------------------- Customers / leads lists ------------------------- */
 
 // GET /api/admin/customers

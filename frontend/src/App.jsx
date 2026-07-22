@@ -8,6 +8,7 @@ import ChatWidget from './components/ChatWidget';
 import PromoPopup from './components/PromoPopup';
 import CookieConsent from './components/CookieConsent';
 import PushOptIn from './components/PushOptIn';
+import SaleCountdown from './components/SaleCountdown';
 
 import Home from './pages/Home';
 import Shop from './pages/Shop';
@@ -47,6 +48,7 @@ import AdminNotify from './pages/admin/AdminNotify';
 import AdminChat from './pages/admin/AdminChat';
 import AdminBlog from './pages/admin/AdminBlog';
 import AdminPageBanners from './pages/admin/AdminPageBanners';
+import AdminSaleBanner from './pages/admin/AdminSaleBanner';
 
 function NotFound() {
   return (
@@ -66,6 +68,7 @@ function StoreLayout() {
   const { t } = useLang();
   return (
     <div className="app-shell">
+      <SaleCountdown />
       <div className="announce-bar">{t('announcement')}</div>
       <Navbar />
       <main className="app-main">
@@ -130,6 +133,7 @@ export default function App() {
         <Route path="chat" element={<AdminChat />} />
         <Route path="blog" element={<AdminBlog />} />
         <Route path="page-banners" element={<AdminPageBanners />} />
+        <Route path="sale-banner" element={<AdminSaleBanner />} />
       </Route>
 
       {/* Customer storefront */}

@@ -30,6 +30,7 @@ const pageBannerRoutes = require('./routes/pageBanners');
 const sitemapRoutes = require('./routes/sitemap');
 const pincodeRoutes = require('./routes/pincode');
 const currencyRoutes = require('./routes/currency');
+const saleBannerRoutes = require('./routes/saleBanner');
 
 const app = express();
 
@@ -67,6 +68,7 @@ app.use('/api/page-banners', pageBannerRoutes);
 app.use('/sitemap.xml', sitemapRoutes);
 app.use('/api/pincode', pincodeRoutes);
 app.use('/api/currency', currencyRoutes);
+app.use('/api/sale-banner', saleBannerRoutes);
 
 // Uploaded banner videos/images
 app.use('/uploads', express.static(UPLOADS_DIR, { maxAge: '7d' }));

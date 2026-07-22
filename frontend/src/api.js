@@ -49,6 +49,9 @@ export const api = {
   // INR-based conversion rates for the storefront currency selector
   getCurrencyRates: () => request('/currency/rates'),
 
+  // sale countdown banner
+  getSaleBanner: () => request('/sale-banner'),
+
   // blog
   getBlogPosts: () => request('/blog'),
   getBlogPost: (slug) => request(`/blog/${slug}`),
@@ -144,6 +147,9 @@ export const api = {
     getPageBanner: (token, page) => request(`/admin/page-banners/${page}`, { token }),
     updatePageBanner: (token, page, settings) =>
       request(`/admin/page-banners/${page}`, { method: 'PUT', body: settings, token }),
+
+    getSaleBanner: (token) => request('/admin/sale-banner', { token }),
+    updateSaleBanner: (token, settings) => request('/admin/sale-banner', { method: 'PUT', body: settings, token }),
 
     getCoupons: (token) => request('/admin/coupons', { token }),
     createCoupon: (token, coupon) => request('/admin/coupons', { method: 'POST', body: coupon, token }),
