@@ -98,13 +98,13 @@ export default function Navbar() {
             ))}
           </select>
           <select
-            className="lang-select"
+            className="lang-select currency-select"
             aria-label="Country / currency"
             value={country.code}
             onChange={(e) => setCountry(e.target.value)}
           >
             {COUNTRIES.map((c) => (
-              <option key={c.code} value={c.code}>{c.label} — {c.currency}</option>
+              <option key={c.code} value={c.code} title={c.label}>{c.currency}</option>
             ))}
           </select>
           {isLoggedIn && (
