@@ -9,6 +9,7 @@ import PromoPopup from './components/PromoPopup';
 import CookieConsent from './components/CookieConsent';
 import PushOptIn from './components/PushOptIn';
 import SaleCountdown from './components/SaleCountdown';
+import WelcomeSelector from './components/WelcomeSelector';
 
 import Home from './pages/Home';
 import Shop from './pages/Shop';
@@ -77,6 +78,7 @@ function StoreLayout() {
       </main>
       <Footer />
       <ChatWidget />
+      <WelcomeSelector />
       <PromoPopup />
       <CookieConsent />
       <PushOptIn />

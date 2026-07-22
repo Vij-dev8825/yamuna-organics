@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useLang } from '../i18n';
+import { useLang, LANGS } from '../i18n';
+import { useCurrency, COUNTRIES } from '../context/CurrencyContext';
 
 const SUPPORT_PHONE = '+918825875607';
 const SUPPORT_EMAIL = 'westerngodsorganic@gmail.com';
@@ -26,7 +27,8 @@ function FooterAccordion({ title, isOpen, onToggle, children }) {
 }
 
 export default function Footer() {
-  const { t } = useLang();
+  const { t, lang, setLang } = useLang();
+  const { country, setCountry } = useCurrency();
   const [openSection, setOpenSection] = useState(null);
   const [showBackToTop, setShowBackToTop] = useState(false);
 
@@ -144,6 +146,29 @@ export default function Footer() {
               <span aria-hidden="true">📍</span> {t('footerGetDirections')}
             </a>
           </FooterAccordion>
+        </div>
+
+        <div className="footer-lang-row">
+          <select
+            className="lang-select footer-lang-select"
+            aria-label="Language"
+            value={lang}
+            onChange={(e) => setLang(e.target.value)}
+          >
+            {LANGS.map((l) => (
+              <option key={l.code} value={l.code}>{l.label}</option>
+            ))}
+          </select>
+          <select
+            className="lang-select currency-select footer-lang-select"
+            aria-label="Country / currency"
+            value={country.code}
+            onChange={(e) => setCountry(e.target.value)}
+          >
+            {COUNTRIES.map((c) => (
+              <option key={c.code} value={c.code} title={c.label}>{c.currency}</option>
+            ))}
+          </select>
         </div>
 
         <div className="footer-bottom">
