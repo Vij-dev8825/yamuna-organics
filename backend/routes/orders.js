@@ -6,6 +6,8 @@ const { buildOrderItems, createOrderRecord } = require('../utils/orderBuilder');
 const { notifyUser } = require('../utils/notify');
 
 const CANCELLABLE_STATUSES = ['placed', 'confirmed'];
+const RETURN_WINDOW_DAYS = 7;
+const RETURN_REASONS = ['damaged-incorrect', 'quality-issue', 'other'];
 
 const router = express.Router();
 
@@ -151,6 +153,64 @@ router.patch('/:id/cancel', requireAuth, async (req, res, next) => {
           order.paymentMethod === 'razorpay'
             ? "Your order has been cancelled. Since it was prepaid, we'll process your refund within 5-7 business days."
             : 'Your order has been cancelled.',
+        meta: { orderId: order.id },
+        channels: { inapp: true, email: true },
+      });
+    }
+
+    res.json({ success: true, order });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// PATCH /api/orders/:id/return  { reason, description } — customer self-service
+// return/replacement request, only for delivered orders within the 7-day
+// return window (see /refund-policy). Orders delivered before deliveredAt
+// started being recorded are let through rather than blocked by a data gap.
+router.patch('/:id/return', requireAuth, async (req, res, next) => {
+  try {
+    const order = await db.get('orders', req.params.id);
+    if (!order || order.userId !== req.user.id) {
+      return res.status(404).json({ success: false, message: 'Order not found.' });
+    }
+    if (order.status !== 'delivered') {
+      return res.status(400).json({ success: false, message: 'Only delivered orders can have a return requested.' });
+    }
+    if (order.returnRequest) {
+      return res.status(400).json({ success: false, message: 'A return has already been requested for this order.' });
+    }
+    if (order.deliveredAt) {
+      const daysSinceDelivery = (Date.now() - new Date(order.deliveredAt).getTime()) / (1000 * 60 * 60 * 24);
+      if (daysSinceDelivery > RETURN_WINDOW_DAYS) {
+        return res.status(400).json({
+          success: false,
+          message: 'The 7-day return window for this order has passed. Please contact support instead.',
+        });
+      }
+    }
+
+    const { reason, description } = req.body;
+    if (!RETURN_REASONS.includes(reason)) {
+      return res.status(400).json({ success: false, message: `Reason must be one of: ${RETURN_REASONS.join(', ')}` });
+    }
+    if (!description || description.trim().length < 10) {
+      return res.status(400).json({ success: false, message: 'Please describe the issue (at least 10 characters).' });
+    }
+
+    order.returnRequest = {
+      reason,
+      description: description.trim().slice(0, 1000),
+      status: 'requested',
+      createdAt: new Date().toISOString(),
+    };
+    await db.put('orders', order);
+
+    const user = await db.get('users', order.userId);
+    if (user) {
+      await notifyUser(user, {
+        title: `Return requested for order ${order.orderNumber}`,
+        message: "We've received your return request and will review it shortly.",
         meta: { orderId: order.id },
         channels: { inapp: true, email: true },
       });

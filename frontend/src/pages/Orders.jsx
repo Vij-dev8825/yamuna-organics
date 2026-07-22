@@ -17,6 +17,25 @@ const STATUS_LABELS = {
 };
 
 const CANCELLABLE_STATUSES = ['placed', 'confirmed'];
+const RETURN_WINDOW_DAYS = 7;
+const RETURN_REASONS = [
+  { value: 'damaged-incorrect', label: 'Damaged or incorrect item' },
+  { value: 'quality-issue', label: "Doesn't meet quality promise" },
+  { value: 'other', label: 'Other' },
+];
+const RETURN_STATUS_LABELS = {
+  requested: 'Return Requested',
+  approved: 'Return Approved',
+  rejected: 'Return Rejected',
+  refunded: 'Refunded',
+};
+
+function canRequestReturn(order) {
+  if (order.status !== 'delivered' || order.returnRequest) return false;
+  if (!order.deliveredAt) return true;
+  const daysSinceDelivery = (Date.now() - new Date(order.deliveredAt).getTime()) / (1000 * 60 * 60 * 24);
+  return daysSinceDelivery <= RETURN_WINDOW_DAYS;
+}
 
 export default function Orders() {
   const { token } = useAuth();
@@ -27,6 +46,10 @@ export default function Orders() {
   const [orders, setOrders] = useState(null);
   const [products, setProducts] = useState([]);
   const [cancellingId, setCancellingId] = useState(null);
+  const [returnFormId, setReturnFormId] = useState(null);
+  const [returnReason, setReturnReason] = useState(RETURN_REASONS[0].value);
+  const [returnDescription, setReturnDescription] = useState('');
+  const [submittingReturn, setSubmittingReturn] = useState(false);
 
   useEffect(() => {
     api.getOrders(token).then((d) => setOrders(d.orders)).catch(() => setOrders([]));
@@ -59,6 +82,33 @@ export default function Orders() {
       showToast(err.message, 'error');
     } finally {
       setCancellingId(null);
+    }
+  }
+
+  function openReturnForm(orderId) {
+    setReturnFormId(orderId);
+    setReturnReason(RETURN_REASONS[0].value);
+    setReturnDescription('');
+  }
+
+  async function handleSubmitReturn(order) {
+    if (returnDescription.trim().length < 10) {
+      showToast('Please describe the issue (at least 10 characters).', 'error');
+      return;
+    }
+    setSubmittingReturn(true);
+    try {
+      const { order: updated } = await api.requestReturn(token, order.id, {
+        reason: returnReason,
+        description: returnDescription,
+      });
+      setOrders((os) => os.map((o) => (o.id === updated.id ? updated : o)));
+      setReturnFormId(null);
+      showToast("Return request submitted — we'll review it shortly.");
+    } catch (err) {
+      showToast(err.message, 'error');
+    } finally {
+      setSubmittingReturn(false);
     }
   }
 
@@ -149,7 +199,51 @@ export default function Orders() {
                       {cancellingId === o.id ? 'Cancelling…' : 'Cancel Order'}
                     </button>
                   )}
+                  {canRequestReturn(o) && returnFormId !== o.id && (
+                    <button className="btn btn-outline btn-sm" onClick={() => openReturnForm(o.id)}>
+                      Request Return
+                    </button>
+                  )}
+                  {o.returnRequest && (
+                    <span className={`status-pill status-${o.returnRequest.status}`}>
+                      {RETURN_STATUS_LABELS[o.returnRequest.status] || o.returnRequest.status}
+                    </span>
+                  )}
                 </div>
+
+                {returnFormId === o.id && (
+                  <div className="return-request-form">
+                    <div className="field">
+                      <label>Reason</label>
+                      <select className="select" value={returnReason} onChange={(e) => setReturnReason(e.target.value)}>
+                        {RETURN_REASONS.map((r) => (
+                          <option key={r.value} value={r.value}>{r.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="field">
+                      <label>Describe the issue</label>
+                      <textarea
+                        rows={3}
+                        value={returnDescription}
+                        onChange={(e) => setReturnDescription(e.target.value)}
+                        placeholder="Tell us what's wrong so we can review your request…"
+                      />
+                    </div>
+                    <div className="flex gap-1">
+                      <button
+                        className="btn btn-gold btn-sm"
+                        disabled={submittingReturn}
+                        onClick={() => handleSubmitReturn(o)}
+                      >
+                        {submittingReturn ? 'Submitting…' : 'Submit Request'}
+                      </button>
+                      <button className="btn btn-outline btn-sm" onClick={() => setReturnFormId(null)}>
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
         </div>

@@ -1371,10 +1371,18 @@ input:focus-visible + .filter-radio { outline: 2px solid var(--gold-2); outline-
   padding: 5px 12px;
   border-radius: 999px;
 }
-.status-placed, .status-confirmed { background: #eef2fb; color: #34519e; }
+.status-placed, .status-confirmed, .status-requested { background: #eef2fb; color: #34519e; }
 .status-shipped { background: #fdf3dd; color: #8a5a1e; }
-.status-delivered { background: #e5f3e8; color: #1e6b34; }
-.status-cancelled { background: #fbe7e4; color: #a52f1e; }
+.status-delivered, .status-approved, .status-refunded { background: #e5f3e8; color: #1e6b34; }
+.status-cancelled, .status-rejected { background: #fbe7e4; color: #a52f1e; }
+
+.return-request-form {
+  margin-top: 14px;
+  padding: 16px;
+  background: var(--cream-deep);
+  border-radius: var(--radius-sm);
+}
+.return-request-form textarea { width: 100%; font-family: inherit; }
 
 /* ---------- Order tracking stepper ---------- */
 .order-tracker { display: flex; align-items: flex-start; margin: 18px 0 20px; }

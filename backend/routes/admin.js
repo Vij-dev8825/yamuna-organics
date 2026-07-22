@@ -631,6 +631,9 @@ router.patch('/orders/:id', async (req, res, next) => {
       return res.status(400).json({ success: false, message: `Status must be one of: ${allowed.join(', ')}` });
     }
     order.status = req.body.status;
+    if (order.status === 'delivered' && !order.deliveredAt) {
+      order.deliveredAt = new Date().toISOString();
+    }
     await db.put('orders', order);
 
     const user = await db.get('users', order.userId);
@@ -642,6 +645,44 @@ router.patch('/orders/:id', async (req, res, next) => {
         channels: { inapp: true, email: true, sms: order.status === 'shipped' },
       });
     }
+    res.json({ success: true, order });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// PATCH /api/admin/orders/:id/return  { status } — approve/reject/refund a
+// customer's return request; notifies the customer.
+const RETURN_STATUSES = ['requested', 'approved', 'rejected', 'refunded'];
+router.patch('/orders/:id/return', async (req, res, next) => {
+  try {
+    const order = await db.get('orders', req.params.id);
+    if (!order || !order.returnRequest) {
+      return res.status(404).json({ success: false, message: 'No return request found for this order.' });
+    }
+    if (!RETURN_STATUSES.includes(req.body.status)) {
+      return res.status(400).json({ success: false, message: `Status must be one of: ${RETURN_STATUSES.join(', ')}` });
+    }
+
+    order.returnRequest.status = req.body.status;
+    order.returnRequest.updatedAt = new Date().toISOString();
+    await db.put('orders', order);
+
+    const user = await db.get('users', order.userId);
+    const messages = {
+      approved: "Your return request has been approved. We'll be in touch about next steps.",
+      rejected: 'Your return request was not approved. Contact support if you have questions.',
+      refunded: `Your refund for order ${order.orderNumber} has been processed.`,
+    };
+    if (user && messages[order.returnRequest.status]) {
+      await notifyUser(user, {
+        title: `Return request update — order ${order.orderNumber}`,
+        message: messages[order.returnRequest.status],
+        meta: { orderId: order.id },
+        channels: { inapp: true, email: true },
+      });
+    }
+
     res.json({ success: true, order });
   } catch (err) {
     next(err);

@@ -15,6 +15,7 @@ const links = [
   { to: '/admin/page-banners', label: 'Page Banners' },
   { to: '/admin/blog', label: 'Blog' },
   { to: '/admin/orders', label: 'Orders' },
+  { to: '/admin/returns', label: 'Returns' },
   { to: '/admin/leads', label: 'Enquiries & Leads' },
   { to: '/admin/notify', label: 'Notifications' },
   { to: '/admin/chat', label: 'Chat' },

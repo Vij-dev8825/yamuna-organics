@@ -40,6 +40,7 @@ import AdminCoupons from './pages/admin/AdminCoupons';
 import AdminSubscriptions from './pages/admin/AdminSubscriptions';
 import AdminBanners from './pages/admin/AdminBanners';
 import AdminOrders from './pages/admin/AdminOrders';
+import AdminReturns from './pages/admin/AdminReturns';
 import AdminLeads from './pages/admin/AdminLeads';
 import AdminNotify from './pages/admin/AdminNotify';
 import AdminChat from './pages/admin/AdminChat';
@@ -121,6 +122,7 @@ export default function App() {
         <Route path="subscriptions" element={<AdminSubscriptions />} />
         <Route path="banners" element={<AdminBanners />} />
         <Route path="orders" element={<AdminOrders />} />
+        <Route path="returns" element={<AdminReturns />} />
         <Route path="leads" element={<AdminLeads />} />
         <Route path="notify" element={<AdminNotify />} />
         <Route path="chat" element={<AdminChat />} />
