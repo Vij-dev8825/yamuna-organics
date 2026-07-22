@@ -4,6 +4,7 @@ import { api } from '../api';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { useCurrency } from '../context/CurrencyContext';
 import { getProductImage } from '../utils/productImages';
 import { loadRazorpay } from '../utils/loadRazorpay';
 import { validateAddress } from '../utils/validators';
@@ -13,6 +14,7 @@ export default function Cart() {
   const { items, updateQuantity, removeItem, clearCart } = useCart();
   const { isLoggedIn, token, user } = useAuth();
   const { showToast } = useToast();
+  const { isForeign } = useCurrency();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -232,6 +234,11 @@ export default function Cart() {
     <div className="container section">
       <div className="breadcrumb">Home / {isBuyNow ? 'Buy Now' : 'Cart'}</div>
       <h2>{isBuyNow ? 'Buy Now' : 'Your Cart'}</h2>
+      {isForeign && (
+        <p className="muted" style={{ marginTop: -8, marginBottom: 16 }}>
+          Prices below are shown in ₹ (INR) — the currency you'll actually be charged, regardless of the reference price shown while browsing.
+        </p>
+      )}
 
       <div className="cart-layout">
         <div>

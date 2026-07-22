@@ -46,6 +46,9 @@ export const api = {
   // pincode -> city/state lookup for the checkout address form
   lookupPincode: (pincode) => request(`/pincode/${pincode}`),
 
+  // INR-based conversion rates for the storefront currency selector
+  getCurrencyRates: () => request('/currency/rates'),
+
   // blog
   getBlogPosts: () => request('/blog'),
   getBlogPost: (slug) => request(`/blog/${slug}`),

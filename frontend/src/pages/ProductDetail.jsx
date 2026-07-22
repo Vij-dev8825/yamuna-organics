@@ -6,6 +6,7 @@ import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { useCurrency } from '../context/CurrencyContext';
 import { recordProductView } from '../utils/recentlyViewed';
 import { validateAddress } from '../utils/validators';
 import ChakkiWheel from '../components/ChakkiWheel';
@@ -66,6 +67,7 @@ export default function ProductDetail() {
   const { productIds, toggleWishlist } = useWishlist();
   const { isLoggedIn, token, user } = useAuth();
   const { showToast } = useToast();
+  const { formatPrice, isForeign } = useCurrency();
 
   useEffect(() => {
     setProduct(null);
@@ -266,10 +268,15 @@ export default function ProductDetail() {
           </div>
 
           <div className="price-row" style={{ margin: '18px 0' }}>
-            <span className="price" style={{ fontSize: '1.6rem' }}>₹{activeSize.price}</span>
-            {activeSize.mrp > activeSize.price && <span className="mrp">₹{activeSize.mrp}</span>}
+            <span className="price" style={{ fontSize: '1.6rem' }}>{formatPrice(activeSize.price)}</span>
+            {activeSize.mrp > activeSize.price && <span className="mrp">{formatPrice(activeSize.mrp)}</span>}
             {discount > 0 && <span className="off">{discount}% off</span>}
           </div>
+          {isForeign && (
+            <p className="muted" style={{ marginTop: -12, marginBottom: 18, fontSize: '0.8rem' }}>
+              Reference price — you'll be charged in ₹ (INR) at checkout.
+            </p>
+          )}
 
           <div className="flex gap-1 product-actions-row" style={{ marginBottom: 22 }}>
             <div className="qty-stepper">
@@ -342,7 +349,7 @@ export default function ProductDetail() {
                 )}
 
                 <button className="btn btn-gold" style={{ marginTop: 12 }} onClick={handleSubscribeClick}>
-                  Subscribe — ₹{Math.round(activeSize.price * (1 - SUBSCRIPTION_DISCOUNT_PERCENT / 100))}/delivery
+                  Subscribe — {formatPrice(activeSize.price * (1 - SUBSCRIPTION_DISCOUNT_PERCENT / 100))}/delivery
                 </button>
               </>
             ) : (
