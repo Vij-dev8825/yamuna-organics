@@ -49,6 +49,7 @@ import AdminChat from './pages/admin/AdminChat';
 import AdminBlog from './pages/admin/AdminBlog';
 import AdminPageBanners from './pages/admin/AdminPageBanners';
 import AdminSaleBanner from './pages/admin/AdminSaleBanner';
+import AdminCurrency from './pages/admin/AdminCurrency';
 
 function NotFound() {
   return (
@@ -134,6 +135,7 @@ export default function App() {
         <Route path="blog" element={<AdminBlog />} />
         <Route path="page-banners" element={<AdminPageBanners />} />
         <Route path="sale-banner" element={<AdminSaleBanner />} />
+        <Route path="currency" element={<AdminCurrency />} />
       </Route>
 
       {/* Customer storefront */}

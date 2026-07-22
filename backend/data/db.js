@@ -33,6 +33,7 @@ const COLLECTIONS = [
   'blog-comments',
   'page-banners',
   'sale-banner',
+  'currency-overrides',
   'media',
   'push-subscriptions',
 ];

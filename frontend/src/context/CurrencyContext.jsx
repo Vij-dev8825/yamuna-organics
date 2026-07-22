@@ -9,6 +9,7 @@ export const COUNTRIES = [
   { code: 'AU', label: 'Australia', currency: 'AUD', symbol: 'A$' },
   { code: 'SG', label: 'Singapore', currency: 'SGD', symbol: 'S$' },
   { code: 'MY', label: 'Malaysia', currency: 'MYR', symbol: 'RM' },
+  { code: 'AE', label: 'United Arab Emirates', currency: 'AED', symbol: 'AED ' },
 ];
 
 const STORAGE_KEY = 'yo_country';

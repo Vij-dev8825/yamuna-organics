@@ -1,15 +1,16 @@
 const express = require('express');
+const db = require('../data/db');
 
 const router = express.Router();
 
-const SUPPORTED = ['USD', 'GBP', 'CAD', 'AUD', 'SGD', 'MYR'];
+const SUPPORTED = ['USD', 'GBP', 'CAD', 'AUD', 'SGD', 'MYR', 'AED'];
 const CACHE_MS = 6 * 60 * 60 * 1000; // 6 hours — the upstream API only updates daily anyway
 
-let cache = { rates: null, fetchedAt: 0 };
+let cache = { liveRates: null, fetchedAt: 0 };
 
-async function getRates() {
-  if (cache.rates && Date.now() - cache.fetchedAt < CACHE_MS) {
-    return cache.rates;
+async function getLiveRates() {
+  if (cache.liveRates && Date.now() - cache.fetchedAt < CACHE_MS) {
+    return cache.liveRates;
   }
   const res = await fetch('https://open.er-api.com/v6/latest/INR');
   const data = await res.json();
@@ -19,26 +20,44 @@ async function getRates() {
   for (const code of SUPPORTED) {
     if (data.rates[code]) rates[code] = data.rates[code];
   }
-  cache = { rates, fetchedAt: Date.now() };
+  cache = { liveRates: rates, fetchedAt: Date.now() };
+  return rates;
+}
+
+// Applies any admin-set fixed rates (stored as "1 <currency> = X INR", the
+// familiar way exchange rates are normally quoted) on top of the live
+// INR-based rates, so a manually overridden currency stays fixed until the
+// admin clears it, while everything else still tracks the live rate.
+async function getEffectiveRates() {
+  const live = await getLiveRates();
+  const overrides = await db.get('currency-overrides', 'main');
+  if (!overrides?.inrPerUnit) return live;
+
+  const rates = { ...live };
+  for (const code of SUPPORTED) {
+    const inrPerUnit = overrides.inrPerUnit[code];
+    if (inrPerUnit) rates[code] = 1 / inrPerUnit;
+  }
   return rates;
 }
 
 // GET /api/currency/rates — INR-based conversion rates for the storefront's
 // currency selector. Display/reference only: checkout still charges in INR
-// (see PageBanner/checkout copy) since payment-gateway multi-currency
-// settlement hasn't been set up.
+// since payment-gateway multi-currency settlement hasn't been set up.
 router.get('/rates', async (req, res, next) => {
   try {
-    const rates = await getRates();
+    const rates = await getEffectiveRates();
     res.json({ success: true, base: 'INR', rates });
   } catch (err) {
     // Serve a stale cache rather than failing the whole storefront if the
     // upstream provider is briefly down.
-    if (cache.rates) {
-      return res.json({ success: true, base: 'INR', rates: cache.rates, stale: true });
+    if (cache.liveRates) {
+      return res.json({ success: true, base: 'INR', rates: cache.liveRates, stale: true });
     }
     next(err);
   }
 });
 
 module.exports = router;
+module.exports.SUPPORTED = SUPPORTED;
+module.exports.getLiveRates = getLiveRates;

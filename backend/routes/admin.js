@@ -12,6 +12,7 @@ const { compressAndStore, compressVideoAndStore } = require('../utils/mediaStore
 const { processDueSubscriptions } = require('../utils/subscriptions');
 const { PAGES: PAGE_BANNER_PAGES } = require('./pageBanners');
 const { sendMail } = require('../utils/mailer');
+const { SUPPORTED: CURRENCY_CODES, getLiveRates } = require('./currency');
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || process.env.CONTACT_NOTIFY_EMAIL;
 
@@ -726,6 +727,47 @@ router.put('/sale-banner', async (req, res, next) => {
     };
     await db.put('sale-banner', settings);
     res.json({ success: true, settings });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/* ------------------------------ Currency rates ----------------------------- */
+
+// GET /api/admin/currency-overrides — live rate (as "1 X = ₹Y", the usual
+// quoting convention) alongside any manual override currently set for it.
+router.get('/currency-overrides', async (req, res, next) => {
+  try {
+    const [overrides, live] = await Promise.all([
+      db.get('currency-overrides', 'main'),
+      getLiveRates().catch(() => ({})),
+    ]);
+    const liveInrPerUnit = {};
+    for (const code of CURRENCY_CODES) {
+      if (live[code]) liveInrPerUnit[code] = +(1 / live[code]).toFixed(4);
+    }
+    res.json({
+      success: true,
+      currencies: CURRENCY_CODES,
+      liveInrPerUnit,
+      inrPerUnit: overrides?.inrPerUnit || {},
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// PUT /api/admin/currency-overrides  { inrPerUnit: { USD: 83.5, ... } } —
+// omit/0 for a currency to fall back to the live rate for it.
+router.put('/currency-overrides', async (req, res, next) => {
+  try {
+    const inrPerUnit = {};
+    for (const code of CURRENCY_CODES) {
+      const v = Number(req.body.inrPerUnit?.[code]);
+      if (v > 0) inrPerUnit[code] = v;
+    }
+    await db.put('currency-overrides', { id: 'main', inrPerUnit });
+    res.json({ success: true, inrPerUnit });
   } catch (err) {
     next(err);
   }

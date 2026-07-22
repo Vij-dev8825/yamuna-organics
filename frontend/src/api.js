@@ -151,6 +151,10 @@ export const api = {
     getSaleBanner: (token) => request('/admin/sale-banner', { token }),
     updateSaleBanner: (token, settings) => request('/admin/sale-banner', { method: 'PUT', body: settings, token }),
 
+    getCurrencyOverrides: (token) => request('/admin/currency-overrides', { token }),
+    updateCurrencyOverrides: (token, inrPerUnit) =>
+      request('/admin/currency-overrides', { method: 'PUT', body: { inrPerUnit }, token }),
+
     getCoupons: (token) => request('/admin/coupons', { token }),
     createCoupon: (token, coupon) => request('/admin/coupons', { method: 'POST', body: coupon, token }),
     updateCoupon: (token, id, patch) => request(`/admin/coupons/${id}`, { method: 'PATCH', body: patch, token }),
