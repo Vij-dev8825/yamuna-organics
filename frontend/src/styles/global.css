@@ -629,6 +629,7 @@ p { margin: 0 0 1em; }
 }
 .combo-badge { background: var(--forest); color: var(--paper); }
 .new-badge { background: #c17a2e; color: #fff8ec; }
+.out-of-stock-badge { background: #a52f1e; color: #fff8ec; }
 
 .combo-includes {
   background: var(--cream-deep);
@@ -744,6 +745,22 @@ p { margin: 0 0 1em; }
 .price-row .off { color: #2f7a45; font-size: 0.78rem; font-weight: 600; }
 .product-actions { display: flex; gap: 10px; margin-top: 6px; }
 .product-actions .btn { flex: 1; padding-left: 8px; padding-right: 8px; }
+
+.out-of-stock-notice {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fbe7e4;
+  color: #a52f1e;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  text-align: center;
+}
+.size-out-of-stock { opacity: 0.55; text-decoration: line-through; }
 
 /* ---------- Category tiles ---------- */
 .category-tile {

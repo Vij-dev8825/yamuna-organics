@@ -110,6 +110,7 @@ export default function Cart() {
   const discount = appliedCoupon && !couponStale ? appliedCoupon.discount : 0;
   const total = subtotal + shipping - discount;
   const minOrderCheck = checkMinOrder(subtotal);
+  const hasOutOfStock = lines.some((l) => l.sizeInfo.stock <= 0);
 
   function updateAddress(field, value) {
     setAddress((a) => ({ ...a, [field]: value }));
@@ -141,6 +142,10 @@ export default function Cart() {
 
   async function handlePlaceOrder(e) {
     e.preventDefault();
+    if (hasOutOfStock) {
+      showToast('One or more items in your cart are currently out of stock. Please remove them to continue.', 'error');
+      return;
+    }
     if (!minOrderCheck.met) {
       showToast(`Minimum order for ${country.label} is ${minOrderCheck.minFormatted}.`, 'error');
       return;
@@ -247,42 +252,48 @@ export default function Cart() {
 
       <div className="cart-layout">
         <div>
-          {lines.map((l) => (
-            <div className="cart-line" key={`${l.productId}-${l.size}`}>
-              <img src={getProductImage(l.product.image)} alt={l.product.name} />
-              <div className="cart-line-details">
-                <h3 style={{ marginBottom: 4 }}>{l.product.name}</h3>
-                <span className="muted" style={{ fontSize: '0.85rem' }}>Size: {l.size}</span>
-                {!isBuyNow && (
-                  <div>
-                    <button
-                      className="btn-sm btn-ghost btn"
-                      style={{ marginTop: 8 }}
-                      onClick={() => removeItem(l.productId, l.size)}
-                    >
-                      Remove
-                    </button>
+          {lines.map((l) => {
+            const lineOutOfStock = l.sizeInfo.stock <= 0;
+            return (
+              <div className="cart-line" key={`${l.productId}-${l.size}`}>
+                <img src={getProductImage(l.product.image)} alt={l.product.name} />
+                <div className="cart-line-details">
+                  <h3 style={{ marginBottom: 4 }}>{l.product.name}</h3>
+                  <span className="muted" style={{ fontSize: '0.85rem' }}>Size: {l.size}</span>
+                  {lineOutOfStock && (
+                    <div className="field-error" style={{ marginTop: 4 }}>Currently stock not available</div>
+                  )}
+                  {!isBuyNow && (
+                    <div>
+                      <button
+                        className="btn-sm btn-ghost btn"
+                        style={{ marginTop: 8 }}
+                        onClick={() => removeItem(l.productId, l.size)}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  )}
+                </div>
+                {isBuyNow ? (
+                  <div className="qty-stepper">
+                    <button onClick={() => setBuyNowQty((q) => Math.max(1, q - 1))} aria-label="Decrease quantity" disabled={lineOutOfStock}>−</button>
+                    <span>{l.quantity}</span>
+                    <button onClick={() => setBuyNowQty((q) => q + 1)} aria-label="Increase quantity" disabled={lineOutOfStock}>+</button>
+                  </div>
+                ) : (
+                  <div className="qty-stepper">
+                    <button onClick={() => updateQuantity(l.productId, l.size, l.quantity - 1)} aria-label="Decrease quantity" disabled={lineOutOfStock}>−</button>
+                    <span>{l.quantity}</span>
+                    <button onClick={() => updateQuantity(l.productId, l.size, l.quantity + 1)} aria-label="Increase quantity" disabled={lineOutOfStock}>+</button>
                   </div>
                 )}
-              </div>
-              {isBuyNow ? (
-                <div className="qty-stepper">
-                  <button onClick={() => setBuyNowQty((q) => Math.max(1, q - 1))} aria-label="Decrease quantity">−</button>
-                  <span>{l.quantity}</span>
-                  <button onClick={() => setBuyNowQty((q) => q + 1)} aria-label="Increase quantity">+</button>
+                <div className="price" style={{ fontFamily: 'var(--font-mono)' }}>
+                  ₹{l.sizeInfo.price * l.quantity}
                 </div>
-              ) : (
-                <div className="qty-stepper">
-                  <button onClick={() => updateQuantity(l.productId, l.size, l.quantity - 1)} aria-label="Decrease quantity">−</button>
-                  <span>{l.quantity}</span>
-                  <button onClick={() => updateQuantity(l.productId, l.size, l.quantity + 1)} aria-label="Increase quantity">+</button>
-                </div>
-              )}
-              <div className="price" style={{ fontFamily: 'var(--font-mono)' }}>
-                ₹{l.sizeInfo.price * l.quantity}
               </div>
-            </div>
-          ))}
+            );
+          })}
           {isBuyNow && (
             <Link to="/cart" className="link-btn" style={{ marginTop: 12, display: 'inline-block' }}>
               ← Go to your full cart instead
@@ -469,6 +480,11 @@ export default function Cart() {
                 </label>
               </div>
 
+              {hasOutOfStock && (
+                <div className="alert alert-error" style={{ marginTop: 16 }}>
+                  One or more items in your cart are currently out of stock. Please remove them to continue.
+                </div>
+              )}
               {!minOrderCheck.met && (
                 <div className="alert alert-error" style={{ marginTop: 16 }}>
                   Minimum order for {country.label} is {minOrderCheck.minFormatted} — add{' '}
@@ -481,7 +497,7 @@ export default function Cart() {
                   <span className="muted">Total</span>
                   <b>₹{total}</b>
                 </div>
-                <button className="btn btn-gold btn-block" style={{ marginTop: 18 }} disabled={placing || !minOrderCheck.met}>
+                <button className="btn btn-gold btn-block" style={{ marginTop: 18 }} disabled={placing || !minOrderCheck.met || hasOutOfStock}>
                   {placing ? 'Processing…' : paymentMethod === 'razorpay' ? 'Pay securely' : 'Place order'}
                 </button>
               </div>

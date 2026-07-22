@@ -29,12 +29,12 @@ async function processDueSubscriptions() {
     if (new Date(sub.nextOrderDate) > now) continue;
 
     try {
-      const { orderItems, subtotal, shipping } = await buildOrderItems(
+      const { orderItems, subtotal, shipping, stockError } = await buildOrderItems(
         [{ productId: sub.productId, size: sub.size, quantity: sub.quantity }],
         null
       );
-      if (!orderItems[0]?.price) {
-        results.push({ subscriptionId: sub.id, skipped: true, reason: 'Product or size no longer available' });
+      if (!orderItems[0]?.price || stockError) {
+        results.push({ subscriptionId: sub.id, skipped: true, reason: stockError || 'Product or size no longer available' });
         continue;
       }
 

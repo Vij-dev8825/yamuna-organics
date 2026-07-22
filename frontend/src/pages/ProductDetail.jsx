@@ -112,15 +112,18 @@ export default function ProductDetail() {
 
   const activeSize = product.sizes.find((s) => s.label === size) || product.sizes[0];
   const discount = Math.round(((activeSize.mrp - activeSize.price) / activeSize.mrp) * 100);
+  const outOfStock = activeSize.stock <= 0;
   const isWished = productIds.includes(product.id);
   const gallery = product.images?.length ? product.images : [product.image];
 
   function handleAdd() {
+    if (outOfStock) return;
     addItem(product.id, size, qty);
     showToast(`${product.name} (${size}) ×${qty} added to cart`);
   }
 
   function handleBuyNow() {
+    if (outOfStock) return;
     navigate('/cart', { state: { buyNow: { productId: product.id, size, quantity: qty } } });
   }
 
@@ -134,6 +137,7 @@ export default function ProductDetail() {
     !subCustom || (Number.isInteger(Number(subCustomDays)) && effectiveFrequencyDays >= MIN_FREQUENCY_DAYS && effectiveFrequencyDays <= MAX_FREQUENCY_DAYS);
 
   function handleSubscribeClick() {
+    if (outOfStock) return;
     if (!isLoggedIn) {
       navigate('/login', { state: { from: `/product/${id}` } });
       return;
@@ -148,6 +152,7 @@ export default function ProductDetail() {
 
   async function handleSubscribeSubmit(e) {
     e.preventDefault();
+    if (outOfStock) return;
     if (!customDaysValid) {
       showToast(`Enter a custom frequency between ${MIN_FREQUENCY_DAYS} and ${MAX_FREQUENCY_DAYS} days.`, 'error');
       return;
@@ -258,10 +263,10 @@ export default function ProductDetail() {
               {product.sizes.map((s) => (
                 <button
                   key={s.label}
-                  className={`btn btn-sm ${size === s.label ? 'btn-forest' : 'btn-outline'}`}
+                  className={`btn btn-sm ${size === s.label ? 'btn-forest' : 'btn-outline'} ${s.stock <= 0 ? 'size-out-of-stock' : ''}`}
                   onClick={() => setSize(s.label)}
                 >
-                  {s.label}
+                  {s.label}{s.stock <= 0 ? ' (out of stock)' : ''}
                 </button>
               ))}
             </div>
@@ -279,13 +284,21 @@ export default function ProductDetail() {
           )}
 
           <div className="flex gap-1 product-actions-row" style={{ marginBottom: 22 }}>
-            <div className="qty-stepper">
-              <button onClick={() => setQty((q) => Math.max(1, q - 1))} aria-label="Decrease quantity">−</button>
-              <span>{qty}</span>
-              <button onClick={() => setQty((q) => q + 1)} aria-label="Increase quantity">+</button>
-            </div>
-            <button className="btn btn-forest" onClick={handleBuyNow}>Buy Now</button>
-            <button className="btn btn-gold" onClick={handleAdd}>Add to cart</button>
+            {!outOfStock && (
+              <div className="qty-stepper">
+                <button onClick={() => setQty((q) => Math.max(1, q - 1))} aria-label="Decrease quantity">−</button>
+                <span>{qty}</span>
+                <button onClick={() => setQty((q) => q + 1)} aria-label="Increase quantity">+</button>
+              </div>
+            )}
+            {outOfStock ? (
+              <div className="out-of-stock-notice">Currently stock not available</div>
+            ) : (
+              <>
+                <button className="btn btn-forest" onClick={handleBuyNow}>Buy Now</button>
+                <button className="btn btn-gold" onClick={handleAdd}>Add to cart</button>
+              </>
+            )}
             <button
               className={`btn btn-outline wishlist-btn-detail ${isWished ? 'active' : ''}`}
               onClick={handleWishlist}
@@ -294,9 +307,13 @@ export default function ProductDetail() {
             </button>
           </div>
 
-          <div className="alert alert-info">
-            In stock: {activeSize.stock} units · Delivered in 3-5 business days
-          </div>
+          {outOfStock ? (
+            <div className="alert alert-error">Currently stock not available</div>
+          ) : (
+            <div className="alert alert-info">
+              In stock: {activeSize.stock} units · Delivered in 3-5 business days
+            </div>
+          )}
 
           <DeliveryEstimate />
           <TrustBadges />
@@ -348,8 +365,10 @@ export default function ProductDetail() {
                   </div>
                 )}
 
-                <button className="btn btn-gold" style={{ marginTop: 12 }} onClick={handleSubscribeClick}>
-                  Subscribe — {formatPrice(activeSize.price * (1 - SUBSCRIPTION_DISCOUNT_PERCENT / 100))}/delivery
+                <button className="btn btn-gold" style={{ marginTop: 12 }} onClick={handleSubscribeClick} disabled={outOfStock}>
+                  {outOfStock
+                    ? 'Currently unavailable for subscription'
+                    : `Subscribe — ${formatPrice(activeSize.price * (1 - SUBSCRIPTION_DISCOUNT_PERCENT / 100))}/delivery`}
                 </button>
               </>
             ) : (

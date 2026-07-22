@@ -23,7 +23,8 @@ router.post('/', requireAuth, async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'A complete delivery address is required.' });
     }
 
-    const { orderItems, total, discount, couponCode: appliedCode } = await buildOrderItems(items, couponCode);
+    const { orderItems, total, discount, couponCode: appliedCode, stockError } = await buildOrderItems(items, couponCode);
+    if (stockError) return res.status(400).json({ success: false, message: stockError });
     const order = await createOrderRecord({
       userId: req.user.id,
       orderItems,
@@ -53,7 +54,8 @@ router.post('/razorpay/create', requireAuth, async (req, res, next) => {
     if (!items || !items.length) {
       return res.status(400).json({ success: false, message: 'Your cart is empty.' });
     }
-    const { total } = await buildOrderItems(items, couponCode);
+    const { total, stockError } = await buildOrderItems(items, couponCode);
+    if (stockError) return res.status(400).json({ success: false, message: stockError });
     if (total <= 0) {
       return res.status(400).json({ success: false, message: 'Order total must be greater than zero.' });
     }
@@ -86,6 +88,12 @@ router.post('/razorpay/verify', requireAuth, async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Payment verification failed. Please contact support before retrying.' });
     }
 
+    // No stock re-check here: by this point Razorpay has already captured the
+    // payment (verified via signature above), so rejecting on a stock race
+    // would strand a paid customer with no order and no refund. The earlier
+    // /razorpay/create check is the real gate; any oversell that still slips
+    // through this narrow window is visible to the admin in Orders same as
+    // a COD one and can be handled manually, same as any other refund case.
     const { orderItems, total, discount, couponCode: appliedCode } = await buildOrderItems(items, couponCode);
     const order = await createOrderRecord({
       userId: req.user.id,

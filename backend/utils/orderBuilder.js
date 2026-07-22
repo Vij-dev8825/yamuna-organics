@@ -29,11 +29,17 @@ function calculateShipping(subtotal) {
 async function buildOrderItems(items, couponCode) {
   const products = await db.list('products');
   let subtotal = 0;
+  let stockError = null;
   const orderItems = items.map((item) => {
     const product = products.find((p) => p.id === item.productId);
     const sizeInfo = product?.sizes.find((s) => s.label === item.size);
     const price = sizeInfo ? sizeInfo.price : 0;
     subtotal += price * item.quantity;
+    if (!stockError) {
+      if (!sizeInfo) stockError = `"${item.size}" is no longer available for this product.`;
+      else if (sizeInfo.stock <= 0) stockError = `"${product.name} (${item.size})" is currently out of stock.`;
+      else if (item.quantity > sizeInfo.stock) stockError = `Only ${sizeInfo.stock} unit(s) of "${product.name} (${item.size})" left in stock.`;
+    }
     return {
       productId: item.productId,
       name: product?.name,
@@ -54,6 +60,7 @@ async function buildOrderItems(items, couponCode) {
     discount,
     couponCode: discount > 0 ? coupon.code : null,
     total: subtotal + shipping - discount,
+    stockError,
   };
 }
 

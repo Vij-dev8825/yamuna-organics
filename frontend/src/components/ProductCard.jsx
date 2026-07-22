@@ -21,6 +21,7 @@ export default function ProductCard({ product }) {
   const isWished = productIds.includes(product.id);
   const activeSize = product.sizes.find((s) => s.label === size) || product.sizes[0];
   const discount = Math.round(((activeSize.mrp - activeSize.price) / activeSize.mrp) * 100);
+  const outOfStock = activeSize.stock <= 0;
 
   function scrubToClientX(clientX, rect) {
     const ratio = (clientX - rect.left) / rect.width;
@@ -40,12 +41,14 @@ export default function ProductCard({ product }) {
 
   function handleAdd(e) {
     e.preventDefault();
+    if (outOfStock) return;
     addItem(product.id, size, qty);
     showToast(`${product.name} (${size}) ×${qty} added to cart`);
   }
 
   function handleBuyNow(e) {
     e.preventDefault();
+    if (outOfStock) return;
     navigate('/cart', { state: { buyNow: { productId: product.id, size, quantity: qty } } });
   }
 
@@ -83,6 +86,14 @@ export default function ProductCard({ product }) {
             Combo
           </span>
         )}
+        {outOfStock && (
+          <span
+            className="product-badge out-of-stock-badge"
+            style={{ top: 12 + (product.isNew ? 32 : 0) + (discount > 0 ? 32 : 0) + (product.comboItems?.length > 0 ? 32 : 0) }}
+          >
+            Out of Stock
+          </span>
+        )}
         <button
           className={`wishlist-toggle ${isWished ? 'active' : ''}`}
           aria-label={isWished ? 'Remove from wishlist' : 'Add to wishlist'}
@@ -101,11 +112,13 @@ export default function ProductCard({ product }) {
 
         <div className="product-media-quickadd">
           <div className="qty-stepper qty-stepper-sm" onClick={(e) => e.preventDefault()}>
-            <button onClick={(e) => stepQty(e, -1)} aria-label="Decrease quantity">−</button>
+            <button onClick={(e) => stepQty(e, -1)} aria-label="Decrease quantity" disabled={outOfStock}>−</button>
             <span>{qty}</span>
-            <button onClick={(e) => stepQty(e, 1)} aria-label="Increase quantity">+</button>
+            <button onClick={(e) => stepQty(e, 1)} aria-label="Increase quantity" disabled={outOfStock}>+</button>
           </div>
-          <button className="btn btn-gold btn-sm" onClick={handleAdd}>Add to cart</button>
+          <button className="btn btn-gold btn-sm" onClick={handleAdd} disabled={outOfStock}>
+            {outOfStock ? 'Out of stock' : 'Add to cart'}
+          </button>
         </div>
       </div>
       <div className="product-body">
@@ -124,7 +137,7 @@ export default function ProductCard({ product }) {
         >
           {product.sizes.map((s) => (
             <option key={s.label} value={s.label}>
-              {s.label}
+              {s.label}{s.stock <= 0 ? ' (out of stock)' : ''}
             </option>
           ))}
         </select>
@@ -135,14 +148,18 @@ export default function ProductCard({ product }) {
           {discount > 0 && <span className="off">{discount}% off</span>}
         </div>
 
-        <div className="product-actions">
-          <button className="btn btn-forest btn-sm" onClick={handleBuyNow}>
-            Buy Now
-          </button>
-          <button className="btn btn-gold btn-sm" onClick={handleAdd}>
-            Add to cart
-          </button>
-        </div>
+        {outOfStock ? (
+          <div className="out-of-stock-notice">Currently stock not available</div>
+        ) : (
+          <div className="product-actions">
+            <button className="btn btn-forest btn-sm" onClick={handleBuyNow}>
+              Buy Now
+            </button>
+            <button className="btn btn-gold btn-sm" onClick={handleAdd}>
+              Add to cart
+            </button>
+          </div>
+        )}
       </div>
     </Link>
   );

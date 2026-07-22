@@ -34,8 +34,12 @@ router.post('/', requireAuth, async (req, res, next) => {
     }
     const product = await db.get('products', productId);
     if (!product) return res.status(404).json({ success: false, message: 'Product not found.' });
-    if (!product.sizes.some((s) => s.label === size)) {
+    const sizeInfo = product.sizes.find((s) => s.label === size);
+    if (!sizeInfo) {
       return res.status(400).json({ success: false, message: 'That size is not available for this product.' });
+    }
+    if (sizeInfo.stock <= 0) {
+      return res.status(400).json({ success: false, message: 'That size is currently out of stock.' });
     }
 
     const subscription = {
