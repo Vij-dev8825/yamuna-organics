@@ -85,7 +85,7 @@ function ScrollToTop() {
   return null;
 }
 
-const CANONICAL_ORIGIN = 'https://westerngodsorganic.com';
+const CANONICAL_ORIGIN = 'https://www.westerngodsorganic.com';
 
 // This is a client-rendered SPA on a single static index.html, so the
 // canonical tag has to be updated per-route in JS rather than baked into
