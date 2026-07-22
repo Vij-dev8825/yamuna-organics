@@ -39,7 +39,11 @@ export async function enablePushNotifications(token) {
     });
   }
 
-  await api.subscribePush(token, subscription.toJSON());
+  if (token) {
+    await api.subscribePush(token, subscription.toJSON());
+  } else {
+    await api.subscribePushAnonymous(subscription.toJSON());
+  }
   return true;
 }
 

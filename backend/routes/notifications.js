@@ -50,6 +50,33 @@ router.post('/push-unsubscribe', requireAuth, async (req, res, next) => {
   }
 });
 
+// POST /api/notifications/push-subscribe-anonymous  { subscription } — for
+// visitors who opt into browser notifications before/without creating an
+// account (e.g. sale alerts). Stored with userId: null so marketing
+// broadcasts can reach them without needing a customer record.
+router.post('/push-subscribe-anonymous', async (req, res, next) => {
+  try {
+    const { subscription } = req.body;
+    if (!subscription?.endpoint) {
+      return res.status(400).json({ success: false, message: 'A valid push subscription is required.' });
+    }
+    const existing = (await db.list('push-subscriptions')).find(
+      (s) => s.userId === null && s.subscription.endpoint === subscription.endpoint
+    );
+    if (existing) return res.json({ success: true });
+
+    await db.put('push-subscriptions', {
+      id: uuid(),
+      userId: null,
+      subscription,
+      createdAt: new Date().toISOString(),
+    });
+    res.status(201).json({ success: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // GET /api/notifications — my notifications, newest first
 router.get('/', requireAuth, async (req, res, next) => {
   try {

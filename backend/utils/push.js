@@ -47,4 +47,30 @@ async function sendPush(userId, { title, message, image, url }) {
   return { sent };
 }
 
-module.exports = { isConfigured, sendPush };
+/** Sends a push notification to every anonymous (not-logged-in) subscriber —
+ * used for marketing broadcasts that should reach visitors who opted into
+ * browser notifications without creating an account. */
+async function sendPushToAnonymous({ title, message, image, url }) {
+  if (!isConfigured()) return { sent: 0 };
+  ensureConfigured();
+
+  const subs = (await db.list('push-subscriptions')).filter((s) => s.userId === null);
+  const payload = JSON.stringify({ title, body: message, image: image || undefined, url: url || '/' });
+  let sent = 0;
+
+  for (const sub of subs) {
+    try {
+      await webpush.sendNotification(sub.subscription, payload);
+      sent++;
+    } catch (err) {
+      if (err.statusCode === 404 || err.statusCode === 410) {
+        await db.remove('push-subscriptions', sub.id);
+      } else {
+        console.error('[PUSH:error]', err.statusCode || '', err.message);
+      }
+    }
+  }
+  return { sent };
+}
+
+module.exports = { isConfigured, sendPush, sendPushToAnonymous };

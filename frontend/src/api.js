@@ -97,6 +97,7 @@ export const api = {
   getPushKey: () => request('/notifications/push-key'),
   subscribePush: (token, subscription) => request('/notifications/push-subscribe', { method: 'POST', body: { subscription }, token }),
   unsubscribePush: (token, payload) => request('/notifications/push-unsubscribe', { method: 'POST', body: payload, token }),
+  subscribePushAnonymous: (subscription) => request('/notifications/push-subscribe-anonymous', { method: 'POST', body: { subscription } }),
 
   // chat (customer)
   getChat: (token) => request('/chat', { token }),

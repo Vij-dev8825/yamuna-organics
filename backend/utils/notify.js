@@ -2,7 +2,7 @@ const { v4: uuid } = require('uuid');
 const db = require('../data/db');
 const { sendMail } = require('./mailer');
 const { sendSms } = require('./sms');
-const { sendPush } = require('./push');
+const { sendPush, sendPushToAnonymous } = require('./push');
 
 const SITE_URL = process.env.SITE_URL || 'https://yamuna-organics.onrender.com';
 
@@ -81,6 +81,15 @@ async function broadcast({ title, message, image, channels, meta = {} }) {
     if (r.email) counts.email += 1;
     if (r.sms) counts.sms += 1;
     if (r.push) counts.push += 1;
+  }
+
+  // Anonymous browser-notification subscribers (opted in without an
+  // account) aren't customer records, so they only get the push channel.
+  if (channels?.push !== false) {
+    const imageUrl = absoluteImageUrl(image);
+    const { sent } = await sendPushToAnonymous({ title, message, image: imageUrl, url: '/' });
+    counts.push += sent;
+    counts.audience += (await db.list('push-subscriptions')).filter((s) => s.userId === null).length;
   }
 
   await db.put('notification-logs', {

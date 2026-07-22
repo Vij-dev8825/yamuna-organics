@@ -7,6 +7,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import ChatWidget from './components/ChatWidget';
 import PromoPopup from './components/PromoPopup';
 import CookieConsent from './components/CookieConsent';
+import PushOptIn from './components/PushOptIn';
 
 import Home from './pages/Home';
 import Shop from './pages/Shop';
@@ -74,6 +75,7 @@ function StoreLayout() {
       <ChatWidget />
       <PromoPopup />
       <CookieConsent />
+      <PushOptIn />
     </div>
   );
 }
