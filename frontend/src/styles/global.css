@@ -33,6 +33,11 @@
   --gold-shine: linear-gradient(115deg, var(--leaf-1) 0%, var(--leaf-2) 22%, var(--leaf-4) 45%, var(--leaf-3) 60%, var(--leaf-1) 100%);
   --gold-shine-soft: linear-gradient(120deg, #8fd67c 0%, #cdf2bd 40%, #f3fbef 50%, #cdf2bd 60%, #8fd67c 100%);
 
+  /* Rose shine — same sweep language as --gold-shine, in a deep maroon/rose
+     range for out-of-stock states so it reads as "premium unavailable", not
+     an error/warning tone. */
+  --rose-shine: linear-gradient(115deg, #7a2416 0%, #a52f1e 20%, #d4483a 42%, #e8887a 55%, #d4483a 68%, #a52f1e 85%, #7a2416 100%);
+
   --font-display: 'Fraunces', Georgia, serif;
   --font-body: 'Work Sans', 'Segoe UI', sans-serif;
   --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
@@ -122,7 +127,7 @@ p { margin: 0 0 1em; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .gold-text, .gold-surface, .wheel-spin, .btn-gold::after { animation: none !important; }
+  .gold-text, .gold-surface, .wheel-spin, .btn-gold::after, .out-of-stock-notice { animation: none !important; }
 }
 
 /* ---------- Buttons ---------- */
@@ -748,17 +753,31 @@ p { margin: 0 0 1em; }
 
 .out-of-stock-notice {
   flex: 1;
+  position: relative;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #fbe7e4;
-  color: #a52f1e;
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
+  gap: 8px;
+  background-image: var(--rose-shine);
+  background-size: 260% 100%;
+  animation: shineSweep 4.5s ease-in-out infinite;
+  color: #fff8ec;
+  font-family: var(--font-display);
+  font-style: italic;
   font-weight: 600;
+  letter-spacing: 0.015em;
+  font-size: 0.95rem;
   border-radius: var(--radius-md);
-  padding: 10px 14px;
+  padding: 12px 16px;
   text-align: center;
+  box-shadow: 0 6px 18px rgba(122, 36, 22, 0.32);
+}
+.out-of-stock-notice::before {
+  content: '✦';
+  font-style: normal;
+  font-size: 0.8em;
+  opacity: 0.85;
 }
 .size-out-of-stock { opacity: 0.55; text-decoration: line-through; }
 
