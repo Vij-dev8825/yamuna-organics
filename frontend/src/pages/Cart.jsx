@@ -46,9 +46,14 @@ export default function Cart() {
   }, []);
 
   // Prefill from the last saved address so returning customers don't have
-  // to retype it every order.
+  // to retype it every order. Addresses saved before the country field
+  // existed won't have one — default to the current browsing country
+  // instead of leaving it undefined (which would silently price shipping
+  // as domestic regardless of what's selected up top).
   useEffect(() => {
-    if (user?.addresses?.[0]) setAddress(user.addresses[0]);
+    if (user?.addresses?.[0]) {
+      setAddress({ ...user.addresses[0], country: user.addresses[0].country || country.code });
+    }
   }, [user]);
 
   // Look up city/state options from the pincode once it's 6 digits, so the

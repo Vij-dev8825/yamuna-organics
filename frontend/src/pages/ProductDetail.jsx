@@ -100,8 +100,13 @@ export default function ProductDetail() {
     }
   }, [reviews, user]);
 
+  // Addresses saved before the country field existed won't have one —
+  // default to the current browsing country rather than leaving it
+  // undefined (see the same fix in Cart.jsx for the full reasoning).
   useEffect(() => {
-    if (user?.addresses?.[0]) setSubAddress(user.addresses[0]);
+    if (user?.addresses?.[0]) {
+      setSubAddress({ ...user.addresses[0], country: user.addresses[0].country || country.code });
+    }
   }, [user]);
 
   useEffect(() => {
