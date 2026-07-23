@@ -36,6 +36,7 @@ const COLLECTIONS = [
   'currency-overrides',
   'media',
   'push-subscriptions',
+  'stock-notify',
 ];
 
 let mode = 'json';

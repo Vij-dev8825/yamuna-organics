@@ -781,6 +781,40 @@ p { margin: 0 0 1em; }
 }
 .size-out-of-stock { opacity: 0.55; text-decoration: line-through; }
 
+.notify-stock-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+.notify-stock-row input {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.8rem;
+  padding: 7px 9px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid rgba(31, 61, 43, 0.18);
+  font-family: inherit;
+}
+.notify-stock-row .link-btn { font-size: 0.78rem; white-space: nowrap; }
+
+.notify-stock-form {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+.notify-stock-form input {
+  flex: 1;
+  min-width: 180px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid rgba(31, 61, 43, 0.18);
+  font-family: inherit;
+  font-size: 0.9rem;
+}
+
 /* ---------- Category tiles ---------- */
 .category-tile {
   position: relative;

@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { api } from '../api';
 import { getProductImage } from '../utils/productImages';
 import { useWishlist } from '../context/WishlistContext';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { useCurrency } from '../context/CurrencyContext';
+import { useAuth } from '../context/AuthContext';
 import { IconHeart } from './Icons';
 
 export default function ProductCard({ product }) {
@@ -12,10 +14,20 @@ export default function ProductCard({ product }) {
   const { addItem } = useCart();
   const { showToast } = useToast();
   const { formatPrice, formatProductPrice } = useCurrency();
+  const { isLoggedIn, token } = useAuth();
   const navigate = useNavigate();
   const [size, setSize] = useState(product.sizes[1]?.label || product.sizes[0].label);
   const [hoverIndex, setHoverIndex] = useState(0);
   const [qty, setQty] = useState(1);
+  const [notifyOpen, setNotifyOpen] = useState(false);
+  const [notifyEmail, setNotifyEmail] = useState('');
+  const [notifyState, setNotifyState] = useState('idle'); // idle | submitting | done
+
+  useEffect(() => {
+    setNotifyOpen(false);
+    setNotifyState('idle');
+    setNotifyEmail('');
+  }, [size]);
 
   const gallery = product.images?.length ? product.images : [product.image];
   const isWished = productIds.includes(product.id);
@@ -62,6 +74,24 @@ export default function ProductCard({ product }) {
     e.preventDefault();
     toggleWishlist(product.id);
     showToast(isWished ? `Removed from wishlist` : `${product.name} added to wishlist`);
+  }
+
+  async function handleNotifyMe(e) {
+    e.preventDefault();
+    if (!isLoggedIn && !notifyOpen) {
+      setNotifyOpen(true);
+      return;
+    }
+    if (!isLoggedIn && !notifyEmail.trim()) return;
+    setNotifyState('submitting');
+    try {
+      const res = await api.subscribeStockNotify({ productId: product.id, size, email: notifyEmail.trim() }, token);
+      showToast(res.message);
+      setNotifyState('done');
+    } catch (err) {
+      showToast(err.message, 'error');
+      setNotifyState('idle');
+    }
   }
 
   return (
@@ -149,7 +179,29 @@ export default function ProductCard({ product }) {
         </div>
 
         {outOfStock ? (
-          <div className="out-of-stock-notice">Currently stock not available</div>
+          <>
+            <div className="out-of-stock-notice">Currently stock not available</div>
+            <div className="notify-stock-row" onClick={(e) => e.preventDefault()}>
+              {notifyState === 'done' ? (
+                <span className="muted" style={{ fontSize: '0.78rem' }}>🔔 We'll email you when it's back.</span>
+              ) : (
+                <>
+                  {!isLoggedIn && notifyOpen && (
+                    <input
+                      type="email"
+                      placeholder="Your email"
+                      value={notifyEmail}
+                      onChange={(e) => setNotifyEmail(e.target.value)}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  )}
+                  <button type="button" className="link-btn" onClick={handleNotifyMe} disabled={notifyState === 'submitting'}>
+                    {notifyState === 'submitting' ? 'Submitting…' : '🔔 Notify me when back in stock'}
+                  </button>
+                </>
+              )}
+            </div>
+          </>
         ) : (
           <div className="product-actions">
             <button className="btn btn-forest btn-sm" onClick={handleBuyNow}>

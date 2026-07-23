@@ -237,6 +237,37 @@ router.put('/products/:id', async (req, res, next) => {
       });
     }
 
+    // Notify anyone who asked to be told when a now-restocked size returns,
+    // then clear those requests out (one-shot, re-subscribe if it runs out again).
+    const restockedLabels = updated.sizes
+      .filter((s) => existing.sizes.find((x) => x.label === s.label && x.stock <= 0) && s.stock > 0)
+      .map((s) => s.label);
+    if (restockedLabels.length) {
+      const pending = (await db.list('stock-notify')).filter(
+        (n) => n.productId === updated.id && restockedLabels.includes(n.size)
+      );
+      for (const sub of pending) {
+        if (sub.userId) {
+          const user = await db.get('users', sub.userId);
+          if (user) {
+            await notifyUser(user, {
+              title: `Back in stock: ${updated.name}`,
+              message: `${updated.name} (${sub.size}) is back in stock — order now before it sells out again!`,
+              meta: { productId: updated.id },
+              channels: { inapp: true, email: true },
+            });
+          }
+        } else if (sub.email) {
+          await sendMail({
+            to: sub.email,
+            subject: `Back in stock: ${updated.name}`,
+            text: `${updated.name} (${sub.size}) is back in stock at Western Gods Organics.\n\nOrder now: ${process.env.SITE_URL || 'https://westerngodsorganic.com'}/product/${updated.id}`,
+          }).catch(() => {});
+        }
+        await db.remove('stock-notify', sub.id);
+      }
+    }
+
     res.json({ success: true, product: updated, notified });
   } catch (err) {
     next(err);

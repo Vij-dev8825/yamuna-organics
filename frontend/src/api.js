@@ -52,6 +52,9 @@ export const api = {
   // sale countdown banner
   getSaleBanner: () => request('/sale-banner'),
 
+  // "Notify me when back in stock" — token is optional, guests pass an email
+  subscribeStockNotify: (payload, token) => request('/stock-notify', { method: 'POST', body: payload, token }),
+
   // blog
   getBlogPosts: () => request('/blog'),
   getBlogPost: (slug) => request(`/blog/${slug}`),

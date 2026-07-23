@@ -63,6 +63,8 @@ export default function ProductDetail() {
   const [subAddress, setSubAddress] = useState({ line1: '', city: '', state: '', pincode: '', phone: '' });
   const [subAddressErrors, setSubAddressErrors] = useState({});
   const [subscribing, setSubscribing] = useState(false);
+  const [notifyEmail, setNotifyEmail] = useState('');
+  const [notifyState, setNotifyState] = useState('idle'); // idle | submitting | done
   const { addItem } = useCart();
   const { productIds, toggleWishlist } = useWishlist();
   const { isLoggedIn, token, user } = useAuth();
@@ -102,6 +104,11 @@ export default function ProductDetail() {
     if (user?.addresses?.[0]) setSubAddress(user.addresses[0]);
   }, [user]);
 
+  useEffect(() => {
+    setNotifyState('idle');
+    setNotifyEmail('');
+  }, [size]);
+
   if (!product) {
     return (
       <div className="center" style={{ padding: '120px 0' }}>
@@ -130,6 +137,23 @@ export default function ProductDetail() {
   function handleWishlist() {
     toggleWishlist(product.id);
     showToast(isWished ? 'Removed from wishlist' : `${product.name} added to wishlist`);
+  }
+
+  async function handleNotifyMe(e) {
+    e.preventDefault();
+    if (!isLoggedIn && !notifyEmail.trim()) {
+      showToast('Enter an email address to be notified.', 'error');
+      return;
+    }
+    setNotifyState('submitting');
+    try {
+      const res = await api.subscribeStockNotify({ productId: product.id, size, email: notifyEmail.trim() }, token);
+      showToast(res.message);
+      setNotifyState('done');
+    } catch (err) {
+      showToast(err.message, 'error');
+      setNotifyState('idle');
+    }
   }
 
   const effectiveFrequencyDays = subCustom ? Number(subCustomDays) || 0 : subFrequency;
@@ -308,7 +332,29 @@ export default function ProductDetail() {
           </div>
 
           {outOfStock ? (
-            <div className="alert alert-error">Currently stock not available</div>
+            <div className="alert alert-error">
+              <div>Currently stock not available</div>
+              {notifyState === 'done' ? (
+                <p className="muted" style={{ margin: '8px 0 0', fontSize: '0.85rem' }}>
+                  🔔 We'll email you the moment "{size}" is back in stock.
+                </p>
+              ) : (
+                <form className="notify-stock-form" onSubmit={handleNotifyMe}>
+                  {!isLoggedIn && (
+                    <input
+                      type="email"
+                      placeholder="Your email"
+                      value={notifyEmail}
+                      onChange={(e) => setNotifyEmail(e.target.value)}
+                      required
+                    />
+                  )}
+                  <button type="submit" className="btn btn-outline btn-sm" disabled={notifyState === 'submitting'}>
+                    {notifyState === 'submitting' ? 'Submitting…' : '🔔 Notify me when back in stock'}
+                  </button>
+                </form>
+              )}
+            </div>
           ) : (
             <div className="alert alert-info">
               In stock: {activeSize.stock} units · Delivered in 3-5 business days
