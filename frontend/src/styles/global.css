@@ -1099,6 +1099,24 @@ input:focus-visible + .filter-radio { outline: 2px solid var(--gold-2); outline-
 }
 .contact-split { grid-template-columns: 0.9fr 1.1fr; }
 
+/* ---------- Store locator ---------- */
+.store-locations {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 28px;
+}
+.store-card {
+  background: var(--paper);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+.store-card-map { width: 100%; aspect-ratio: 16/9; background: var(--cream-deep); }
+.store-card-map iframe { width: 100%; height: 100%; border: 0; }
+.store-card-body { padding: 24px 28px 28px; }
+.store-card-body h3 { margin-bottom: 8px; }
+.store-card-body p { margin-bottom: 6px; }
+
 /* ---------- Cart / Wishlist ---------- */
 .cart-layout { display: grid; grid-template-columns: 1.7fr 1fr; gap: 40px; align-items: start; }
 .cart-line {

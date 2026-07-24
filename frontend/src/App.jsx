@@ -33,6 +33,7 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import RefundPolicy from './pages/RefundPolicy';
 import TermsAndConditions from './pages/TermsAndConditions';
 import ImportInfo from './pages/ImportInfo';
+import StoreLocator from './pages/StoreLocator';
 
 import AdminLogin from './pages/admin/AdminLogin';
 import AdminLayout from './pages/admin/AdminLayout';
@@ -206,6 +207,7 @@ export default function App() {
         <Route path="/refund-policy" element={<RefundPolicy />} />
         <Route path="/terms" element={<TermsAndConditions />} />
         <Route path="/import" element={<ImportInfo />} />
+        <Route path="/store-locator" element={<StoreLocator />} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>

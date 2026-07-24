@@ -9,6 +9,7 @@ const PAGES = [
   { key: 'combos', label: 'Combo Offers', defaultTitle: 'Combo Offers', defaultSubtitle: "Hand-picked bundles of our oils, soaps and powders at a better price together." },
   { key: 'contact', label: 'Contact Us', defaultTitle: "We'd love to hear from you", defaultSubtitle: "Questions about an order, a product, or just want to say hello — reach us any way that's easy for you." },
   { key: 'bulk-enquiry', label: 'Bulk Enquiry', defaultTitle: 'Stock our oils in your store or kitchen', defaultSubtitle: 'We supply restaurants, retailers, gyms (for massage oils), and distributors across India in 5L, 15L and 35L containers, with GST invoicing and flexible delivery schedules.' },
+  { key: 'store-locator', label: 'Visit Us', defaultTitle: 'Visit Us', defaultSubtitle: 'Come see where your oils are pressed, straight from the source.' },
 ];
 
 function PageBannerCard({ page }) {

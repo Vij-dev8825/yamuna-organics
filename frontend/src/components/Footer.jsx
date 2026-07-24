@@ -2,12 +2,13 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useLang, LANGS } from '../i18n';
 import { useCurrency, COUNTRIES } from '../context/CurrencyContext';
+import { STORE_LOCATIONS, mapEmbedSrc, directionsUrl } from '../data/storeLocations';
 
 const SUPPORT_PHONE = '+918825875607';
 const SUPPORT_EMAIL = 'westerngodsorganic@gmail.com';
-const MILL_ADDRESS = 'Shri Gopal Flour & Oil Mills, Udumalpet, Tiruppur District, Tamil Nadu – 642126';
-const MAP_EMBED_SRC = `https://maps.google.com/maps?q=${encodeURIComponent(MILL_ADDRESS)}&z=14&output=embed`;
-const DIRECTIONS_URL = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(MILL_ADDRESS)}`;
+const MILL_ADDRESS = STORE_LOCATIONS[0].address;
+const MAP_EMBED_SRC = mapEmbedSrc(MILL_ADDRESS);
+const DIRECTIONS_URL = directionsUrl(MILL_ADDRESS);
 
 function FooterAccordion({ title, isOpen, onToggle, children }) {
   return (
@@ -124,6 +125,7 @@ export default function Footer() {
               <li><Link to="/blog">{t('navBlog')}</Link></li>
               <li><Link to="/bulk-enquiry">{t('footerBulk')}</Link></li>
               <li><Link to="/contact">{t('navContact')}</Link></li>
+              <li><Link to="/store-locator">{t('footerVisitUs')}</Link></li>
               <li><Link to="/cart">{t('footerCart')}</Link></li>
               <li><Link to="/orders">{t('footerOrders')}</Link></li>
               <li><Link to="/wishlist">{t('footerWishlist')}</Link></li>
