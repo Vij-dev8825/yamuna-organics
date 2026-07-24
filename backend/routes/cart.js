@@ -4,7 +4,10 @@ const { requireAuth } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Carts are stored one document per user: { id: userId, items: [...] }.
+// Carts are stored one document per user: { id: userId, items: [...],
+// updatedAt, remindedAt }. remindedAt is cleared on every mutation so a
+// fresh abandonment window starts each time the customer touches their
+// cart again — see utils/abandonedCarts.js.
 
 async function getItems(userId) {
   const doc = await db.get('carts', userId);
@@ -12,7 +15,7 @@ async function getItems(userId) {
 }
 
 async function saveItems(userId, items) {
-  await db.put('carts', { id: userId, items });
+  await db.put('carts', { id: userId, items, updatedAt: new Date().toISOString(), remindedAt: null });
   return items;
 }
 

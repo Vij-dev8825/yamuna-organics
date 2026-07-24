@@ -18,6 +18,7 @@ function absoluteImageUrl(image) {
 function notificationUrl(meta) {
   if (meta.productId) return `/product/${meta.productId}`;
   if (meta.orderId) return '/orders';
+  if (meta.cart) return '/cart';
   return '/notifications';
 }
 

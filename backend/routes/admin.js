@@ -10,6 +10,7 @@ const { UPLOADS_DIR } = require('../data/seed');
 const cloudinary = require('../utils/cloudinary');
 const { compressAndStore, compressVideoAndStore } = require('../utils/mediaStore');
 const { processDueSubscriptions } = require('../utils/subscriptions');
+const { processAbandonedCarts } = require('../utils/abandonedCarts');
 const { PAGES: PAGE_BANNER_PAGES } = require('./pageBanners');
 const { sendMail } = require('../utils/mailer');
 const { getCountries, getFullLiveRates } = require('./currency');
@@ -1152,6 +1153,17 @@ router.get('/subscriptions', async (req, res, next) => {
 router.post('/subscriptions/run', async (req, res, next) => {
   try {
     const results = await processDueSubscriptions();
+    res.json({ success: true, results });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/admin/abandoned-carts/run — manual fallback/testing trigger
+// (alongside the automatic hourly check in server.js)
+router.post('/abandoned-carts/run', async (req, res, next) => {
+  try {
+    const results = await processAbandonedCarts();
     res.json({ success: true, results });
   } catch (err) {
     next(err);

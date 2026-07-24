@@ -23,6 +23,7 @@ const configRoutes = require('./routes/config');
 const couponRoutes = require('./routes/coupons');
 const subscriptionRoutes = require('./routes/subscriptions');
 const { processDueSubscriptions } = require('./utils/subscriptions');
+const { processAbandonedCarts } = require('./utils/abandonedCarts');
 const mediaRoutes = require('./routes/media');
 const catalogRoutes = require('./routes/catalog');
 const blogRoutes = require('./routes/blog');
@@ -121,6 +122,11 @@ const PORT = process.env.PORT || 5000;
     processDueSubscriptions().catch((err) => console.error('processDueSubscriptions failed:', err));
     setInterval(() => {
       processDueSubscriptions().catch((err) => console.error('processDueSubscriptions failed:', err));
+    }, 60 * 60 * 1000);
+
+    processAbandonedCarts().catch((err) => console.error('processAbandonedCarts failed:', err));
+    setInterval(() => {
+      processAbandonedCarts().catch((err) => console.error('processAbandonedCarts failed:', err));
     }, 60 * 60 * 1000);
   } catch (err) {
     console.error('Failed to start:', err);
