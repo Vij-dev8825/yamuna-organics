@@ -15,6 +15,7 @@ import ImageLightbox from '../components/ImageLightbox';
 import DeliveryEstimate from '../components/DeliveryEstimate';
 import TrustBadges from '../components/TrustBadges';
 import StructuredData from '../components/StructuredData';
+import SeoMeta from '../components/SeoMeta';
 import { IconHeart } from '../components/Icons';
 import { CANONICAL_ORIGIN } from '../utils/site';
 
@@ -55,7 +56,10 @@ function buildProductSchema(product) {
   const inStock = product.sizes.some((s) => s.stock > 0);
   const url = `${CANONICAL_ORIGIN}/product/${product.id}`;
   const rawImage = getProductImage(product.image);
-  const image = rawImage.startsWith('http') ? rawImage : `${CANONICAL_ORIGIN}${rawImage}`;
+  // Generated placeholder images are inline data: URIs, not relative paths —
+  // only prepend the origin for genuinely relative URLs, or this produces a
+  // broken "https://...comdata:image/svg+xml..." string for those products.
+  const image = /^[a-z][a-z0-9+.-]*:/i.test(rawImage) ? rawImage : `${CANONICAL_ORIGIN}${rawImage}`;
 
   const schema = {
     '@context': 'https://schema.org',
@@ -280,6 +284,16 @@ export default function ProductDetail() {
 
   return (
     <div className="container section">
+      <SeoMeta
+        title={`${product.name} | Western Gods Organics`}
+        description={(product.shortDescription || product.description || '').slice(0, 160)}
+        // Placeholder products use an inline data: URI image — social-share
+        // crawlers can't fetch that as an og:image, so fall back to the
+        // site logo instead of a link preview with a broken picture.
+        image={productSchema.image.startsWith('http') ? productSchema.image : undefined}
+        type="product"
+        path={`/product/${product.id}`}
+      />
       <StructuredData id="ld-product" data={productSchema} />
       <div className="breadcrumb">
         <Link to="/shop">Shop</Link> / {product.name}

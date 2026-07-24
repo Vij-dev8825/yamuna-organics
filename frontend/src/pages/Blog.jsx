@@ -5,6 +5,7 @@ import { getProductImage } from '../utils/productImages';
 import ChakkiWheel from '../components/ChakkiWheel';
 import BlogShare from '../components/BlogShare';
 import BlogLike from '../components/BlogLike';
+import SeoMeta from '../components/SeoMeta';
 import { useLang } from '../i18n';
 
 export default function Blog() {
@@ -29,6 +30,11 @@ export default function Blog() {
 
   return (
     <div className="section" style={{ paddingTop: 0 }}>
+      <SeoMeta
+        title="Blog — Cold-Pressed Oils, Herbal Soaps & Ayurvedic Living | Western Gods Organics"
+        description="Articles on traditional wood-pressed oils, handmade herbal soaps, herbal powders, and Ayurvedic wellness rituals from Western Gods Organics."
+        path="/blog"
+      />
       <div
         className={`page-banner ${banner.bannerImage ? 'has-image' : ''}`}
         style={banner.bannerImage ? { backgroundImage: `url(${getProductImage(banner.bannerImage)})` } : undefined}

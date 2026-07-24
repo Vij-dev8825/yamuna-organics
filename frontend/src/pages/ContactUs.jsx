@@ -3,6 +3,7 @@ import { api } from '../api';
 import { isValidEmail, isValidPhone } from '../utils/validators';
 import ChakkiWheel from '../components/ChakkiWheel';
 import PageBanner from '../components/PageBanner';
+import SeoMeta from '../components/SeoMeta';
 
 function validate(form) {
   const errors = {};
@@ -44,6 +45,11 @@ export default function ContactUs() {
 
   return (
     <div className="section" style={{ paddingTop: 0 }}>
+      <SeoMeta
+        title="Contact Us | Western Gods Organics"
+        description="Get in touch with Western Gods Organics for questions about our cold-pressed oils, herbal soaps, herbal powders, orders, or bulk enquiries."
+        path="/contact"
+      />
       <PageBanner
         page="contact"
         title="We'd love to hear from you"

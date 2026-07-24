@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { api } from '../api';
 import { getProductImage } from '../utils/productImages';
 import PageBanner from '../components/PageBanner';
+import SeoMeta from '../components/SeoMeta';
 import { useLang } from '../i18n';
 
 export default function Categories() {
@@ -15,6 +16,11 @@ export default function Categories() {
 
   return (
     <div className="section" style={{ paddingTop: 0 }}>
+      <SeoMeta
+        title="Shop by Category — Oils, Soaps & Herbal Powders | Western Gods Organics"
+        description="Explore our cold-pressed oils, handmade herbal soaps and stone-ground herbal powders by category — traditional, natural, and chemical-free."
+        path="/categories"
+      />
       <PageBanner page="categories" title={t('catEyebrow')} subtitle={t('catPageSub')} />
       <div className="container">
         <div className="breadcrumb">{t('navHome')} / {t('navCategories')}</div>

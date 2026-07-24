@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import ProductCard from '../components/ProductCard';
 import ChakkiWheel from '../components/ChakkiWheel';
 import PageBanner from '../components/PageBanner';
+import SeoMeta from '../components/SeoMeta';
 import { api } from '../api';
 
 export default function Combos() {
@@ -17,6 +18,11 @@ export default function Combos() {
 
   return (
     <div className="section" style={{ paddingTop: 0 }}>
+      <SeoMeta
+        title="Combo Offers — Bundle & Save | Western Gods Organics"
+        description="Hand-picked combo bundles of our cold-pressed oils, herbal soaps and powders at a better price together."
+        path="/combos"
+      />
       <PageBanner
         page="combos"
         title="Combo Offers"

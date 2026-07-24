@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 
 /**
  * Lightweight i18n: flat key → string dictionaries per language.
@@ -152,7 +152,7 @@ const en = {
   footerWhatsapp: 'Chat on WhatsApp',
   footerAbout: 'About Us',
   footerAboutText:
-    'A small family mill in Udumalpet, Tamil Nadu, pressing oils the traditional wood-pressed (kachi ghani) way for over 60 years — in small weekly batches, traceable back to the farmers we source from.',
+    'A small family mill in Udumalpet, Tamil Nadu, making traditional wood-pressed (kachi ghani) oils, handmade soaps and stone-ground powders for over 60 years — in small weekly batches, traceable back to the farmers we source from.',
   footerProducts: 'Our Products',
   footerB2B: 'B2B',
   footerB2BText: 'Supplying restaurants, stores and events in bulk — 15L, 35L drums and custom quantities, with GST invoicing.',
@@ -321,7 +321,7 @@ const hi = {
   footerWhatsapp: 'व्हाट्सएप पर चैट करें',
   footerAbout: 'हमारे बारे में',
   footerAboutText:
-    'उदुमलपेट, तमिलनाडु में एक छोटी पारिवारिक मिल — 60 से अधिक वर्षों से पारंपरिक लकड़ी-पेराई (कच्ची घानी) तरीक़े से, छोटे साप्ताहिक बैचों में, उन किसानों तक ट्रेस करने योग्य जिनसे हम सामग्री लेते हैं।',
+    'उदुमलपेट, तमिलनाडु में एक छोटी पारिवारिक मिल — 60 से अधिक वर्षों से पारंपरिक लकड़ी-पेराई (कच्ची घानी) तेल, हाथ के बने साबुन और सिल-पिसे चूर्ण बनाती हुई, छोटे साप्ताहिक बैचों में, उन किसानों तक ट्रेस करने योग्य जिनसे हम सामग्री लेते हैं।',
   footerProducts: 'हमारे उत्पाद',
   footerB2B: 'B2B',
   footerB2BText: 'रेस्टोरेंट, दुकानों और आयोजनों को थोक में आपूर्ति — 15L, 35L ड्रम और कस्टम मात्रा, GST बिल के साथ।',
@@ -488,7 +488,7 @@ const ta = {
   footerWhatsapp: 'வாட்ஸ்அப்பில் அரட்டையடிக்கவும்',
   footerAbout: 'எங்களைப் பற்றி',
   footerAboutText:
-    'தமிழ்நாட்டின் உடுமலைப்பேட்டையில் உள்ள ஒரு சிறிய குடும்ப ஆலை — 60 ஆண்டுகளுக்கும் மேலாக பாரம்பரிய மரச்செக்கு (கச்சி காணி) முறையில், சிறு வாராந்திர தொகுப்புகளில், நாங்கள் மூலப்பொருள் பெறும் விவசாயிகள் வரை தடமறியக்கூடியது.',
+    'தமிழ்நாட்டின் உடுமலைப்பேட்டையில் உள்ள ஒரு சிறிய குடும்ப ஆலை — 60 ஆண்டுகளுக்கும் மேலாக பாரம்பரிய முறையில் மரச்செக்கு எண்ணெய்கள், கைவினை சோப்புகள் மற்றும் கல்லில் அரைத்த பொடிகள் தயாரிக்கிறது, சிறு வாராந்திர தொகுப்புகளில், நாங்கள் மூலப்பொருள் பெறும் விவசாயிகள் வரை தடமறியக்கூடியது.',
   footerProducts: 'எங்கள் பொருட்கள்',
   footerB2B: 'B2B',
   footerB2BText: 'உணவகங்கள், கடைகள் மற்றும் நிகழ்வுகளுக்கு மொத்தமாக வழங்குகிறோம் — 15L, 35L டிரம் மற்றும் தேவைக்கேற்ற அளவு, GST பில்லுடன்.',
@@ -655,7 +655,7 @@ const te = {
   footerWhatsapp: 'వాట్సాప్‌లో చాట్ చేయండి',
   footerAbout: 'మా గురించి',
   footerAboutText:
-    'తమిళనాడులోని ఉదుమలైపేటలో ఉన్న ఒక చిన్న కుటుంబ మిల్లు — 60 సంవత్సరాలకు పైగా సాంప్రదాయ కలప-పిండిన (కచ్చి ఘాని) పద్ధతిలో, చిన్న వారపు బ్యాచ్‌లలో, మేము పదార్థాలు తీసుకునే రైతుల వరకు గుర్తించదగినది.',
+    'తమిళనాడులోని ఉదుమలైపేటలో ఉన్న ఒక చిన్న కుటుంబ మిల్లు — 60 సంవత్సరాలకు పైగా సాంప్రదాయ కలప-పిండిన (కచ్చి ఘాని) నూనెలు, చేతితో తయారు చేసిన సబ్బులు మరియు రాతిలో రుబ్బిన పొడులు తయారు చేస్తుంది, చిన్న వారపు బ్యాచ్‌లలో, మేము పదార్థాలు తీసుకునే రైతుల వరకు గుర్తించదగినది.',
   footerProducts: 'మా ఉత్పత్తులు',
   footerB2B: 'B2B',
   footerB2BText: 'రెస్టారెంట్లు, దుకాణాలు మరియు ఈవెంట్లకు టోకుగా సరఫరా చేస్తాము — 15L, 35L డ్రమ్‌లు మరియు అనుకూల పరిమాణాలు, GST ఇన్వాయిస్‌తో.',
@@ -822,7 +822,7 @@ const kn = {
   footerWhatsapp: 'ವಾಟ್ಸಾಪ್‌ನಲ್ಲಿ ಚಾಟ್ ಮಾಡಿ',
   footerAbout: 'ನಮ್ಮ ಬಗ್ಗೆ',
   footerAboutText:
-    'ತಮಿಳುನಾಡಿನ ಉದುಮಲೈಪೇಟೆಯಲ್ಲಿರುವ ಒಂದು ಚಿಕ್ಕ ಕುಟುಂಬ ಗಿರಣಿ — 60 ವರ್ಷಗಳಿಗೂ ಹೆಚ್ಚು ಕಾಲ ಸಾಂಪ್ರದಾಯಿಕ ಮರದ ಗಾಣದ (ಕಚ್ಚಿ ಘಾಣಿ) ರೀತಿಯಲ್ಲಿ, ಚಿಕ್ಕ ವಾರದ ಬ್ಯಾಚ್‌ಗಳಲ್ಲಿ, ನಾವು ಪದಾರ್ಥ ಪಡೆಯುವ ರೈತರವರೆಗೆ ಪತ್ತೆಹಚ್ಚಬಹುದಾದ.',
+    'ತಮಿಳುನಾಡಿನ ಉದುಮಲೈಪೇಟೆಯಲ್ಲಿರುವ ಒಂದು ಚಿಕ್ಕ ಕುಟುಂಬ ಗಿರಣಿ — 60 ವರ್ಷಗಳಿಗೂ ಹೆಚ್ಚು ಕಾಲ ಸಾಂಪ್ರದಾಯಿಕ ಮರದ ಗಾಣದ (ಕಚ್ಚಿ ಘಾಣಿ) ಎಣ್ಣೆಗಳು, ಕೈಯಿಂದ ತಯಾರಿಸಿದ ಸಾಬೂನುಗಳು ಮತ್ತು ಕಲ್ಲಿನಲ್ಲಿ ಅರೆದ ಪುಡಿಗಳನ್ನು ತಯಾರಿಸುತ್ತದೆ, ಚಿಕ್ಕ ವಾರದ ಬ್ಯಾಚ್‌ಗಳಲ್ಲಿ, ನಾವು ಪದಾರ್ಥ ಪಡೆಯುವ ರೈತರವರೆಗೆ ಪತ್ತೆಹಚ್ಚಬಹುದಾದ.',
   footerProducts: 'ನಮ್ಮ ಉತ್ಪನ್ನಗಳು',
   footerB2B: 'B2B',
   footerB2BText: 'ರೆಸ್ಟೋರೆಂಟ್‌ಗಳು, ಅಂಗಡಿಗಳು ಮತ್ತು ಈವೆಂಟ್‌ಗಳಿಗೆ ಸಗಟಾಗಿ ಪೂರೈಸುತ್ತೇವೆ — 15L, 35L ಡ್ರಮ್‌ಗಳು ಮತ್ತು ಕಸ್ಟಮ್ ಪ್ರಮಾಣಗಳು, GST ಇನ್‌ವಾಯ್ಸ್‌ನೊಂದಿಗೆ.',
@@ -871,11 +871,17 @@ export function LanguageProvider({ children }) {
     return dictionaries[saved] ? saved : 'en';
   });
 
+  // Also syncs on first mount for a returning visitor's saved language, not
+  // just on an active switch — search engines and screen readers read this
+  // attribute, and it was previously left as the static index.html default.
+  useEffect(() => {
+    document.documentElement.lang = lang;
+  }, [lang]);
+
   function setLang(code) {
     if (!dictionaries[code]) return;
     localStorage.setItem('yo_lang', code);
     setLangState(code);
-    document.documentElement.lang = code;
   }
 
   function t(key) {

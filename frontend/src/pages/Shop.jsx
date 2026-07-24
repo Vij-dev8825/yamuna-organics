@@ -4,6 +4,7 @@ import { api } from '../api';
 import ProductCard from '../components/ProductCard';
 import ChakkiWheel from '../components/ChakkiWheel';
 import PageBanner from '../components/PageBanner';
+import SeoMeta from '../components/SeoMeta';
 import { useLang } from '../i18n';
 
 export default function Shop() {
@@ -54,6 +55,11 @@ export default function Shop() {
 
   return (
     <div className="section" style={{ paddingTop: 0 }}>
+      <SeoMeta
+        title={category === 'all' ? 'Shop All Products | Western Gods Organics' : `${heading} | Western Gods Organics`}
+        description="Browse our full range of traditional wood-pressed cold-pressed oils, handmade herbal soaps and stone-ground herbal powders — 100% natural, chemical-free, shipped across India and worldwide."
+        path="/shop"
+      />
       <PageBanner page="shop" title={t('shopTitle')} subtitle={t('shopBannerSub')} />
       <div className="container">
       <div className="breadcrumb">{t('navHome')} / {t('shopTitle')} {category !== 'all' && `/ ${heading}`}</div>

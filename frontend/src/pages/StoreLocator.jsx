@@ -1,9 +1,15 @@
 import PageBanner from '../components/PageBanner';
+import SeoMeta from '../components/SeoMeta';
 import { STORE_LOCATIONS, mapEmbedSrc, directionsUrl } from '../data/storeLocations';
 
 export default function StoreLocator() {
   return (
     <div className="section" style={{ paddingTop: 0 }}>
+      <SeoMeta
+        title="Visit Our Mill — Store Locator | Western Gods Organics"
+        description="Visit our family mill in Udumalpet, Tamil Nadu, where our cold-pressed oils, herbal soaps and powders are made. Find address, hours, and directions."
+        path="/store-locator"
+      />
       <PageBanner
         page="store-locator"
         title="Visit Us"

@@ -3,6 +3,7 @@ import { api } from '../api';
 import { useAuth } from '../context/AuthContext';
 import { isValidEmail, isValidPhone } from '../utils/validators';
 import ChakkiWheel from '../components/ChakkiWheel';
+import SeoMeta from '../components/SeoMeta';
 
 const initial = {
   name: '', company: '', phone: '', email: '', country: '',
@@ -51,6 +52,11 @@ export default function ImportInfo() {
 
   return (
     <div className="container section">
+      <SeoMeta
+        title="Import Cold-Pressed Oils, Herbal Soaps & Powders | Western Gods Organics"
+        description="Import authentic Indian cold-pressed oils, handmade herbal soaps and stone-ground herbal powders to your country. Export-ready, GST/IEC invoicing, worldwide shipping."
+        path="/import"
+      />
       <div className="breadcrumb">Home / Import to Your Country</div>
       <div className="two-col-split">
         <div>

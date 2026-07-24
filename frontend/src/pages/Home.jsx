@@ -6,6 +6,7 @@ import SectionDivider from '../components/SectionDivider';
 import ChakkiWheel from '../components/ChakkiWheel';
 import GoogleReviewsWidget from '../components/GoogleReviewsWidget';
 import StructuredData from '../components/StructuredData';
+import SeoMeta from '../components/SeoMeta';
 import { getProductImage } from '../utils/productImages';
 import { getRecentlyViewedIds } from '../utils/recentlyViewed';
 import { useLang } from '../i18n';
@@ -20,6 +21,8 @@ const ORGANIZATION_SCHEMA = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
   name: 'Western Gods Organics',
+  description:
+    'Traditional wood-pressed cold-pressed oils, handmade herbal soaps and stone-ground herbal powders — 100% natural and chemical-free, from a family mill in Tamil Nadu, India, shipped across India and worldwide.',
   url: CANONICAL_ORIGIN,
   logo: `${CANONICAL_ORIGIN}/favicon-96x96.png`,
   image: `${CANONICAL_ORIGIN}/favicon-96x96.png`,
@@ -108,6 +111,11 @@ export default function Home() {
 
   return (
     <>
+      <SeoMeta
+        title="Western Gods Organics — Cold-Pressed Oils, Herbal Soaps & Powders"
+        description="Shop traditional wood-pressed cold-pressed oils, handmade herbal soaps and stone-ground herbal powders from a family mill in Tamil Nadu, India. 100% natural, chemical-free, shipped across India and worldwide."
+        path="/"
+      />
       <StructuredData id="ld-organization" data={ORGANIZATION_SCHEMA} />
       <StructuredData id="ld-website" data={WEBSITE_SCHEMA} />
 
@@ -126,7 +134,12 @@ export default function Home() {
               preload={i === 0 ? 'auto' : 'metadata'}
             />
           ) : (
-            <img key={b.id} className={`hero-media ${i === current ? 'visible' : ''}`} src={b.url} alt="" />
+            <img
+              key={b.id}
+              className={`hero-media ${i === current ? 'visible' : ''}`}
+              src={b.url}
+              alt={b.title || 'Western Gods Organics — cold-pressed oils, herbal soaps and powders'}
+            />
           )
         )}
         <div className="hero-overlay" />

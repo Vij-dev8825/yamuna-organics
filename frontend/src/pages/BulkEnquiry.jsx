@@ -5,6 +5,7 @@ import { useCurrency } from '../context/CurrencyContext';
 import { isValidEmail, isValidPhone } from '../utils/validators';
 import ChakkiWheel from '../components/ChakkiWheel';
 import PageBanner from '../components/PageBanner';
+import SeoMeta from '../components/SeoMeta';
 
 const SUPPORT_PHONE = '+918825875607';
 
@@ -93,6 +94,11 @@ export default function BulkEnquiry() {
 
   return (
     <div className="section" style={{ paddingTop: 0 }}>
+      <SeoMeta
+        title="Bulk & Wholesale Enquiry | Western Gods Organics"
+        description="Buy wholesale cold-pressed oils, herbal soaps and powders in bulk. GST invoicing, private-label bottling, and worldwide export shipping available."
+        path="/bulk-enquiry"
+      />
       <PageBanner
         page="bulk-enquiry"
         title="Stock our oils in your store or kitchen"

@@ -6,6 +6,8 @@ import ChakkiWheel from '../components/ChakkiWheel';
 import BlogShare from '../components/BlogShare';
 import BlogLike from '../components/BlogLike';
 import BlogComments from '../components/BlogComments';
+import SeoMeta from '../components/SeoMeta';
+import { CANONICAL_ORIGIN } from '../utils/site';
 import { useLang } from '../i18n';
 
 export default function BlogPost() {
@@ -57,8 +59,22 @@ export default function BlogPost() {
     );
   }
 
+  const rawImage = post.image ? getProductImage(post.image) : '';
+  const resolvedImage = rawImage && (/^[a-z][a-z0-9+.-]*:/i.test(rawImage) ? rawImage : `${CANONICAL_ORIGIN}${rawImage}`);
+  // Placeholder posts use an inline data: URI image — social-share crawlers
+  // can't fetch that as an og:image, so fall back to the site logo instead
+  // of a link preview with a broken picture.
+  const ogImage = resolvedImage.startsWith('http') ? resolvedImage : undefined;
+
   return (
     <div className="container section blog-post">
+      <SeoMeta
+        title={`${post.title} | Western Gods Organics Blog`}
+        description={(post.excerpt || '').slice(0, 160)}
+        image={ogImage}
+        type="article"
+        path={`/blog/${post.id}`}
+      />
       <div className="breadcrumb">
         {t('navHome')} / <Link to="/blog">{t('navBlog')}</Link> / {post.title}
       </div>

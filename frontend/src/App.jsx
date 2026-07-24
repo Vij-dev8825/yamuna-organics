@@ -11,6 +11,7 @@ import CookieConsent from './components/CookieConsent';
 import PushOptIn from './components/PushOptIn';
 import SaleCountdown from './components/SaleCountdown';
 import WelcomeSelector from './components/WelcomeSelector';
+import SeoMeta from './components/SeoMeta';
 
 import Home from './pages/Home';
 import Shop from './pages/Shop';
@@ -59,6 +60,7 @@ import AdminCountries from './pages/admin/AdminCountries';
 function NotFound() {
   return (
     <div className="container" style={{ padding: '96px 0', textAlign: 'center' }}>
+      <SeoMeta title="Page Not Found | Western Gods Organics" description="This page doesn't exist. Explore our cold-pressed oils, herbal soaps and powders." />
       <h1 style={{ fontSize: '3rem' }}>404</h1>
       <p>This field hasn't been sown yet. The page you're looking for doesn't exist.</p>
       <a className="btn btn-gold" href="/">
