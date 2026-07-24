@@ -716,7 +716,7 @@ router.patch('/orders/:id', async (req, res, next) => {
         title: `Order ${order.orderNumber} ${order.status}`,
         message: `Your order is now "${order.status}". Total ₹${order.total}.`,
         meta: { orderId: order.id },
-        channels: { inapp: true, email: true, sms: order.status === 'shipped' },
+        channels: { inapp: true, email: true, sms: order.status === 'shipped', whatsapp: true },
       });
     }
     if (ADMIN_EMAIL) {
@@ -760,7 +760,7 @@ router.patch('/orders/:id/return', async (req, res, next) => {
         title: `Return request update — order ${order.orderNumber}`,
         message: messages[order.returnRequest.status],
         meta: { orderId: order.id },
-        channels: { inapp: true, email: true },
+        channels: { inapp: true, email: true, whatsapp: true },
       });
     }
 

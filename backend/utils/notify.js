@@ -2,6 +2,7 @@ const { v4: uuid } = require('uuid');
 const db = require('../data/db');
 const { sendMail } = require('./mailer');
 const { sendSms } = require('./sms');
+const { sendWhatsApp } = require('./whatsapp');
 const { sendPush, sendPushToAnonymous } = require('./push');
 
 const SITE_URL = process.env.SITE_URL || 'https://yamuna-organics.onrender.com';
@@ -24,12 +25,12 @@ function notificationUrl(meta) {
 
 /**
  * Push a notification to one user over the selected channels.
- * channels: { inapp?: bool, email?: bool, sms?: bool, push?: bool }
+ * channels: { inapp?: bool, email?: bool, sms?: bool, whatsapp?: bool, push?: bool }
  * (in-app and push are on by default — push silently no-ops for users with
  * no registered browser subscription, so it's safe to always attempt.)
  */
 async function notifyUser(user, { title, message, image, meta = {}, channels = { inapp: true } }) {
-  const results = { inapp: false, email: false, sms: false, push: false };
+  const results = { inapp: false, email: false, sms: false, whatsapp: false, push: false };
   const imageUrl = absoluteImageUrl(image);
 
   if (channels.inapp !== false) {
@@ -56,6 +57,10 @@ async function notifyUser(user, { title, message, image, meta = {}, channels = {
     const r = await sendSms(user.phone, `${title} — ${message}`);
     results.sms = !!r.sent;
   }
+  if (channels.whatsapp && user.phone) {
+    const r = await sendWhatsApp(user.phone, `*${title}*\n${message}`);
+    results.whatsapp = !!r.sent;
+  }
   if (channels.push !== false) {
     const r = await sendPush(user.id, {
       title,
@@ -74,13 +79,14 @@ async function notifyUser(user, { title, message, image, meta = {}, channels = {
  */
 async function broadcast({ title, message, image, channels, meta = {} }) {
   const users = (await db.list('users')).filter((u) => u.role !== 'admin');
-  const counts = { audience: users.length, inapp: 0, email: 0, sms: 0, push: 0 };
+  const counts = { audience: users.length, inapp: 0, email: 0, sms: 0, whatsapp: 0, push: 0 };
 
   for (const user of users) {
     const r = await notifyUser(user, { title, message, image, meta, channels });
     if (r.inapp) counts.inapp += 1;
     if (r.email) counts.email += 1;
     if (r.sms) counts.sms += 1;
+    if (r.whatsapp) counts.whatsapp += 1;
     if (r.push) counts.push += 1;
   }
 

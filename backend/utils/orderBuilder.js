@@ -162,7 +162,7 @@ async function createOrderRecord({ userId, orderItems, address, total, discount,
         ? `Your subscription renewed: ${orderItems.length} item(s) totalling ₹${total}. We'll notify you when it ships.`
         : `We've received your order of ${orderItems.length} item(s) totalling ₹${total}. We'll notify you when it ships.`,
       meta: { orderId: order.id },
-      channels: { inapp: true, email: true },
+      channels: { inapp: true, email: true, whatsapp: true },
     });
   }
   notifyAdminOfOrder(order, user);

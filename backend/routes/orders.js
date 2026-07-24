@@ -257,7 +257,7 @@ router.patch('/:id/cancel', requireAuth, async (req, res, next) => {
             ? "Your order has been cancelled. Since it was prepaid, we'll process your refund within 5-7 business days."
             : 'Your order has been cancelled.',
         meta: { orderId: order.id },
-        channels: { inapp: true, email: true },
+        channels: { inapp: true, email: true, whatsapp: true },
       });
     }
 
@@ -315,7 +315,7 @@ router.patch('/:id/return', requireAuth, async (req, res, next) => {
         title: `Return requested for order ${order.orderNumber}`,
         message: "We've received your return request and will review it shortly.",
         meta: { orderId: order.id },
-        channels: { inapp: true, email: true },
+        channels: { inapp: true, email: true, whatsapp: true },
       });
     }
 
