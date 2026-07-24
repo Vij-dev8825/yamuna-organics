@@ -1,9 +1,12 @@
 const db = require('../data/db');
 
-// Gemini 2.5 Flash is the model covered by Google's free tier (1,500
-// requests/day, no billing required) as of when this was built — override
-// via GEMINI_MODEL if that changes or a paid tier is set up later.
-const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+// "gemini-flash-latest" is an alias Google keeps pointed at its current
+// recommended free-tier flash model (resolves to gemini-3.6-flash as of when
+// this was built) — pinning to a specific dated model name instead breaks
+// the moment Google deprecates it for new API keys, which is exactly what
+// happened with the initially-hardcoded gemini-2.5-flash. Override via
+// GEMINI_MODEL if a paid tier or a different model is set up later.
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-flash-latest';
 const MAX_HISTORY_TURNS = 8;
 const MAX_MESSAGE_CHARS = 1000;
 
