@@ -116,6 +116,9 @@ export const api = {
   getChatUnread: (token) => request('/chat/unread', { token }),
   sendChat: (token, text) => request('/chat', { method: 'POST', body: { text }, token }),
 
+  // AI shopping/support assistant (no login required)
+  askAiAssistant: (message, history) => request('/ai-assistant', { method: 'POST', body: { message, history } }),
+
   // admin
   admin: {
     stats: (token) => request('/admin/stats', { token }),

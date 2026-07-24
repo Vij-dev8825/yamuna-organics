@@ -1,0 +1,53 @@
+const express = require('express');
+const { askAssistant } = require('../utils/aiAssistant');
+
+const router = express.Router();
+
+// Simple in-memory per-IP daily cap — Google's free Gemini tier is a single
+// shared quota (1,500 requests/day) for the whole site, so this protects it
+// from being exhausted by one abusive client. Resets naturally on redeploy;
+// no persistence needed for a soft anti-abuse limit like this.
+const RATE_LIMIT_PER_DAY = 60;
+const usage = new Map(); // ip -> { count, day }
+
+function todayKey() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function checkRateLimit(ip) {
+  const day = todayKey();
+  const entry = usage.get(ip);
+  if (!entry || entry.day !== day) {
+    usage.set(ip, { count: 1, day });
+    return true;
+  }
+  if (entry.count >= RATE_LIMIT_PER_DAY) return false;
+  entry.count += 1;
+  return true;
+}
+
+// POST /api/ai-assistant  { message, history?: [{from:'user'|'bot', text}] }
+router.post('/', async (req, res, next) => {
+  try {
+    const { message, history } = req.body;
+    if (!message || !message.trim()) {
+      return res.status(400).json({ success: false, message: 'Enter a message.' });
+    }
+    if (message.length > 1000) {
+      return res.status(400).json({ success: false, message: 'Message is too long.' });
+    }
+    if (!checkRateLimit(req.ip)) {
+      return res.status(429).json({
+        success: false,
+        message: 'You\'ve reached today\'s limit for the AI assistant — please try again tomorrow, or use "Chat with us" instead.',
+      });
+    }
+
+    const result = await askAssistant(message.trim(), Array.isArray(history) ? history : []);
+    res.json({ success: true, reply: result.reply });
+  } catch (err) {
+    next(err);
+  }
+});
+
+module.exports = router;

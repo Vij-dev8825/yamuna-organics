@@ -34,6 +34,7 @@ const currencyRoutes = require('./routes/currency');
 const saleBannerRoutes = require('./routes/saleBanner');
 const stockNotifyRoutes = require('./routes/stockNotify');
 const homepageReviewsRoutes = require('./routes/homepageReviews');
+const aiAssistantRoutes = require('./routes/aiAssistant');
 
 const app = express();
 
@@ -74,6 +75,7 @@ app.use('/api/currency', currencyRoutes);
 app.use('/api/sale-banner', saleBannerRoutes);
 app.use('/api/stock-notify', stockNotifyRoutes);
 app.use('/api/homepage-reviews', homepageReviewsRoutes);
+app.use('/api/ai-assistant', aiAssistantRoutes);
 
 // Uploaded banner videos/images
 app.use('/uploads', express.static(UPLOADS_DIR, { maxAge: '7d' }));
