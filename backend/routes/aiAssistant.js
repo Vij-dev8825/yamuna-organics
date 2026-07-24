@@ -44,7 +44,7 @@ router.post('/', async (req, res, next) => {
     }
 
     const result = await askAssistant(message.trim(), Array.isArray(history) ? history : []);
-    res.json({ success: true, reply: result.reply });
+    res.json({ success: true, reply: result.reply, productIds: result.productIds || [] });
   } catch (err) {
     next(err);
   }

@@ -1,21 +1,67 @@
 import { useEffect, useRef, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { api } from '../api';
+import { useCart } from '../context/CartContext';
+import { useToast } from '../context/ToastContext';
+import { getProductImage } from '../utils/productImages';
+
+function ProductChatCard({ product }) {
+  const { addItem } = useCart();
+  const { showToast } = useToast();
+  if (!product) return null;
+
+  const sizes = product.sizes || [];
+  const prices = sizes.map((s) => s.price);
+  const priceLabel = prices.length
+    ? prices.length > 1
+      ? `₹${Math.min(...prices)}–₹${Math.max(...prices)}`
+      : `₹${prices[0]}`
+    : '';
+  const defaultSize = sizes.find((s) => s.stock > 0);
+
+  function handleAddToCart() {
+    if (!defaultSize) return;
+    addItem(product.id, defaultSize.label, 1);
+    showToast(`${product.name} (${defaultSize.label}) added to cart`);
+  }
+
+  return (
+    <div className="ai-product-card">
+      <img src={getProductImage(product.image)} alt={product.name} />
+      <div className="ai-product-card-info">
+        <b>{product.name}</b>
+        <span className="muted">{priceLabel}</span>
+        <div className="ai-product-card-actions">
+          <Link to={`/product/${product.id}`} className="btn btn-outline btn-sm">View</Link>
+          <button type="button" className="btn btn-gold btn-sm" disabled={!defaultSize} onClick={handleAddToCart}>
+            {defaultSize ? 'Add to cart' : 'Out of stock'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 /** "Shop with AI" — a stateless AI assistant (Google Gemini, free tier) that
  * can recommend products and answer store-policy questions instantly with
  * no login, separate from ChatWidget's login-gated human support thread.
  * Conversation history lives only in this component's state — nothing is
- * persisted server-side. */
+ * persisted server-side. Product recommendations render as real cards
+ * (image, price, Add to Cart) rather than just naming them in text. */
 export default function AiAssistant() {
   const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState([]); // { from: 'user' | 'bot', text }
+  const [messages, setMessages] = useState([]); // { from: 'user' | 'bot', text, productIds? }
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
+  const [products, setProducts] = useState([]);
   const bottomRef = useRef(null);
   const location = useLocation();
 
   const hidden = location.pathname.startsWith('/admin') || location.pathname === '/login';
+
+  useEffect(() => {
+    api.getProducts().then((d) => setProducts(d.products)).catch(() => {});
+  }, []);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -33,7 +79,7 @@ export default function AiAssistant() {
     setSending(true);
     try {
       const d = await api.askAiAssistant(t, priorMessages);
-      setMessages((m) => [...m, { from: 'bot', text: d.reply }]);
+      setMessages((m) => [...m, { from: 'bot', text: d.reply, productIds: d.productIds }]);
     } catch (err) {
       setMessages((m) => [...m, { from: 'bot', text: err.message || 'Something went wrong — please try again.' }]);
     } finally {
@@ -59,8 +105,17 @@ export default function AiAssistant() {
               </div>
             )}
             {messages.map((m, i) => (
-              <div key={i} className={`chat-msg ${m.from === 'user' ? 'mine' : 'theirs'}`}>
-                {m.text}
+              <div key={i}>
+                <div className={`chat-msg ${m.from === 'user' ? 'mine' : 'theirs'}`}>
+                  {m.text}
+                </div>
+                {m.productIds?.length > 0 && (
+                  <div className="ai-product-cards">
+                    {m.productIds.map((id) => (
+                      <ProductChatCard key={id} product={products.find((p) => p.id === id)} />
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
             {sending && <div className="chat-msg theirs">…</div>}

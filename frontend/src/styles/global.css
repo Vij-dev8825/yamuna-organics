@@ -2283,6 +2283,38 @@ input:focus-visible + .filter-radio { outline: 2px solid var(--gold-2); outline-
   border-radius: var(--radius-sm);
   padding: 12px 14px;
 }
+.ai-product-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 8px 0 4px;
+}
+.ai-product-card {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  background: var(--paper);
+  border: 1px solid rgba(31,61,43,0.1);
+  border-radius: var(--radius-sm);
+  padding: 8px;
+}
+.ai-product-card img {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+.ai-product-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+.ai-product-card-info b { font-size: 0.85rem; }
+.ai-product-card-actions { display: flex; gap: 6px; margin-top: 4px; }
+.ai-product-card-actions .btn { padding: 4px 10px; font-size: 0.76rem; }
 .chat-input {
   display: flex;
   gap: 8px;
