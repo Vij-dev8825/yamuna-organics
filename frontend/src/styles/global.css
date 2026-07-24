@@ -439,11 +439,11 @@ p { margin: 0 0 1em; }
   color: rgba(250, 246, 236, 0.82);
   max-width: 480px;
 }
-.hero-cta { display: flex; gap: 14px; margin-top: 28px; flex-wrap: wrap; }
+.hero-cta { display: flex; gap: 14px; margin-top: 18px; flex-wrap: wrap; }
 .hero-stats {
   display: flex;
   gap: 32px;
-  margin-top: 44px;
+  margin-top: 24px;
   flex-wrap: wrap;
 }
 .hero-stats .stat b {
@@ -1980,7 +1980,7 @@ input:focus-visible + .filter-radio { outline: 2px solid var(--gold-2); outline-
    ============================================================ */
 .hero-video {
   position: relative;
-  min-height: min(88vh, 720px);
+  min-height: min(65vh, 560px);
   display: flex;
   align-items: center;
   overflow: hidden;
@@ -2007,8 +2007,8 @@ input:focus-visible + .filter-radio { outline: 2px solid var(--gold-2); outline-
   position: relative;
   z-index: 2;
   width: 100%;
-  padding-top: 90px;
-  padding-bottom: 90px;
+  padding-top: 56px;
+  padding-bottom: 56px;
   color: var(--cream);
 }
 .hero-video-content h1 { color: var(--paper); max-width: 640px; }
@@ -2020,7 +2020,7 @@ input:focus-visible + .filter-radio { outline: 2px solid var(--gold-2); outline-
 .eyebrow.light { color: var(--gold-3); }
 .btn-outline-light { border-color: rgba(250,246,236,0.55); color: #fffdf8; }
 .btn-outline-light:hover { background: rgba(250,246,236,0.12); color: #fffdf8; }
-.hero-dots { display: flex; gap: 10px; margin-top: 34px; }
+.hero-dots { display: flex; gap: 10px; margin-top: 20px; }
 .hero-dots button {
   width: 34px; height: 4px;
   border-radius: 999px;
@@ -2707,7 +2707,7 @@ input:focus-visible + .filter-radio { outline: 2px solid var(--gold-2); outline-
   .feature-split { grid-template-columns: 1fr; }
   .chat-console { grid-template-columns: 1fr; }
   .chat-list { max-height: 200px; border-right: none; border-bottom: 1px solid rgba(31,61,43,0.1); }
-  .hero-video { min-height: 76vh; }
+  .hero-video { min-height: 60vh; }
   .product-detail-grid, .two-col-split { grid-template-columns: 1fr; gap: 28px; }
 }
 
@@ -2722,8 +2722,8 @@ input:focus-visible + .filter-radio { outline: 2px solid var(--gold-2); outline-
 
   .announce-bar { font-size: 0.7rem; padding: 7px 12px; }
 
-  .hero-video { min-height: 92vh; }
-  .hero-video-content { padding-top: 56px; padding-bottom: 56px; }
+  .hero-video { min-height: 70vh; }
+  .hero-video-content { padding-top: 40px; padding-bottom: 40px; }
   .hero-stats { gap: 20px 28px; margin-top: 32px; }
   .hero-cta { gap: 10px; }
   .hero-cta .btn { flex: 1 1 auto; }
