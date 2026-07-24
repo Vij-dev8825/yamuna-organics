@@ -9,6 +9,7 @@ import { useToast } from '../context/ToastContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { recordProductView } from '../utils/recentlyViewed';
 import { validateAddress } from '../utils/validators';
+import { normalizeAddresses } from '../utils/addresses';
 import ChakkiWheel from '../components/ChakkiWheel';
 import ProductCard from '../components/ProductCard';
 import ImageLightbox from '../components/ImageLightbox';
@@ -16,6 +17,7 @@ import DeliveryEstimate from '../components/DeliveryEstimate';
 import TrustBadges from '../components/TrustBadges';
 import StructuredData from '../components/StructuredData';
 import SeoMeta from '../components/SeoMeta';
+import AddressForm from '../components/AddressForm';
 import { IconHeart } from '../components/Icons';
 import { CANONICAL_ORIGIN } from '../utils/site';
 
@@ -110,7 +112,7 @@ export default function ProductDetail() {
   const [subCustom, setSubCustom] = useState(false);
   const [subCustomDays, setSubCustomDays] = useState('');
   const [subShowForm, setSubShowForm] = useState(false);
-  const { formatPrice, formatProductPrice, isForeign, country, countries } = useCurrency();
+  const { formatPrice, formatProductPrice, isForeign, country } = useCurrency();
   const [subAddress, setSubAddress] = useState({ line1: '', city: '', state: '', pincode: '', phone: '', country: country.code });
   const [subAddressErrors, setSubAddressErrors] = useState({});
   const [subscribing, setSubscribing] = useState(false);
@@ -154,8 +156,10 @@ export default function ProductDetail() {
   // default to the current browsing country rather than leaving it
   // undefined (see the same fix in Cart.jsx for the full reasoning).
   useEffect(() => {
-    if (user?.addresses?.[0]) {
-      setSubAddress({ ...user.addresses[0], country: user.addresses[0].country || country.code });
+    const addresses = normalizeAddresses(user?.addresses);
+    if (addresses.length) {
+      const def = addresses.find((a) => a.isDefault) || addresses[0];
+      setSubAddress({ ...def, country: def.country || country.code });
     }
   }, [user]);
 
@@ -486,68 +490,13 @@ export default function ProductDetail() {
               </>
             ) : (
               <form onSubmit={handleSubscribeSubmit} noValidate>
-                {user?.addresses?.[0] && (
+                {user?.addresses?.length > 0 && (
                   <p className="muted" style={{ fontSize: '0.82rem' }}>
-                    Filled in from your saved address — edit any field if it's changed.
+                    Filled in from your default address — edit any field if it's changed, or manage your
+                    address book from your <Link to="/profile">profile</Link>.
                   </p>
                 )}
-                <div className="field">
-                  <label>Country</label>
-                  <select value={subAddress.country} onChange={(e) => updateSubAddress('country', e.target.value)}>
-                    {countries.map((c) => (
-                      <option key={c.code} value={c.code}>{c.label}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="field">
-                  <label>Address line</label>
-                  <input required value={subAddress.line1} onChange={(e) => updateSubAddress('line1', e.target.value)} />
-                  {subAddressErrors.line1 && <div className="field-error">{subAddressErrors.line1}</div>}
-                </div>
-                <div className="field">
-                  <label>City</label>
-                  <input required value={subAddress.city} onChange={(e) => updateSubAddress('city', e.target.value)} />
-                  {subAddressErrors.city && <div className="field-error">{subAddressErrors.city}</div>}
-                </div>
-                <div className="field">
-                  <label>State</label>
-                  <input required value={subAddress.state} onChange={(e) => updateSubAddress('state', e.target.value)} />
-                  {subAddressErrors.state && <div className="field-error">{subAddressErrors.state}</div>}
-                </div>
-                <div className="field">
-                  <label>{subAddress.country === 'IN' ? 'Pincode' : 'Postal / ZIP code'}</label>
-                  <input
-                    required
-                    inputMode={subAddress.country === 'IN' ? 'numeric' : 'text'}
-                    maxLength={subAddress.country === 'IN' ? 6 : 10}
-                    value={subAddress.pincode}
-                    onChange={(e) => updateSubAddress(
-                      'pincode',
-                      subAddress.country === 'IN'
-                        ? e.target.value.replace(/\D/g, '')
-                        : e.target.value.replace(/[^A-Za-z0-9\s-]/g, '')
-                    )}
-                  />
-                  {subAddressErrors.pincode && <div className="field-error">{subAddressErrors.pincode}</div>}
-                </div>
-                <div className="field">
-                  <label>Phone</label>
-                  <input
-                    required
-                    type="tel"
-                    inputMode={subAddress.country === 'IN' ? 'numeric' : 'tel'}
-                    maxLength={subAddress.country === 'IN' ? 10 : 16}
-                    value={subAddress.phone}
-                    placeholder={subAddress.country === 'IN' ? undefined : '+1 555 123 4567'}
-                    onChange={(e) => updateSubAddress(
-                      'phone',
-                      subAddress.country === 'IN'
-                        ? e.target.value.replace(/\D/g, '')
-                        : e.target.value.replace(/[^\d+\s-]/g, '')
-                    )}
-                  />
-                  {subAddressErrors.phone && <div className="field-error">{subAddressErrors.phone}</div>}
-                </div>
+                <AddressForm address={subAddress} onChange={updateSubAddress} errors={subAddressErrors} />
                 <div className="flex gap-1">
                   <button className="btn btn-forest" disabled={subscribing}>
                     {subscribing ? 'Setting up…' : 'Confirm subscription'}

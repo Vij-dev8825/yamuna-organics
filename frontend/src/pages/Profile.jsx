@@ -1,16 +1,20 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { useCurrency } from '../context/CurrencyContext';
 import { api } from '../api';
 import { useNavigate, Link } from 'react-router-dom';
 import { IconBox } from '../components/Icons';
-import { isValidEmail } from '../utils/validators';
+import { isValidEmail, validateAddress } from '../utils/validators';
+import { normalizeAddresses } from '../utils/addresses';
 import ChakkiWheel from '../components/ChakkiWheel';
+import AddressForm from '../components/AddressForm';
 import { CANONICAL_ORIGIN } from '../utils/site';
 
 export default function Profile() {
   const { user, token, logout, updateUser } = useAuth();
   const { showToast } = useToast();
+  const { country } = useCurrency();
   const navigate = useNavigate();
 
   const [name, setName] = useState(user?.name || '');
@@ -18,12 +22,102 @@ export default function Profile() {
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
 
+  const [addresses, setAddresses] = useState(() => normalizeAddresses(user?.addresses));
+  const [editingAddrId, setEditingAddrId] = useState(null); // null | 'new' | address id
+  const [addrDraft, setAddrDraft] = useState(null);
+  const [addrErrors, setAddrErrors] = useState({});
+  const [savingAddr, setSavingAddr] = useState(false);
+
   useEffect(() => {
     if (user) {
       setName(user.name || '');
       setEmail(user.email || '');
     }
   }, [user]);
+
+  // Backfills id/isDefault for addresses saved before multi-address support
+  // existed, then persists the backfilled version once so it stabilizes.
+  useEffect(() => {
+    if (!user?.addresses?.length) return;
+    const normalized = normalizeAddresses(user.addresses);
+    setAddresses(normalized);
+    if (normalized !== user.addresses) {
+      api.updateProfile(token, { addresses: normalized }).then((d) => updateUser(d.user)).catch(() => {});
+    }
+  }, [user]);
+
+  function startAddAddress() {
+    setEditingAddrId('new');
+    setAddrDraft({ line1: '', city: '', state: '', pincode: '', phone: '', country: country.code, label: '' });
+    setAddrErrors({});
+  }
+
+  function startEditAddress(a) {
+    setEditingAddrId(a.id);
+    setAddrDraft({ ...a });
+    setAddrErrors({});
+  }
+
+  function cancelAddressEdit() {
+    setEditingAddrId(null);
+    setAddrDraft(null);
+    setAddrErrors({});
+  }
+
+  function updateAddrDraft(field, value) {
+    setAddrDraft((d) => ({ ...d, [field]: value }));
+    setAddrErrors((errs) => (errs[field] ? { ...errs, [field]: undefined } : errs));
+  }
+
+  async function saveAddress(e) {
+    e.preventDefault();
+    const errs = validateAddress(addrDraft);
+    setAddrErrors(errs);
+    if (Object.keys(errs).length) return;
+
+    setSavingAddr(true);
+    const next = editingAddrId === 'new'
+      ? [...addresses, { ...addrDraft, id: crypto.randomUUID(), isDefault: addresses.length === 0 }]
+      : addresses.map((a) => (a.id === editingAddrId ? { ...addrDraft, id: editingAddrId } : a));
+    try {
+      const data = await api.updateProfile(token, { addresses: next });
+      updateUser(data.user);
+      setAddresses(data.user.addresses);
+      showToast('Address saved.');
+      cancelAddressEdit();
+    } catch (err) {
+      showToast(err.message, 'error');
+    } finally {
+      setSavingAddr(false);
+    }
+  }
+
+  async function deleteAddress(id) {
+    if (!window.confirm('Remove this address?')) return;
+    let next = addresses.filter((a) => a.id !== id);
+    if (next.length && !next.some((a) => a.isDefault)) {
+      next = next.map((a, i) => (i === 0 ? { ...a, isDefault: true } : a));
+    }
+    try {
+      const data = await api.updateProfile(token, { addresses: next });
+      updateUser(data.user);
+      setAddresses(data.user.addresses);
+      showToast('Address removed.');
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
+  }
+
+  async function setDefaultAddress(id) {
+    const next = addresses.map((a) => ({ ...a, isDefault: a.id === id }));
+    try {
+      const data = await api.updateProfile(token, { addresses: next });
+      updateUser(data.user);
+      setAddresses(data.user.addresses);
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
+  }
 
   async function handleSave(e) {
     e.preventDefault();
@@ -116,6 +210,62 @@ export default function Profile() {
           </div>
         </div>
       )}
+
+      <div className="form-card" style={{ margin: '0 0 22px' }}>
+        <div className="flex-between" style={{ marginBottom: addresses.length || editingAddrId ? 14 : 0 }}>
+          <h3 style={{ margin: 0 }}>Address Book</h3>
+          {editingAddrId === null && (
+            <button type="button" className="btn btn-outline btn-sm" onClick={startAddAddress}>
+              + Add address
+            </button>
+          )}
+        </div>
+
+        {addresses.map((a) => (
+          editingAddrId === a.id ? (
+            <form key={a.id} onSubmit={saveAddress} style={{ marginBottom: 18 }} noValidate>
+              <AddressForm address={addrDraft} onChange={updateAddrDraft} errors={addrErrors} showLabel />
+              <div className="flex gap-1">
+                <button className="btn btn-forest btn-sm" disabled={savingAddr}>
+                  {savingAddr ? 'Saving…' : 'Save'}
+                </button>
+                <button type="button" className="btn btn-outline btn-sm" onClick={cancelAddressEdit}>Cancel</button>
+              </div>
+            </form>
+          ) : (
+            <div key={a.id} className="address-card">
+              <b>{a.label || 'Address'}</b>{a.isDefault && <span className="muted"> · Default</span>}
+              <div className="muted" style={{ fontSize: '0.85rem', marginTop: 2 }}>
+                {a.line1}, {a.city}, {a.state} – {a.pincode}<br />
+                {a.phone}
+              </div>
+              <div className="address-card-actions">
+                {!a.isDefault && (
+                  <button type="button" className="link-btn" onClick={() => setDefaultAddress(a.id)}>Set as default</button>
+                )}
+                <button type="button" className="link-btn" onClick={() => startEditAddress(a)}>Edit</button>
+                <button type="button" className="link-btn" onClick={() => deleteAddress(a.id)}>Delete</button>
+              </div>
+            </div>
+          )
+        ))}
+
+        {editingAddrId === 'new' && (
+          <form onSubmit={saveAddress} noValidate>
+            <AddressForm address={addrDraft} onChange={updateAddrDraft} errors={addrErrors} showLabel />
+            <div className="flex gap-1">
+              <button className="btn btn-forest btn-sm" disabled={savingAddr}>
+                {savingAddr ? 'Saving…' : 'Save address'}
+              </button>
+              <button type="button" className="btn btn-outline btn-sm" onClick={cancelAddressEdit}>Cancel</button>
+            </div>
+          </form>
+        )}
+
+        {!addresses.length && editingAddrId === null && (
+          <p className="muted" style={{ margin: 0 }}>No saved addresses yet.</p>
+        )}
+      </div>
 
       <form className="form-card" style={{ margin: 0 }} onSubmit={handleSave} noValidate>
         <div className="field">

@@ -1556,6 +1556,15 @@ input:focus-visible + .filter-radio { outline: 2px solid var(--gold-2); outline-
 .order-items-summary { font-size: 0.85rem; line-height: 1.4; }
 .order-card-actions { display: flex; gap: 10px; flex-wrap: wrap; }
 
+/* ---------- Address book (Profile) ---------- */
+.address-card {
+  background: var(--cream-deep);
+  border-radius: var(--radius-md);
+  padding: 16px 18px;
+  margin-bottom: 12px;
+}
+.address-card-actions { display: flex; gap: 14px; margin-top: 8px; flex-wrap: wrap; }
+
 /* ---------- Order Success (post-checkout confirmation) ---------- */
 .order-success-page { display: flex; justify-content: center; }
 .order-success-card {

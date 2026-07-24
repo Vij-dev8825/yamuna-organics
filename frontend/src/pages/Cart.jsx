@@ -8,7 +8,9 @@ import { useCurrency } from '../context/CurrencyContext';
 import { getProductImage } from '../utils/productImages';
 import { loadRazorpay } from '../utils/loadRazorpay';
 import { validateAddress, isValidEmail } from '../utils/validators';
+import { normalizeAddresses } from '../utils/addresses';
 import ChakkiWheel from '../components/ChakkiWheel';
+import AddressForm from '../components/AddressForm';
 
 function validateGuestInfo(name, email) {
   const errors = {};
@@ -21,7 +23,7 @@ export default function Cart() {
   const { items, updateQuantity, removeItem, clearCart } = useCart();
   const { isLoggedIn, token, user, login } = useAuth();
   const { showToast } = useToast();
-  const { isForeign, checkMinOrder, getShippingFee, country, countries } = useCurrency();
+  const { isForeign, checkMinOrder, getShippingFee, country } = useCurrency();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -36,12 +38,10 @@ export default function Cart() {
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [address, setAddress] = useState({ line1: '', city: '', state: '', pincode: '', phone: '', country: country.code });
   const [addressErrors, setAddressErrors] = useState({});
+  const [selectedAddressId, setSelectedAddressId] = useState('new');
   const [guestName, setGuestName] = useState('');
   const [guestEmail, setGuestEmail] = useState('');
   const [guestErrors, setGuestErrors] = useState({});
-  const [cityOptions, setCityOptions] = useState([]);
-  const [stateOptions, setStateOptions] = useState([]);
-  const [pincodeLookupError, setPincodeLookupError] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('cod'); // 'cod' | 'razorpay'
   const [razorpayEnabled, setRazorpayEnabled] = useState(false);
   const [buyNowQty, setBuyNowQty] = useState(buyNowItem?.quantity || 1);
@@ -55,51 +55,33 @@ export default function Cart() {
     api.getConfig().then((d) => setRazorpayEnabled(!!d.razorpayEnabled)).catch(() => {});
   }, []);
 
-  // Prefill from the last saved address so returning customers don't have
-  // to retype it every order. Addresses saved before the country field
-  // existed won't have one — default to the current browsing country
-  // instead of leaving it undefined (which would silently price shipping
-  // as domestic regardless of what's selected up top).
+  // Prefill from the default saved address so returning customers don't have
+  // to retype it every order. Addresses saved before this field existed
+  // won't have one — default to the current browsing country instead of
+  // leaving it undefined (which would silently price shipping as domestic
+  // regardless of what's selected up top).
   useEffect(() => {
-    if (user?.addresses?.[0]) {
-      setAddress({ ...user.addresses[0], country: user.addresses[0].country || country.code });
+    const addresses = normalizeAddresses(user?.addresses);
+    if (addresses.length) {
+      const def = addresses.find((a) => a.isDefault) || addresses[0];
+      setSelectedAddressId(def.id);
+      setAddress({ ...def, country: def.country || country.code });
+    } else {
+      setSelectedAddressId('new');
     }
   }, [user]);
 
-  // Look up city/state options from the pincode once it's 6 digits, so the
-  // customer picks from a dropdown instead of typing them (and can't typo a
-  // city/state that doesn't match their pincode).
-  useEffect(() => {
-    if (address.country !== 'IN' || !/^\d{6}$/.test(address.pincode)) {
-      setCityOptions([]);
-      setStateOptions([]);
-      setPincodeLookupError('');
-      return;
-    }
-    let cancelled = false;
-    api
-      .lookupPincode(address.pincode)
-      .then((d) => {
-        if (cancelled) return;
-        setCityOptions(d.cities);
-        setStateOptions(d.states);
-        setPincodeLookupError('');
-        setAddress((a) => ({
-          ...a,
-          city: d.cities.includes(a.city) ? a.city : d.cities[0] || '',
-          state: d.states.includes(a.state) ? a.state : d.states[0] || '',
-        }));
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setCityOptions([]);
-        setStateOptions([]);
-        setPincodeLookupError("Couldn't look up this pincode — enter city/state manually.");
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [address.pincode, address.country]);
+  function selectSavedAddress(a) {
+    setSelectedAddressId(a.id);
+    setAddress({ ...a, country: a.country || country.code });
+    setAddressErrors({});
+  }
+
+  function selectNewAddress() {
+    setSelectedAddressId('new');
+    setAddress({ line1: '', city: '', state: '', pincode: '', phone: '', country: country.code });
+    setAddressErrors({});
+  }
 
   const lines = useMemo(() => {
     if (isBuyNow) {
@@ -202,7 +184,17 @@ export default function Cart() {
       showToast(`Account created — track this order anytime from "My Orders."`);
     }
     if (!isBuyNow) clearCart();
-    api.updateProfile(effectiveToken, { addresses: [deliveredTo] }).catch(() => {});
+
+    // Only append a new address book entry when checkout actually used a
+    // freshly-typed one — an existing saved address was picked as-is, so
+    // overwriting the whole array here would silently wipe out every other
+    // saved address (the bug this replaced).
+    const isNewAddress = !isLoggedIn || selectedAddressId === 'new';
+    if (isNewAddress) {
+      const existing = normalizeAddresses((data.user || user)?.addresses);
+      const entry = { ...deliveredTo, id: crypto.randomUUID(), isDefault: existing.length === 0 };
+      api.updateProfile(effectiveToken, { addresses: [...existing, entry] }).catch(() => {});
+    }
     navigate(`/order-success/${data.order.id}`);
   }
 
@@ -419,104 +411,39 @@ export default function Cart() {
                 <span className="checkout-step-num">{isLoggedIn ? 1 : 2}</span>
                 <h4>Delivery Address</h4>
               </div>
-              {user?.addresses?.[0] && (
-                <p className="muted" style={{ fontSize: '0.82rem', marginTop: -8 }}>
-                  Filled in from your saved address — edit any field if it's changed.
-                </p>
-              )}
-              <div className="field">
-                <label>Country</label>
-                <select value={address.country} onChange={(e) => updateAddress('country', e.target.value)}>
-                  {countries.map((c) => (
-                    <option key={c.code} value={c.code}>{c.label}</option>
+              {isLoggedIn && user?.addresses?.length > 0 && (
+                <div className="address-picker" style={{ marginBottom: 14 }}>
+                  {normalizeAddresses(user.addresses).map((a) => (
+                    <label key={a.id} className={`payment-option ${selectedAddressId === a.id ? 'active' : ''}`}>
+                      <input
+                        type="radio"
+                        name="savedAddress"
+                        checked={selectedAddressId === a.id}
+                        onChange={() => selectSavedAddress(a)}
+                      />
+                      <span className="filter-radio" aria-hidden="true" />
+                      <span className="payment-option-body">
+                        <b>{a.label || 'Address'}{a.isDefault ? ' · Default' : ''}</b>
+                        <span className="muted">{a.line1}, {a.city}, {a.state} – {a.pincode}, {a.phone}</span>
+                      </span>
+                    </label>
                   ))}
-                </select>
-              </div>
-              <div className="field">
-                <label>Address line</label>
-                <input
-                  required
-                  value={address.line1}
-                  onChange={(e) => updateAddress('line1', e.target.value)}
-                />
-                {addressErrors.line1 && <div className="field-error">{addressErrors.line1}</div>}
-              </div>
-              <div className="field">
-                <label>{address.country === 'IN' ? 'Pincode' : 'Postal / ZIP code'}</label>
-                <input
-                  required
-                  inputMode={address.country === 'IN' ? 'numeric' : 'text'}
-                  maxLength={address.country === 'IN' ? 6 : 10}
-                  value={address.pincode}
-                  onChange={(e) => updateAddress(
-                    'pincode',
-                    address.country === 'IN'
-                      ? e.target.value.replace(/\D/g, '')
-                      : e.target.value.replace(/[^A-Za-z0-9\s-]/g, '')
-                  )}
-                />
-                {addressErrors.pincode && <div className="field-error">{addressErrors.pincode}</div>}
-                {pincodeLookupError && <div className="field-error">{pincodeLookupError}</div>}
-              </div>
-              <div className="field">
-                <label>City</label>
-                {cityOptions.length > 0 ? (
-                  <select value={address.city} onChange={(e) => updateAddress('city', e.target.value)}>
-                    {cityOptions.map((c) => (
-                      <option key={c} value={c}>{c}</option>
-                    ))}
-                  </select>
-                ) : (
-                  <input
-                    required
-                    value={address.city}
-                    onChange={(e) => updateAddress('city', e.target.value)}
-                    placeholder={address.country === 'IN' ? 'Enter your 6-digit pincode above to auto-fill' : 'Enter your city'}
-                  />
-                )}
-                {addressErrors.city && <div className="field-error">{addressErrors.city}</div>}
-              </div>
-              <div className="field">
-                <label>State</label>
-                {stateOptions.length > 0 ? (
-                  <select value={address.state} onChange={(e) => updateAddress('state', e.target.value)}>
-                    {stateOptions.map((s) => (
-                      <option key={s} value={s}>{s}</option>
-                    ))}
-                  </select>
-                ) : (
-                  <input
-                    required
-                    value={address.state}
-                    onChange={(e) => updateAddress('state', e.target.value)}
-                    placeholder={address.country === 'IN' ? 'Enter your 6-digit pincode above to auto-fill' : 'Enter your state/province'}
-                  />
-                )}
-                {addressErrors.state && <div className="field-error">{addressErrors.state}</div>}
-              </div>
-              <div className="field">
-                <label>Phone</label>
-                <input
-                  required
-                  type="tel"
-                  inputMode={address.country === 'IN' ? 'numeric' : 'tel'}
-                  maxLength={address.country === 'IN' ? 10 : 16}
-                  value={address.phone}
-                  placeholder={address.country === 'IN' ? undefined : '+1 555 123 4567'}
-                  onChange={(e) => updateAddress(
-                    'phone',
-                    address.country === 'IN'
-                      ? e.target.value.replace(/\D/g, '')
-                      : e.target.value.replace(/[^\d+\s-]/g, '')
-                  )}
-                />
-                {addressErrors.phone && <div className="field-error">{addressErrors.phone}</div>}
-              </div>
-              {address.country !== 'IN' && (
-                <p className="muted" style={{ fontSize: '0.8rem' }}>
-                  🌍 International orders may be subject to customs duties or import taxes charged by your
-                  country on delivery — these aren't included in the total shown here.
-                </p>
+                  <label className={`payment-option ${selectedAddressId === 'new' ? 'active' : ''}`}>
+                    <input
+                      type="radio"
+                      name="savedAddress"
+                      checked={selectedAddressId === 'new'}
+                      onChange={selectNewAddress}
+                    />
+                    <span className="filter-radio" aria-hidden="true" />
+                    <span className="payment-option-body">
+                      <b>+ Use a new address</b>
+                    </span>
+                  </label>
+                </div>
+              )}
+              {(!isLoggedIn || !user?.addresses?.length || selectedAddressId === 'new') && (
+                <AddressForm address={address} onChange={updateAddress} errors={addressErrors} showCustomsNote />
               )}
 
               <div className="checkout-step" style={{ marginTop: 22 }}>
