@@ -227,3 +227,4 @@ router.put('/me', requireAuth, async (req, res, next) => {
 });
 
 module.exports = router;
+module.exports.signToken = signToken;

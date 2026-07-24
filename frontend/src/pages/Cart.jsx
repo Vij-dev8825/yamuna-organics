@@ -7,12 +7,19 @@ import { useToast } from '../context/ToastContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { getProductImage } from '../utils/productImages';
 import { loadRazorpay } from '../utils/loadRazorpay';
-import { validateAddress } from '../utils/validators';
+import { validateAddress, isValidEmail } from '../utils/validators';
 import ChakkiWheel from '../components/ChakkiWheel';
+
+function validateGuestInfo(name, email) {
+  const errors = {};
+  if (!name || name.trim().length < 2) errors.name = 'Enter your name.';
+  if (email && !isValidEmail(email)) errors.email = 'Enter a valid email address, or leave it blank.';
+  return errors;
+}
 
 export default function Cart() {
   const { items, updateQuantity, removeItem, clearCart } = useCart();
-  const { isLoggedIn, token, user } = useAuth();
+  const { isLoggedIn, token, user, login } = useAuth();
   const { showToast } = useToast();
   const { isForeign, checkMinOrder, getShippingFee, country, countries } = useCurrency();
   const navigate = useNavigate();
@@ -29,6 +36,9 @@ export default function Cart() {
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [address, setAddress] = useState({ line1: '', city: '', state: '', pincode: '', phone: '', country: country.code });
   const [addressErrors, setAddressErrors] = useState({});
+  const [guestName, setGuestName] = useState('');
+  const [guestEmail, setGuestEmail] = useState('');
+  const [guestErrors, setGuestErrors] = useState({});
   const [cityOptions, setCityOptions] = useState([]);
   const [stateOptions, setStateOptions] = useState([]);
   const [pincodeLookupError, setPincodeLookupError] = useState('');
@@ -157,21 +167,22 @@ export default function Cart() {
     }
     const errors = validateAddress(address);
     setAddressErrors(errors);
-    if (Object.keys(errors).length) {
-      showToast('Please fix the highlighted fields in your delivery address.', 'error');
+    const gErrors = isLoggedIn ? {} : validateGuestInfo(guestName, guestEmail);
+    setGuestErrors(gErrors);
+    if (Object.keys(errors).length || Object.keys(gErrors).length) {
+      showToast('Please fix the highlighted fields.', 'error');
       return;
     }
     setPlacing(true);
     const orderItems = lines.map((l) => ({ productId: l.productId, size: l.size, quantity: l.quantity }));
     const couponCode = !couponStale && appliedCoupon ? appliedCoupon.code : undefined;
+    const guestInfo = isLoggedIn ? undefined : { name: guestName.trim(), email: guestEmail.trim() };
     try {
       if (paymentMethod === 'razorpay') {
-        await payWithRazorpay(orderItems, couponCode);
+        await payWithRazorpay(orderItems, couponCode, guestInfo);
       } else {
-        const data = await api.placeOrder(token, { items: orderItems, address, paymentMethod: 'cod', couponCode });
-        if (!isBuyNow) clearCart();
-        api.updateProfile(token, { addresses: [address] }).catch(() => {});
-        navigate(`/order-success/${data.order.id}`);
+        const data = await api.placeOrder(token, { items: orderItems, address, paymentMethod: 'cod', couponCode, guestInfo });
+        finishOrder(data, address);
       }
     } catch (err) {
       showToast(err.message, 'error');
@@ -180,8 +191,23 @@ export default function Cart() {
     }
   }
 
-  async function payWithRazorpay(orderItems, couponCode) {
-    const rzpOrder = await api.createRazorpayOrder(token, { items: orderItems, couponCode, address });
+  // Shared by the COD and Razorpay success paths — a guest checkout returns
+  // a fresh token/user (see backend/routes/orders.js), which logs them in
+  // seamlessly so they land on Order Success/My Orders like any other
+  // customer instead of a dead end with no way to see their own order.
+  function finishOrder(data, deliveredTo) {
+    const effectiveToken = data.token || token;
+    if (data.token) {
+      login(data.token, data.user);
+      showToast(`Account created — track this order anytime from "My Orders."`);
+    }
+    if (!isBuyNow) clearCart();
+    api.updateProfile(effectiveToken, { addresses: [deliveredTo] }).catch(() => {});
+    navigate(`/order-success/${data.order.id}`);
+  }
+
+  async function payWithRazorpay(orderItems, couponCode, guestInfo) {
+    const rzpOrder = await api.createRazorpayOrder(token, { items: orderItems, couponCode, address, guestInfo });
     await loadRazorpay();
 
     return new Promise((resolve, reject) => {
@@ -205,10 +231,8 @@ export default function Cart() {
         },
         handler: async (response) => {
           try {
-            const data = await api.verifyRazorpayPayment(token, { items: orderItems, address, couponCode, ...response });
-            if (!isBuyNow) clearCart();
-            api.updateProfile(token, { addresses: [address] }).catch(() => {});
-            navigate(`/order-success/${data.order.id}`);
+            const data = await api.verifyRazorpayPayment(token, { items: orderItems, address, couponCode, guestInfo, ...response });
+            finishOrder(data, address);
             resolve();
           } catch (err) {
             showToast(err.message, 'error');
@@ -360,21 +384,39 @@ export default function Cart() {
               <button
                 className="btn btn-gold btn-block"
                 style={{ marginTop: 18 }}
-                onClick={() => {
-                  if (!isLoggedIn) {
-                    navigate('/login', { state: { from: '/cart', buyNow: buyNowItem || undefined } });
-                    return;
-                  }
-                  setShowAddressForm(true);
-                }}
+                onClick={() => setShowAddressForm(true)}
               >
-                {isLoggedIn ? 'Proceed to checkout' : 'Log in to checkout'}
+                Proceed to checkout
               </button>
+              {!isLoggedIn && (
+                <p className="muted center" style={{ marginTop: 10, fontSize: '0.85rem' }}>
+                  Have an account?{' '}
+                  <Link to="/login" state={{ from: '/cart', buyNow: buyNowItem || undefined }}>Log in</Link> for faster checkout.
+                </p>
+              )}
             </div>
           ) : (
             <form onSubmit={handlePlaceOrder} style={{ marginTop: 18 }} noValidate>
+              {!isLoggedIn && (
+                <>
+                  <div className="checkout-step">
+                    <span className="checkout-step-num">1</span>
+                    <h4>Your Details</h4>
+                  </div>
+                  <div className="field">
+                    <label>Full name *</label>
+                    <input required value={guestName} onChange={(e) => setGuestName(e.target.value)} />
+                    {guestErrors.name && <div className="field-error">{guestErrors.name}</div>}
+                  </div>
+                  <div className="field">
+                    <label>Email (optional, for order updates)</label>
+                    <input type="email" value={guestEmail} onChange={(e) => setGuestEmail(e.target.value)} />
+                    {guestErrors.email && <div className="field-error">{guestErrors.email}</div>}
+                  </div>
+                </>
+              )}
               <div className="checkout-step">
-                <span className="checkout-step-num">1</span>
+                <span className="checkout-step-num">{isLoggedIn ? 1 : 2}</span>
                 <h4>Delivery Address</h4>
               </div>
               {user?.addresses?.[0] && (
@@ -478,7 +520,7 @@ export default function Cart() {
               )}
 
               <div className="checkout-step" style={{ marginTop: 22 }}>
-                <span className="checkout-step-num">2</span>
+                <span className="checkout-step-num">{isLoggedIn ? 2 : 3}</span>
                 <h4>Payment Method</h4>
               </div>
               <div className="payment-options">

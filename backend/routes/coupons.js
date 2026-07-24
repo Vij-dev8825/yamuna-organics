@@ -1,5 +1,5 @@
 const express = require('express');
-const { requireAuth } = require('../middleware/auth');
+const { optionalAuth } = require('../middleware/auth');
 const db = require('../data/db');
 const { findValidCoupon, computeDiscount } = require('../utils/coupons');
 
@@ -35,11 +35,13 @@ router.get('/featured', async (req, res, next) => {
 
 // POST /api/coupons/validate  { code, subtotal } — checkout preview only;
 // the order-placement routes re-validate and recompute the discount
-// server-side rather than trusting whatever this returned.
-router.post('/validate', requireAuth, async (req, res, next) => {
+// server-side rather than trusting whatever this returned. Guests (no
+// req.user) can preview site-wide coupons fine; personal/assigned coupons
+// correctly fail without a matching userId, same as at order-placement time.
+router.post('/validate', optionalAuth, async (req, res, next) => {
   try {
     const { code, subtotal } = req.body;
-    const coupon = await findValidCoupon(code, req.user.id);
+    const coupon = await findValidCoupon(code, req.user?.id);
     if (!coupon) {
       return res.status(404).json({ success: false, message: 'Invalid or expired coupon code.' });
     }

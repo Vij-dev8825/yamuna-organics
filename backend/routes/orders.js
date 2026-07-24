@@ -1,6 +1,8 @@
 const express = require('express');
+const { v4: uuid } = require('uuid');
 const db = require('../data/db');
-const { requireAuth } = require('../middleware/auth');
+const { requireAuth, optionalAuth } = require('../middleware/auth');
+const { signToken } = require('./auth');
 const razorpay = require('../utils/razorpay');
 const { buildOrderItems, createOrderRecord } = require('../utils/orderBuilder');
 const { notifyUser } = require('../utils/notify');
@@ -11,10 +13,45 @@ const RETURN_REASONS = ['damaged-incorrect', 'quality-issue', 'other'];
 
 const router = express.Router();
 
-// POST /api/orders  { items, address, paymentMethod }  — COD path
-router.post('/', requireAuth, async (req, res, next) => {
+// Builds a candidate account for a guest checkout — does NOT check for an
+// existing phone match or persist it (callers decide when/whether to do
+// that; see the two call sites below for why they differ).
+async function resolveGuestUser(guestInfo, phone) {
+  const name = guestInfo?.name?.trim();
+  if (!name || name.length < 2) {
+    return { error: { status: 400, message: 'Enter your name.' } };
+  }
+  if (!phone) {
+    return { error: { status: 400, message: 'A phone number is required.' } };
+  }
+  return {
+    user: {
+      id: uuid(),
+      phone,
+      name,
+      email: guestInfo?.email?.trim() || '',
+      role: 'customer',
+      addresses: [],
+      createdAt: new Date().toISOString(),
+    },
+  };
+}
+
+// A guest order is only ever attached to a BRAND NEW account — never to an
+// existing one, since there's no OTP step to prove the phone number is
+// really theirs. Silently reusing an existing account here would let anyone
+// view/modify a stranger's order history just by typing their phone number.
+async function isPhoneAvailable(phone) {
+  const users = await db.list('users');
+  return !users.some((u) => u.phone === phone);
+}
+
+// POST /api/orders  { items, address, paymentMethod, guestInfo? }  — COD path.
+// guestInfo: { name, email? } is required when not logged in; the delivery
+// address's phone number doubles as the guest's identity.
+router.post('/', optionalAuth, async (req, res, next) => {
   try {
-    const { items, address, paymentMethod, couponCode } = req.body;
+    const { items, address, paymentMethod, couponCode, guestInfo } = req.body;
 
     if (!items || !items.length) {
       return res.status(400).json({ success: false, message: 'Your cart is empty.' });
@@ -23,10 +60,26 @@ router.post('/', requireAuth, async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'A complete delivery address is required.' });
     }
 
-    const { orderItems, total, discount, couponCode: appliedCode, stockError } = await buildOrderItems(items, couponCode, address.country, req.user.id);
+    let userId = req.user?.id;
+    let newAccount = null;
+    if (!userId) {
+      if (!(await isPhoneAvailable(address.phone))) {
+        return res.status(409).json({
+          success: false,
+          message: 'An account already exists with this phone number. Please log in to continue.',
+        });
+      }
+      const resolved = await resolveGuestUser(guestInfo, address.phone);
+      if (resolved.error) return res.status(resolved.error.status).json({ success: false, message: resolved.error.message });
+      newAccount = resolved.user;
+      await db.put('users', newAccount);
+      userId = newAccount.id;
+    }
+
+    const { orderItems, total, discount, couponCode: appliedCode, stockError } = await buildOrderItems(items, couponCode, address.country, userId);
     if (stockError) return res.status(400).json({ success: false, message: stockError });
     const order = await createOrderRecord({
-      userId: req.user.id,
+      userId,
       orderItems,
       address,
       total,
@@ -35,14 +88,19 @@ router.post('/', requireAuth, async (req, res, next) => {
       paymentMethod: paymentMethod || 'cod',
     });
 
-    res.status(201).json({ success: true, message: 'Order placed successfully.', order });
+    const response = { success: true, message: 'Order placed successfully.', order };
+    if (newAccount) {
+      response.token = signToken(newAccount);
+      response.user = newAccount;
+    }
+    res.status(201).json(response);
   } catch (err) {
     next(err);
   }
 });
 
-// POST /api/orders/razorpay/create  { items } → { razorpayOrderId, amount, currency, keyId }
-router.post('/razorpay/create', requireAuth, async (req, res, next) => {
+// POST /api/orders/razorpay/create  { items, guestInfo? } → { razorpayOrderId, amount, currency, keyId }
+router.post('/razorpay/create', optionalAuth, async (req, res, next) => {
   try {
     if (!razorpay.isConfigured()) {
       return res.status(503).json({
@@ -50,11 +108,29 @@ router.post('/razorpay/create', requireAuth, async (req, res, next) => {
         message: 'Online payment isn’t set up yet — please choose Cash on Delivery instead.',
       });
     }
-    const { items, couponCode, address } = req.body;
+    const { items, couponCode, address, guestInfo } = req.body;
     if (!items || !items.length) {
       return res.status(400).json({ success: false, message: 'Your cart is empty.' });
     }
-    const { total, stockError } = await buildOrderItems(items, couponCode, address?.country, req.user.id);
+
+    // Guest identity/availability is validated up front, before any payment
+    // is initiated — not persisted yet, so an abandoned payment here doesn't
+    // leave behind an unused account (see /razorpay/verify, which persists).
+    if (!req.user) {
+      if (!address?.phone) {
+        return res.status(400).json({ success: false, message: 'A complete delivery address is required.' });
+      }
+      if (!(await isPhoneAvailable(address.phone))) {
+        return res.status(409).json({
+          success: false,
+          message: 'An account already exists with this phone number. Please log in to continue.',
+        });
+      }
+      const resolved = await resolveGuestUser(guestInfo, address.phone);
+      if (resolved.error) return res.status(resolved.error.status).json({ success: false, message: resolved.error.message });
+    }
+
+    const { total, stockError } = await buildOrderItems(items, couponCode, address?.country, req.user?.id);
     if (stockError) return res.status(400).json({ success: false, message: stockError });
     if (total <= 0) {
       return res.status(400).json({ success: false, message: 'Order total must be greater than zero.' });
@@ -73,10 +149,10 @@ router.post('/razorpay/create', requireAuth, async (req, res, next) => {
 });
 
 // POST /api/orders/razorpay/verify
-// { items, address, razorpay_order_id, razorpay_payment_id, razorpay_signature }
-router.post('/razorpay/verify', requireAuth, async (req, res, next) => {
+// { items, address, guestInfo?, razorpay_order_id, razorpay_payment_id, razorpay_signature }
+router.post('/razorpay/verify', optionalAuth, async (req, res, next) => {
   try {
-    const { items, address, couponCode, razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+    const { items, address, couponCode, guestInfo, razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
       return res.status(400).json({ success: false, message: 'Missing payment confirmation details.' });
@@ -88,15 +164,29 @@ router.post('/razorpay/verify', requireAuth, async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Payment verification failed. Please contact support before retrying.' });
     }
 
+    // Same reasoning as the stock check below: /razorpay/create already
+    // gated on phone availability before payment was taken, so this doesn't
+    // re-check it — rejecting a guest here after Razorpay has already
+    // captured the payment would strand a paid customer.
+    let userId = req.user?.id;
+    let newAccount = null;
+    if (!userId) {
+      const resolved = await resolveGuestUser(guestInfo, address.phone);
+      if (resolved.error) return res.status(resolved.error.status).json({ success: false, message: resolved.error.message });
+      newAccount = resolved.user;
+      await db.put('users', newAccount);
+      userId = newAccount.id;
+    }
+
     // No stock re-check here: by this point Razorpay has already captured the
     // payment (verified via signature above), so rejecting on a stock race
     // would strand a paid customer with no order and no refund. The earlier
     // /razorpay/create check is the real gate; any oversell that still slips
     // through this narrow window is visible to the admin in Orders same as
     // a COD one and can be handled manually, same as any other refund case.
-    const { orderItems, total, discount, couponCode: appliedCode } = await buildOrderItems(items, couponCode, address.country, req.user.id);
+    const { orderItems, total, discount, couponCode: appliedCode } = await buildOrderItems(items, couponCode, address.country, userId);
     const order = await createOrderRecord({
-      userId: req.user.id,
+      userId,
       orderItems,
       address,
       total,
@@ -106,7 +196,12 @@ router.post('/razorpay/verify', requireAuth, async (req, res, next) => {
       payment: { razorpay_order_id, razorpay_payment_id },
     });
 
-    res.status(201).json({ success: true, message: 'Payment verified and order placed.', order });
+    const response = { success: true, message: 'Payment verified and order placed.', order };
+    if (newAccount) {
+      response.token = signToken(newAccount);
+      response.user = newAccount;
+    }
+    res.status(201).json(response);
   } catch (err) {
     next(err);
   }
