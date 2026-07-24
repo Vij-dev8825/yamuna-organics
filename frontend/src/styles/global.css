@@ -2156,6 +2156,24 @@ input:focus-visible + .filter-radio { outline: 2px solid var(--gold-2); outline-
   box-shadow: var(--shadow-lift);
   z-index: 180;
 }
+.whatsapp-fab {
+  position: fixed;
+  left: 24px;
+  bottom: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #25D366;
+  color: #fff;
+  box-shadow: var(--shadow-lift);
+  z-index: 180;
+  transition: transform 0.15s ease;
+}
+.whatsapp-fab:hover { transform: scale(1.06); }
+
 .chat-panel {
   position: fixed;
   right: 24px;
@@ -2642,6 +2660,7 @@ input:focus-visible + .filter-radio { outline: 2px solid var(--gold-2); outline-
 
   .chat-panel { bottom: 82px; right: 16px; left: 16px; width: auto; height: min(64vh, 460px); }
   .chat-fab { right: 16px; bottom: 16px; width: 50px; height: 50px; font-size: 1.2rem; }
+  .whatsapp-fab { left: 16px; bottom: 16px; width: 50px; height: 50px; }
 
   .cart-line {
     grid-template-columns: 64px 1fr auto;
@@ -3038,6 +3057,7 @@ input:focus-visible + .filter-radio { outline: 2px solid var(--gold-2); outline-
    bar's buttons — --cookie-bar-height is set live by CookieConsent.jsx. */
 body.has-cookie-bar .chat-fab { bottom: calc(var(--cookie-bar-height, 0px) + 16px); }
 body.has-cookie-bar .push-optin { bottom: calc(var(--cookie-bar-height, 0px) + 16px); }
+body.has-cookie-bar .whatsapp-fab { bottom: calc(var(--cookie-bar-height, 0px) + 16px); }
 
 .push-optin {
   position: fixed;

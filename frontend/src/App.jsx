@@ -6,6 +6,7 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ProtectedRoute from './components/ProtectedRoute';
 import ChatWidget from './components/ChatWidget';
+import WhatsAppButton from './components/WhatsAppButton';
 import PromoPopup from './components/PromoPopup';
 import CookieConsent from './components/CookieConsent';
 import PushOptIn from './components/PushOptIn';
@@ -84,6 +85,7 @@ function StoreLayout() {
       </main>
       <Footer />
       <ChatWidget />
+      <WhatsAppButton />
       <WelcomeSelector />
       <PromoPopup />
       <CookieConsent />
