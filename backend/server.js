@@ -32,6 +32,7 @@ const pincodeRoutes = require('./routes/pincode');
 const currencyRoutes = require('./routes/currency');
 const saleBannerRoutes = require('./routes/saleBanner');
 const stockNotifyRoutes = require('./routes/stockNotify');
+const googleReviewsRoutes = require('./routes/googleReviews');
 
 const app = express();
 
@@ -71,6 +72,7 @@ app.use('/api/pincode', pincodeRoutes);
 app.use('/api/currency', currencyRoutes);
 app.use('/api/sale-banner', saleBannerRoutes);
 app.use('/api/stock-notify', stockNotifyRoutes);
+app.use('/api/google-reviews', googleReviewsRoutes);
 
 // Uploaded banner videos/images
 app.use('/uploads', express.static(UPLOADS_DIR, { maxAge: '7d' }));

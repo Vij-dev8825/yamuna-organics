@@ -55,6 +55,9 @@ export const api = {
   // "Notify me when back in stock" — token is optional, guests pass an email
   subscribeStockNotify: (payload, token) => request('/stock-notify', { method: 'POST', body: payload, token }),
 
+  // Aggregate rating + review snippets from the business's Google listing
+  getGoogleReviews: () => request('/google-reviews'),
+
   // blog
   getBlogPosts: () => request('/blog'),
   getBlogPost: (slug) => request(`/blog/${slug}`),

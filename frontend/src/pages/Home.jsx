@@ -4,6 +4,7 @@ import { api } from '../api';
 import ProductCard from '../components/ProductCard';
 import SectionDivider from '../components/SectionDivider';
 import ChakkiWheel from '../components/ChakkiWheel';
+import GoogleReviewsWidget from '../components/GoogleReviewsWidget';
 import { getProductImage } from '../utils/productImages';
 import { getRecentlyViewedIds } from '../utils/recentlyViewed';
 import { useLang } from '../i18n';
@@ -277,6 +278,8 @@ export default function Home() {
           ))}
         </div>
       </section>
+
+      <GoogleReviewsWidget />
 
       {/* ---------- Bulk CTA ---------- */}
       <section className="section container center" style={{ paddingTop: 0 }}>
