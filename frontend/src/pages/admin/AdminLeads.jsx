@@ -2,6 +2,15 @@ import { useEffect, useState } from 'react';
 import { api } from '../../api';
 import { useAuth } from '../../context/AuthContext';
 
+// Enquiries submitted before the multi-product form existed used a flat
+// productCategory/quantity/unit shape instead of an items array — read
+// either so old leads still display correctly without a data migration.
+function enquiryItems(e2) {
+  if (Array.isArray(e2.items) && e2.items.length) return e2.items;
+  if (e2.productCategory) return [{ productCategory: e2.productCategory, quantity: e2.quantity, unit: e2.unit }];
+  return [];
+}
+
 export default function AdminLeads() {
   const { token } = useAuth();
   const [tab, setTab] = useState('enquiries');
@@ -49,13 +58,25 @@ export default function AdminLeads() {
               <tbody>
                 {enquiries.map((e2) => (
                   <tr key={e2.id}>
-                    <td><b>{e2.name}</b>{e2.company && <div className="muted" style={{ fontSize: '0.75rem' }}>{e2.company}</div>}</td>
+                    <td>
+                      <b>{e2.name}</b>
+                      {e2.enquiryNumber && <div className="muted" style={{ fontSize: '0.72rem' }}>{e2.enquiryNumber}</div>}
+                      {e2.company && <div className="muted" style={{ fontSize: '0.75rem' }}>{e2.company}</div>}
+                    </td>
                     <td>{e2.phone}<div className="muted" style={{ fontSize: '0.75rem' }}>{e2.email}</div></td>
                     <td>
-                      {e2.quantity} {e2.unit} of {e2.productCategory}
+                      {enquiryItems(e2).map((it, idx) => (
+                        <div key={idx}>{it.quantity} {it.unit} of {it.productCategory}</div>
+                      ))}
                       {(e2.country || e2.city) && (
                         <div className="muted" style={{ fontSize: '0.75rem' }}>
                           {[e2.city, e2.country].filter(Boolean).join(', ')}
+                        </div>
+                      )}
+                      {e2.gstin && <div className="muted" style={{ fontSize: '0.75rem' }}>GST: {e2.gstin}</div>}
+                      {(e2.sampleRequested || e2.privateLabel) && (
+                        <div className="muted" style={{ fontSize: '0.75rem' }}>
+                          {[e2.sampleRequested && 'Sample requested', e2.privateLabel && 'Private label'].filter(Boolean).join(' · ')}
                         </div>
                       )}
                     </td>
