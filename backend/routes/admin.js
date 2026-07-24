@@ -788,6 +788,50 @@ router.put('/sale-banner', async (req, res, next) => {
   }
 });
 
+/* --------------------------- Homepage reviews showcase --------------------- */
+
+// GET /api/admin/homepage-reviews
+router.get('/homepage-reviews', async (req, res, next) => {
+  try {
+    const settings = await db.get('homepage-reviews', 'main');
+    res.json({
+      success: true,
+      settings: settings || { id: 'main', rating: 0, reviewCount: 0, mapsUrl: '', reviews: [] },
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// PUT /api/admin/homepage-reviews  { rating, reviewCount, mapsUrl,
+// reviews: [{ author, rating, text, relativeTime }] } — a manually-curated
+// stand-in for a live Google Places API pull (see homepageReviews.js).
+router.put('/homepage-reviews', async (req, res, next) => {
+  try {
+    const settings = {
+      id: 'main',
+      rating: Number(req.body.rating) || 0,
+      reviewCount: Number(req.body.reviewCount) || 0,
+      mapsUrl: req.body.mapsUrl || '',
+      reviews: Array.isArray(req.body.reviews)
+        ? req.body.reviews
+            .filter((r) => r.author && r.text)
+            .map((r) => ({
+              id: r.id || uuid(),
+              author: r.author,
+              rating: Number(r.rating) || 5,
+              text: r.text,
+              relativeTime: r.relativeTime || '',
+            }))
+        : [],
+    };
+    await db.put('homepage-reviews', settings);
+    res.json({ success: true, settings });
+  } catch (err) {
+    next(err);
+  }
+});
+
 /* ------------------------------ Currency rates ----------------------------- */
 
 // GET /api/admin/currency-overrides — live rate (as "1 X = ₹Y", the usual

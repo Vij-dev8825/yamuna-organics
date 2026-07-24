@@ -52,6 +52,7 @@ import AdminBlog from './pages/admin/AdminBlog';
 import AdminPageBanners from './pages/admin/AdminPageBanners';
 import AdminSaleBanner from './pages/admin/AdminSaleBanner';
 import AdminCurrency from './pages/admin/AdminCurrency';
+import AdminHomepageReviews from './pages/admin/AdminHomepageReviews';
 
 function NotFound() {
   return (
@@ -139,6 +140,7 @@ export default function App() {
         <Route path="page-banners" element={<AdminPageBanners />} />
         <Route path="sale-banner" element={<AdminSaleBanner />} />
         <Route path="currency" element={<AdminCurrency />} />
+        <Route path="homepage-reviews" element={<AdminHomepageReviews />} />
       </Route>
 
       {/* Customer storefront */}

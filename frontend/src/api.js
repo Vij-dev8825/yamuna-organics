@@ -55,8 +55,8 @@ export const api = {
   // "Notify me when back in stock" — token is optional, guests pass an email
   subscribeStockNotify: (payload, token) => request('/stock-notify', { method: 'POST', body: payload, token }),
 
-  // Aggregate rating + review snippets from the business's Google listing
-  getGoogleReviews: () => request('/google-reviews'),
+  // Manually-curated showcase of real reviews from the business's Google listing
+  getHomepageReviews: () => request('/homepage-reviews'),
 
   // blog
   getBlogPosts: () => request('/blog'),
@@ -156,6 +156,8 @@ export const api = {
 
     getSaleBanner: (token) => request('/admin/sale-banner', { token }),
     updateSaleBanner: (token, settings) => request('/admin/sale-banner', { method: 'PUT', body: settings, token }),
+    getHomepageReviews: (token) => request('/admin/homepage-reviews', { token }),
+    updateHomepageReviews: (token, settings) => request('/admin/homepage-reviews', { method: 'PUT', body: settings, token }),
 
     getCurrencyOverrides: (token) => request('/admin/currency-overrides', { token }),
     updateCurrencyOverrides: (token, body) =>

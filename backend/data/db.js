@@ -37,6 +37,7 @@ const COLLECTIONS = [
   'media',
   'push-subscriptions',
   'stock-notify',
+  'homepage-reviews',
 ];
 
 let mode = 'json';

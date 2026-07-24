@@ -11,16 +11,17 @@ function Stars({ rating }) {
   );
 }
 
-/** Aggregate rating + up to 5 review snippets pulled from the business's
- * Google listing (Places API, cached server-side). Renders nothing until
- * GOOGLE_PLACES_API_KEY and GOOGLE_PLACE_ID are configured, and nothing on
- * fetch failure — this is a bonus trust section, never worth blocking or
- * erroring the homepage over. */
+/** Aggregate rating + a handful of review snippets, manually curated by the
+ * admin from the business's real Google listing (see AdminHomepageReviews) —
+ * a stand-in for a live Places API pull, which would need Google Cloud
+ * billing set up. Renders nothing until at least one review is entered, and
+ * nothing on fetch failure — this is a bonus trust section, never worth
+ * blocking or erroring the homepage over. */
 export default function GoogleReviewsWidget() {
   const [data, setData] = useState(null);
 
   useEffect(() => {
-    api.getGoogleReviews().then(setData).catch(() => {});
+    api.getHomepageReviews().then(setData).catch(() => {});
   }, []);
 
   if (!data?.success || !data.configured || !data.reviews?.length) return null;
@@ -36,7 +37,7 @@ export default function GoogleReviewsWidget() {
           <span className="google-reviews-rating">{data.rating.toFixed(1)}</span>
           <div>
             <Stars rating={data.rating} />
-            <span className="muted google-reviews-count">{data.userRatingsTotal} Google reviews</span>
+            <span className="muted google-reviews-count">{data.reviewCount} Google reviews</span>
           </div>
         </div>
       </div>
@@ -45,11 +46,7 @@ export default function GoogleReviewsWidget() {
         {data.reviews.map((r, i) => (
           <figure className="testimonial google-review-card" key={i}>
             <div className="google-review-head">
-              {r.profilePhoto ? (
-                <img src={r.profilePhoto} alt="" referrerPolicy="no-referrer" />
-              ) : (
-                <span className="google-review-avatar">{r.author?.[0] || '?'}</span>
-              )}
+              <span className="google-review-avatar">{r.author?.[0] || '?'}</span>
               <div>
                 <b>{r.author}</b>
                 <Stars rating={r.rating} />
